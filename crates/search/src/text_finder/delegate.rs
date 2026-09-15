@@ -727,7 +727,7 @@ impl PickerDelegate for Delegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Search all files…".into()
+        locale::t("Search all files…").as_str().into()
     }
 
     fn searchbar_trailer(
@@ -759,7 +759,9 @@ impl PickerDelegate for Delegate {
             )
             .icon_size(IconSize::Small)
             .toggle_state(active.contains(options))
-            .tooltip(move |_window, cx| Tooltip::for_action_in(label, action, &focus_handle, cx))
+            .tooltip(move |_window, cx| {
+                Tooltip::for_action_in(locale::t(label), action, &focus_handle, cx)
+            })
             .on_click(move |_, window, cx| {
                 picker.update(cx, |picker, cx| {
                     toggle_search_option(picker, options, window, cx);
@@ -788,30 +790,36 @@ impl PickerDelegate for Delegate {
     ) -> Vec<picker::PickerAction> {
         use gpui::Action as _;
         vec![
-            picker::PickerAction::header("Split…"),
+            picker::PickerAction::header(locale::t("Split…")),
             picker::PickerAction::button(
-                "Left",
+                locale::t("Left"),
                 workspace::pane::SplitLeft::default().boxed_clone(),
             ),
             picker::PickerAction::button(
-                "Right",
+                locale::t("Right"),
                 workspace::pane::SplitRight::default().boxed_clone(),
             ),
-            picker::PickerAction::button("Up", workspace::pane::SplitUp::default().boxed_clone()),
             picker::PickerAction::button(
-                "Down",
+                locale::t("Up"),
+                workspace::pane::SplitUp::default().boxed_clone(),
+            ),
+            picker::PickerAction::button(
+                locale::t("Down"),
                 workspace::pane::SplitDown::default().boxed_clone(),
             ),
             picker::PickerAction::separator(),
             picker::PickerAction::button(
                 if self.selected_matches.len() > 1 {
-                    "Open Multiple"
+                    locale::t("Open Multiple")
                 } else {
-                    "Open File"
+                    locale::t("Open File")
                 },
                 menu::Confirm.boxed_clone(),
             ),
-            picker::PickerAction::button("Open as Tab", super::ToProjectSearch.boxed_clone()),
+            picker::PickerAction::button(
+                locale::t("Open as Tab"),
+                super::ToProjectSearch.boxed_clone(),
+            ),
         ]
     }
 
@@ -1128,7 +1136,7 @@ impl Delegate {
                                                         ("Fold", &Fold)
                                                     };
                                                 Tooltip::with_meta_in(
-                                                    label,
+                                                    locale::t(label),
                                                     Some(action),
                                                     format!(
                                                         "{} to toggle all",

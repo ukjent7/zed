@@ -158,7 +158,9 @@ impl SearchOption {
         })
         .shape(IconButtonShape::Square)
         .toggle_state(active.contains(self.as_options()))
-        .tooltip(move |_window, cx| Tooltip::for_action_in(label, action, &focus_handle, cx))
+        .tooltip(move |_window, cx| {
+            Tooltip::for_action_in(locale::t(label), action, &focus_handle, cx)
+        })
     }
 }
 
