@@ -18307,6 +18307,7 @@ dependencies = [
  "gpui",
  "itertools 0.14.0",
  "language",
+ "locale",
  "log",
  "menu",
  "pretty_assertions",

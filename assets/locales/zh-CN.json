@@ -529,5 +529,19 @@
   "View Log": "查看日志",
   "View Options": "查看选项",
   "View Stash": "查看储藏",
-  "Branch \"{name}\" is not fully merged. Force delete it?": "分支 \"{name}\" 尚未完全合并。强制删除吗？"
+  "Branch \"{name}\" is not fully merged. Force delete it?": "分支 \"{name}\" 尚未完全合并。强制删除吗？",
+  "Add to Agent Thread": "添加到 Agent 会话",
+  "Clear": "清屏",
+  "Close Terminal Tab": "关闭终端标签页",
+  "Edit Settings": "编辑设置",
+  "Edit settings.json": "编辑 settings.json",
+  "Failed to spawn terminal": "终端启动失败",
+  "Inline Assist": "内联协助",
+  "New Center Terminal": "新建中央终端",
+  "New Terminal": "新建终端",
+  "New…": "新建…",
+  "Paste Text": "粘贴文本",
+  "Restoring terminals…": "正在恢复终端…",
+  "Split Pane": "拆分窗格",
+  "Starting terminal…": "正在启动终端…"
 }
