@@ -32,7 +32,7 @@ impl Display for GitPickerTab {
             GitPickerTab::Branches => "Branches",
             GitPickerTab::Stashes => "Stashes",
         };
-        write!(f, "{}", label)
+        write!(f, "{}", locale::t(label))
     }
 }
 
@@ -209,7 +209,7 @@ impl GitPicker {
                     )
                     .tooltip(move |_, cx| {
                         Tooltip::for_action_in(
-                            "Toggle Branch Picker",
+                            locale::t("Toggle Branch Picker"),
                             &ActivateBranchesTab,
                             &branches_focus_handle,
                             cx,
@@ -226,7 +226,7 @@ impl GitPicker {
                     )
                     .tooltip(move |_, cx| {
                         Tooltip::for_action_in(
-                            "Toggle Stash Picker",
+                            locale::t("Toggle Stash Picker"),
                             &ActivateStashTab,
                             &stash_focus_handle,
                             cx,

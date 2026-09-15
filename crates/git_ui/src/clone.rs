@@ -68,12 +68,14 @@ pub fn clone_and_open(
                 .ok()?;
 
             let prompt_answer = if has_worktrees {
+                let add_to_project = locale::t("Add repo to project");
+                let open_new_project = locale::t("Open repo in new project");
                 cx.update(|window, cx| {
                     window.prompt(
                         gpui::PromptLevel::Info,
-                        &format!("Git Clone: {}", repo_name),
+                        locale::t_format("Git Clone: {name}", &[("{name}", &repo_name)]).as_str(),
                         None,
-                        &["Add repo to project", "Open repo in new project"],
+                        &[add_to_project.as_str(), open_new_project.as_str()],
                         cx,
                     )
                 })
