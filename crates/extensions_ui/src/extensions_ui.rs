@@ -75,15 +75,16 @@ struct DevExtensionNotInstalledError {
 impl WorkspaceError for DevExtensionNotInstalledError {
     fn primary_message(&self) -> SharedString {
         match &self.extension_id {
-            Some(extension_id) => {
-                format!("Dev extension '{extension_id}' is not installed.").into()
-            }
-            None => "No dev extensions are installed.".into(),
+            Some(extension_id) => locale::t_format(
+                "Dev extension '{id}' is not installed.",
+                &[("{id}", extension_id)],
+            ),
+            None => locale::t("No dev extensions are installed."),
         }
     }
 
     fn primary_action(&self) -> ErrorAction {
-        ErrorAction::new("Install Dev Extension", InstallDevExtension)
+        ErrorAction::new(locale::t("Install Dev Extension"), InstallDevExtension)
     }
 
     fn severity(&self) -> ErrorSeverity {
@@ -424,7 +425,7 @@ impl ExtensionsPage {
 
             let query_editor = cx.new(|cx| {
                 let mut input = Editor::single_line(window, cx);
-                input.set_placeholder_text("Search extensions...", window, cx);
+                input.set_placeholder_text(locale::t("Search extensions...").as_str(), window, cx);
                 if let Some(id) = focus_extension_id {
                     input.set_text(format!("id:{id}"), window, cx);
                 }
@@ -703,7 +704,7 @@ impl ExtensionsPage {
             Some(ContextMenu::build(window, cx, |context_menu, window, _| {
                 context_menu
                     .entry(
-                        "Install Another Version...",
+                        locale::t("Install Another Version..."),
                         None,
                         window.handler_for(&this, {
                             let extension_id = extension_id.clone();
@@ -712,7 +713,7 @@ impl ExtensionsPage {
                             }
                         }),
                     )
-                    .entry("Copy Extension ID", None, {
+                    .entry(locale::t("Copy Extension ID"), None, {
                         let extension_id = extension_id.clone();
                         move |_, cx| {
                             cx.write_to_clipboard(ClipboardItem::new_string(
@@ -720,7 +721,7 @@ impl ExtensionsPage {
                             ));
                         }
                     })
-                    .entry("Copy Author Info", None, move |_, cx| {
+                    .entry(locale::t("Copy Author Info"), None, move |_, cx| {
                         cx.write_to_clipboard(ClipboardItem::new_string(authors.to_string()));
                     })
             }))
@@ -948,7 +949,7 @@ impl ExtensionsPage {
                         .color(Color::Warning),
                 )
             })
-            .child(Label::new(message))
+            .child(Label::new(locale::t(message)))
     }
 
     fn update_settings(
@@ -1021,7 +1022,7 @@ impl ExtensionsPage {
         vim: bool,
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
-        let docs_url_button = Button::new("open_docs", "View Documentation")
+        let docs_url_button = Button::new("open_docs", locale::t("View Documentation"))
             .end_icon(Icon::new(IconName::ArrowUpRight).size(IconSize::Small))
             .on_click({
                 move |_event, _window, cx| {
@@ -1052,7 +1053,7 @@ impl ExtensionsPage {
                                         h_flex()
                                             .pl_1()
                                             .gap_1()
-                                            .child(Label::new("Enable Vim mode"))
+                                            .child(Label::new(locale::t("Enable Vim mode")))
                                             .child(
                                                 Switch::new(
                                                     "enable-vim",
@@ -1094,43 +1095,43 @@ impl ExtensionsPage {
         for feature in &self.upsells {
             let banner = match feature {
                 Feature::AgentClaude => self.render_feature_upsell_banner(
-                    "Claude Agent support is built-in to Zed!".into(),
+                    locale::t("Claude Agent support is built-in to Zed!"),
                     "https://zed.dev/docs/ai/external-agents#claude-agent".into(),
                     false,
                     cx,
                 ),
                 Feature::AgentCodex => self.render_feature_upsell_banner(
-                    "Codex CLI support is built-in to Zed!".into(),
+                    locale::t("Codex CLI support is built-in to Zed!"),
                     "https://zed.dev/docs/ai/external-agents#codex-cli".into(),
                     false,
                     cx,
                 ),
                 Feature::AgentGemini => self.render_feature_upsell_banner(
-                    "Gemini CLI support is built-in to Zed!".into(),
+                    locale::t("Gemini CLI support is built-in to Zed!"),
                     "https://zed.dev/docs/ai/external-agents#gemini-cli".into(),
                     false,
                     cx,
                 ),
                 Feature::ExtensionBasedpyright => self.render_feature_upsell_banner(
-                    "Basedpyright (Python language server) support is built-in to Zed!".into(),
+                    locale::t("Basedpyright (Python language server) support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/python#basedpyright".into(),
                     false,
                     cx,
                 ),
                 Feature::ExtensionRuff => self.render_feature_upsell_banner(
-                    "Ruff (linter for Python) support is built-in to Zed!".into(),
+                    locale::t("Ruff (linter for Python) support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/python#code-formatting--linting".into(),
                     false,
                     cx,
                 ),
                 Feature::ExtensionTailwind => self.render_feature_upsell_banner(
-                    "Tailwind CSS support is built-in to Zed!".into(),
+                    locale::t("Tailwind CSS support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/tailwindcss".into(),
                     false,
                     cx,
                 ),
                 Feature::ExtensionTy => self.render_feature_upsell_banner(
-                    "Ty (Python language server) support is built-in to Zed!".into(),
+                    locale::t("Ty (Python language server) support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/python".into(),
                     false,
                     cx,
@@ -1143,49 +1144,49 @@ impl ExtensionsPage {
                     cx,
                 ),
                 Feature::LanguageBash => self.render_feature_upsell_banner(
-                    "Shell support is built-in to Zed!".into(),
+                    locale::t("Shell support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/bash".into(),
                     false,
                     cx,
                 ),
                 Feature::LanguageC => self.render_feature_upsell_banner(
-                    "C support is built-in to Zed!".into(),
+                    locale::t("C support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/c".into(),
                     false,
                     cx,
                 ),
                 Feature::LanguageCpp => self.render_feature_upsell_banner(
-                    "C++ support is built-in to Zed!".into(),
+                    locale::t("C++ support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/cpp".into(),
                     false,
                     cx,
                 ),
                 Feature::LanguageGo => self.render_feature_upsell_banner(
-                    "Go support is built-in to Zed!".into(),
+                    locale::t("Go support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/go".into(),
                     false,
                     cx,
                 ),
                 Feature::LanguagePython => self.render_feature_upsell_banner(
-                    "Python support is built-in to Zed!".into(),
+                    locale::t("Python support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/python".into(),
                     false,
                     cx,
                 ),
                 Feature::LanguageReact => self.render_feature_upsell_banner(
-                    "React support is built-in to Zed!".into(),
+                    locale::t("React support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/typescript".into(),
                     false,
                     cx,
                 ),
                 Feature::LanguageRust => self.render_feature_upsell_banner(
-                    "Rust support is built-in to Zed!".into(),
+                    locale::t("Rust support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/rust".into(),
                     false,
                     cx,
                 ),
                 Feature::LanguageTypescript => self.render_feature_upsell_banner(
-                    "Typescript support is built-in to Zed!".into(),
+                    locale::t("Typescript support is built-in to Zed!"),
                     "https://zed.dev/docs/languages/typescript".into(),
                     false,
                     cx,
@@ -1197,7 +1198,7 @@ impl ExtensionsPage {
                     cx,
                 ),
                 Feature::Vim => self.render_feature_upsell_banner(
-                    "Vim support is built-in to Zed!".into(),
+                    locale::t("Vim support is built-in to Zed!"),
                     "https://zed.dev/docs/vim".into(),
                     true,
                     cx,
@@ -1336,7 +1337,7 @@ impl PickerDelegate for DevExtensionRebuildPickerDelegate {
     fn dismissed(&mut self, _window: &mut Window, _cx: &mut Context<Picker<Self>>) {}
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        Arc::from("Rebuild dev extension…")
+        locale::t("Rebuild dev extension…").as_str().into()
     }
 
     fn render_match(
@@ -1371,7 +1372,7 @@ impl PickerDelegate for DevExtensionRebuildPickerDelegate {
     }
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
-        Some("No dev extensions found".into())
+        Some(locale::t("No dev extensions found"))
     }
 }
 
@@ -1391,14 +1392,17 @@ impl Render for ExtensionsPage {
                             .w_full()
                             .gap_1p5()
                             .justify_between()
-                            .child(Headline::new("Extensions").size(HeadlineSize::Large))
+                            .child(Headline::new(locale::t("Extensions")).size(HeadlineSize::Large))
                             .child(
-                                Button::new("install-dev-extension", "Install Dev Extension")
-                                    .style(ButtonStyle::Outlined)
-                                    .size(ButtonSize::Medium)
-                                    .on_click(|_event, window, cx| {
-                                        window.dispatch_action(Box::new(InstallDevExtension), cx)
-                                    }),
+                                Button::new(
+                                    "install-dev-extension",
+                                    locale::t("Install Dev Extension"),
+                                )
+                                .style(ButtonStyle::Outlined)
+                                .size(ButtonSize::Medium)
+                                .on_click(|_event, window, cx| {
+                                    window.dispatch_action(Box::new(InstallDevExtension), cx)
+                                }),
                             ),
                     )
                     .child(
@@ -1413,7 +1417,7 @@ impl Render for ExtensionsPage {
                                         "filter-buttons",
                                         [
                                             ToggleButtonSimple::new(
-                                                "All",
+                                                locale::t("All"),
                                                 cx.listener(|this, _event, _, cx| {
                                                     this.filter = ExtensionFilter::All;
                                                     this.filter_extension_entries(cx);
@@ -1421,7 +1425,7 @@ impl Render for ExtensionsPage {
                                                 }),
                                             ),
                                             ToggleButtonSimple::new(
-                                                "Installed",
+                                                locale::t("Installed"),
                                                 cx.listener(|this, _event, _, cx| {
                                                     this.filter = ExtensionFilter::Installed;
                                                     this.filter_extension_entries(cx);
@@ -1429,7 +1433,7 @@ impl Render for ExtensionsPage {
                                                 }),
                                             ),
                                             ToggleButtonSimple::new(
-                                                "Not Installed",
+                                                locale::t("Not Installed"),
                                                 cx.listener(|this, _event, _, cx| {
                                                     this.filter = ExtensionFilter::NotInstalled;
                                                     this.filter_extension_entries(cx);
@@ -1462,7 +1466,7 @@ impl Render for ExtensionsPage {
                     .border_color(cx.theme().colors().border_variant)
                     .overflow_x_scroll()
                     .child(
-                        Button::new("filter-all-categories", "All")
+                        Button::new("filter-all-categories", locale::t("All"))
                             .when(self.provides_filter.is_none(), |button| {
                                 button.style(ButtonStyle::Filled)
                             })
@@ -1488,7 +1492,7 @@ impl Render for ExtensionsPage {
                                 let button_id =
                                     SharedString::from(format!("filter-category-{}", label));
 
-                                Button::new(button_id, label)
+                                Button::new(button_id, locale::t(label))
                                     .style(if self.provides_filter == Some(provides) {
                                         ButtonStyle::Filled
                                     } else {
@@ -1539,7 +1543,7 @@ impl Item for ExtensionsPage {
     type Event = ItemEvent;
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Extensions".into()
+        locale::t("Extensions")
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {

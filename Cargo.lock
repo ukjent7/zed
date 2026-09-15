@@ -6250,6 +6250,7 @@ dependencies = [
  "gpui",
  "http_client",
  "language",
+ "locale",
  "log",
  "markdown",
  "num-format",

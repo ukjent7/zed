@@ -196,7 +196,7 @@ impl ExtensionCard {
     ) -> Button {
         Button::new(
             Self::button_id(extension_id, ExtensionOperation::Remove),
-            "Uninstall",
+            locale::t("Uninstall"),
         )
         .when(ENABLE_HANDLERS, |button| {
             button.on_click({
@@ -221,7 +221,7 @@ impl ExtensionCard {
     ) -> Button {
         Button::new(
             SharedString::from(format!("configure-{extension_id}")),
-            "Configure",
+            locale::t("Configure"),
         )
         .when(ENABLE_HANDLERS, |button| {
             button.on_click({
@@ -251,7 +251,7 @@ impl ExtensionCard {
     ) -> ExtensionCardActions {
         let rebuild = Button::new(
             SharedString::from(format!("rebuild-{}", extension.id)),
-            "Rebuild",
+            locale::t("Rebuild"),
         )
         .color(Color::Accent)
         .disabled(status.disables_actions())
@@ -280,7 +280,7 @@ impl ExtensionCard {
     fn install_button<const ENABLE_HANDLERS: bool>(extension_id: &Arc<str>) -> Button {
         Button::new(
             Self::button_id(extension_id, ExtensionOperation::Install),
-            "Install",
+            locale::t("Install"),
         )
         .style(ButtonStyle::Tinted(ui::TintColor::Accent))
         .start_icon(
@@ -329,7 +329,7 @@ impl ExtensionCard {
                 let upgrade = matches!(status, ExtensionStatus::Upgrading).then(|| {
                     Button::new(
                         Self::button_id(&extension.id, ExtensionOperation::Upgrade),
-                        "Upgrade",
+                        locale::t("Upgrade"),
                     )
                     .disabled(status.disables_actions())
                 });
@@ -350,7 +350,7 @@ impl ExtensionCard {
                     );
                     Button::new(
                         Self::button_id(&extension.id, ExtensionOperation::Upgrade),
-                        "Upgrade",
+                        locale::t("Upgrade"),
                     )
                     .style(ButtonStyle::Tinted(ui::TintColor::Accent))
                     .when(!is_compatible, |button| {
@@ -358,8 +358,9 @@ impl ExtensionCard {
                             let version = extension.manifest.version.clone();
                             move |_, cx| {
                                 Tooltip::simple(
-                                    format!(
-                                        "v{version} is not compatible with this version of Zed."
+                                    locale::t_format(
+                                        "v{version} is not compatible with this version of Zed.",
+                                        &[("{version}", &version)],
                                     ),
                                     cx,
                                 )
@@ -655,14 +656,19 @@ impl RenderOnce for ExtensionCard {
                                     .color(Color::Muted),
                                 )
                                 .children(installed_version.map(|installed_version| {
-                                    Headline::new(format!("(v{installed_version} installed)"))
-                                        .size(HeadlineSize::XSmall)
+                                    Headline::new(locale::t_format(
+                                        "(v{version} installed)",
+                                        &[("{version}", &installed_version)],
+                                    ))
+                                    .size(HeadlineSize::XSmall)
                                 }))
                                 .when(!provided_features.is_empty(), |parent| {
                                     parent.child(
-                                        h_flex()
-                                            .gap_1()
-                                            .children(provided_features.into_iter().map(Chip::new)),
+                                        h_flex().gap_1().children(
+                                            provided_features
+                                                .into_iter()
+                                                .map(|label| Chip::new(locale::t(label))),
+                                        ),
                                     )
                                 }),
                         )
@@ -772,7 +778,7 @@ impl RenderOnce for ExtensionCard {
                             .size_full()
                             .justify_center()
                             .bg(cx.theme().colors().elevated_surface_background.alpha(0.8))
-                            .child(Label::new("Overridden by dev extension.")),
+                            .child(Label::new(locale::t("Overridden by dev extension."))),
                     )
                 }),
         )
