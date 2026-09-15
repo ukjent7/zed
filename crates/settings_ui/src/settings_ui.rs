@@ -850,6 +850,8 @@ fn open_settings_editor_with(
 ) {
     telemetry::event!("Settings Viewed");
 
+    locale::set_language(settings::LanguageSetting::get_global(cx).into());
+
     let existing_window = cx
         .windows()
         .into_iter()
@@ -1794,7 +1796,7 @@ impl SettingsWindow {
         let current_file = SettingsUiFile::User;
         let search_bar = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Search settings…", window, cx);
+            editor.set_placeholder_text(locale::t("Search settings…").as_str(), window, cx);
             editor
         });
         cx.subscribe(&search_bar, |this, _, event: &EditorEvent, cx| {
@@ -3226,7 +3228,7 @@ impl SettingsWindow {
                                     .map(|(entry_index, entry)| {
                                         TreeViewItem::new(
                                             ("settings-ui-navbar-entry", entry_index),
-                                            entry.title,
+                                            locale::t(entry.title),
                                         )
                                         .track_focus(&entry.focus_handle)
                                         .root_item(entry.is_root)

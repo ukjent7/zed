@@ -1426,13 +1426,13 @@ impl Render for PanelButtons {
                     let action = dock.toggle_action();
 
                     let tooltip: SharedString =
-                        format!("Close {} Dock", dock.position.label()).into();
+                        locale::t(&format!("Close {} Dock", dock.position.label()));
 
                     (action, tooltip)
                 } else {
                     let action = entry.panel.toggle_action(window, cx);
 
-                    (action, icon_tooltip.into())
+                    (action, locale::t(icon_tooltip))
                 };
 
                 let focus_handle = dock.focus_handle(cx);
@@ -1455,7 +1455,7 @@ impl Render for PanelButtons {
                                         let is_current = position == dock_position;
                                         let panel = panel.clone();
                                         menu = menu.toggleable_entry(
-                                            format!("Dock {}", position.label()),
+                                            locale::t(&format!("Dock {}", position.label())),
                                             is_current,
                                             IconPosition::Start,
                                             None,
@@ -1476,7 +1476,7 @@ impl Render for PanelButtons {
                                     let dock_for_flex = dock_for_menu.clone();
                                     let workspace_for_flex = workspace_for_menu.clone();
                                     menu = menu.toggleable_entry(
-                                        "Flex Width",
+                                        locale::t("Flex Width"),
                                         currently_flexible,
                                         IconPosition::Start,
                                         None,
@@ -1499,7 +1499,7 @@ impl Render for PanelButtons {
                                     let dock_for_fixed = dock_for_menu.clone();
                                     let workspace_for_fixed = workspace_for_menu.clone();
                                     menu = menu.toggleable_entry(
-                                        "Fixed Width",
+                                        locale::t("Fixed Width"),
                                         !currently_flexible,
                                         IconPosition::Start,
                                         None,
@@ -1537,7 +1537,7 @@ impl Render for PanelButtons {
                                 .icon_size(IconSize::Small)
                                 .toggle_state(is_active_button)
                                 .tab_index(0isize)
-                                .aria_label(icon_tooltip)
+                                .aria_label(locale::t(icon_tooltip))
                                 .on_click({
                                     let action = action.boxed_clone();
                                     move |_, window, cx| {
