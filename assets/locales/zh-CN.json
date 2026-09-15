@@ -1,1 +1,7 @@
-{}
+{
+  "Execute a command...": "执行命令…",
+  "Change Keybinding…": "修改快捷键…",
+  "Add Keybinding…": "添加快捷键…",
+  "Run": "运行",
+  "Remove from Command History": "从命令历史中移除"
+}

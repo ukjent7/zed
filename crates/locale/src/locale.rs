@@ -13,6 +13,10 @@ use gpui_shared_string::SharedString;
 /// Dictionary compiled in from `assets/locales/zh-CN.json`.
 const DEFAULT_DICTIONARY_JSON: &str = include_str!("../../../assets/locales/zh-CN.json");
 
+/// Action display names compiled in from `assets/locales/actions-zh-CN.json`,
+/// keyed by action ID (`workspace::NewFile`).
+const ACTIONS_DICTIONARY_JSON: &str = include_str!("../../../assets/locales/actions-zh-CN.json");
+
 /// Language selected for Zed's user interface.
 ///
 /// The default follows the operating system locale, so users on Chinese
@@ -55,6 +59,12 @@ static LANGUAGE_OVERRIDE: RwLock<Option<Language>> = RwLock::new(None);
 fn dictionary() -> &'static HashMap<String, String> {
     static DICTIONARY: OnceLock<HashMap<String, String>> = OnceLock::new();
     DICTIONARY.get_or_init(|| serde_json::from_str(DEFAULT_DICTIONARY_JSON).unwrap_or_default())
+}
+
+fn actions_dictionary() -> &'static HashMap<String, String> {
+    static ACTIONS_DICTIONARY: OnceLock<HashMap<String, String>> = OnceLock::new();
+    ACTIONS_DICTIONARY
+        .get_or_init(|| serde_json::from_str(ACTIONS_DICTIONARY_JSON).unwrap_or_default())
 }
 
 fn language_override() -> Option<Language> {
@@ -117,6 +127,21 @@ pub fn t(key: &str) -> SharedString {
         .get(key)
         .map(SharedString::from)
         .unwrap_or_else(|| SharedString::from(key))
+}
+
+/// Display name for a command palette action: `中文 (english)` when Chinese
+/// is active and a translation exists, otherwise the English name unchanged.
+///
+/// Matching keeps working in both languages because the combined string
+/// contains the English name.
+pub fn localized_action_name(action_id: &str, english: &str) -> SharedString {
+    if !use_chinese() {
+        return SharedString::from(english);
+    }
+    match actions_dictionary().get(action_id) {
+        Some(translated) => SharedString::from(format!("{translated} ({english})")),
+        None => SharedString::from(english),
+    }
 }
 
 /// Placeholder names (`{name}`) in a source text that a translation must keep.
@@ -222,6 +247,19 @@ mod tests {
         // Missing keys fall back even when Chinese is active.
         set_language(Language::SimplifiedChinese);
         assert_eq!(t("No Such Translation Key"), "No Such Translation Key");
+        assert_eq!(
+            localized_action_name("no_such::Action", "no such: action"),
+            "no such: action"
+        );
         clear_language_override();
+    }
+
+    #[test]
+    fn actions_dictionary_parses() {
+        // Guard against malformed JSON and non-string entries.
+        for (action_id, translation) in actions_dictionary() {
+            assert!(action_id.contains("::"), "{action_id} is not an action ID");
+            assert!(!translation.is_empty());
+        }
     }
 }

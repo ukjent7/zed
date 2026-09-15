@@ -23,6 +23,7 @@ fs.workspace = true
 futures.workspace = true
 gpui.workspace = true
 inventory.workspace = true
+locale.workspace = true
 log.workspace = true
 migrator.workspace = true
 paths.workspace = true

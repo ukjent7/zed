@@ -4,6 +4,7 @@ mod editable_setting_control;
 mod editorconfig_store;
 mod granted_write_path;
 mod keymap_file;
+mod language_setting;
 mod settings_file;
 mod settings_store;
 mod vscode_import;
@@ -42,6 +43,7 @@ pub use keymap_file::{
     KeyBindingValidator, KeyBindingValidatorRegistration, KeybindSource, KeybindUpdateOperation,
     KeybindUpdateTarget, KeymapFile, KeymapFileLoadResult,
 };
+pub use language_setting::*;
 pub use settings_file::*;
 pub use settings_json::*;
 pub use settings_store::{
