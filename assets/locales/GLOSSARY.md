@@ -64,7 +64,16 @@
 | Profile | 配置方案 | 设置配置方案 |
 | Channel | 频道 | 协作语境 |
 | Agent | Agent | 产品概念，保留英文 |
-| Thread（Agent） | 待定 | PR-2 确定后回填 |
+| Thread（Agent） | 会话 | 暂与 Session 共用（如“开启你的第一个会话”），待复核 |
+| Keystroke | 按键 | 单次物理按键；与“快捷键”（组合键位）区分 |
+| Binding | 绑定 | “快捷键”的简写语境（如“此绑定被覆盖”） |
+| Action | 动作 | GUI 动作名（如键位编辑器表格列） |
+| Context（keymap） | 上下文 | 按键上下文 |
+| Source（keymap） | 来源 | 绑定来源列（User/Default） |
+| Nickname（server） | 备注名 | 远程服务器备注 |
+| Scope（settings） | 范围 | 设置作用域（User/Project/Server） |
+| Dev Container | Dev Container | 容器技术名，保留英文 |
+| Multibuffer | multibuffer | Zed 特有概念，保留英文小写 |
 | Vim Mode | Vim 模式 | Vim 保留英文 |
 | Helix Mode | Helix 模式 | Helix 保留英文 |
 | Telemetry | 遥测 | 设置页用“遥测” |
