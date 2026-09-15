@@ -38,8 +38,24 @@ BLOCKLIST = (
     "crates/zeta_prompt/",
 )
 
-CALL_PATTERN = re.compile(r'(?<!\w)t\(\s*"((?:[^"\\]|\\.)*)"')
+CALL_PATTERN = re.compile(r'(?<!\w)t(?:_format)?\(\s*"((?:[^"\\]|\\.)*)"')
 MAX_LISTED = 50
+
+# Rust string escapes that may appear inside t("...") keys.
+_SOURCE_ESCAPES = {
+    "n": "\n",
+    "t": "\t",
+    "r": "\r",
+    "0": "\0",
+    '"': '"',
+    "'": "'",
+    "\\": "\\",
+}
+
+
+def decode_source_key(raw: str) -> str:
+    """Decode backslash escapes in a Rust string literal captured from source."""
+    return re.sub(r"\\(.)", lambda m: _SOURCE_ESCAPES.get(m.group(1), m.group(0)), raw)
 
 
 def repo_root() -> Path:
@@ -64,7 +80,7 @@ def main() -> int:
         except OSError:
             continue
         for match in CALL_PATTERN.finditer(text):
-            key = match.group(1).replace('\\"', '"').replace("\\\\", "\\")
+            key = decode_source_key(match.group(1))
             if key:
                 used.add(key)
 

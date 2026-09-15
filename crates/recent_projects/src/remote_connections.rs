@@ -309,11 +309,13 @@ pub async fn open_remote_project(
                     }
                 });
                 log::error!("Failed to open project: {e:#}");
+                let retry = locale::t("Retry");
+                let cancel = locale::t("Cancel");
                 let response = window
                     .update(cx, |_, window, cx| {
                         window.prompt(
                             PromptLevel::Critical,
-                            match connection_options {
+                            locale::t(match connection_options {
                                 RemoteConnectionOptions::Ssh(_) => "Failed to connect over SSH",
                                 RemoteConnectionOptions::Wsl(_) => "Failed to connect to WSL",
                                 RemoteConnectionOptions::Docker(_) => {
@@ -323,9 +325,10 @@ pub async fn open_remote_project(
                                 RemoteConnectionOptions::Mock(_) => {
                                     "Failed to connect to mock server"
                                 }
-                            },
+                            })
+                            .as_str(),
                             Some(&format!("{e:#}")),
-                            &["Retry", "Cancel"],
+                            &[retry.as_str(), cancel.as_str()],
                             cx,
                         )
                     })?
@@ -370,11 +373,13 @@ pub async fn open_remote_project(
         match opened {
             Err(e) => {
                 log::error!("Failed to open project: {e:#}");
+                let retry = locale::t("Retry");
+                let cancel = locale::t("Cancel");
                 let response = window
                     .update(cx, |_, window, cx| {
                         window.prompt(
                             PromptLevel::Critical,
-                            match connection_options {
+                            locale::t(match connection_options {
                                 RemoteConnectionOptions::Ssh(_) => "Failed to connect over SSH",
                                 RemoteConnectionOptions::Wsl(_) => "Failed to connect to WSL",
                                 RemoteConnectionOptions::Docker(_) => {
@@ -384,9 +389,10 @@ pub async fn open_remote_project(
                                 RemoteConnectionOptions::Mock(_) => {
                                     "Failed to connect to mock server"
                                 }
-                            },
+                            })
+                            .as_str(),
                             Some(&format!("{e:#}")),
-                            &["Retry", "Cancel"],
+                            &[retry.as_str(), cancel.as_str()],
                             cx,
                         )
                     })?
