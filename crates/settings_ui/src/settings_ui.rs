@@ -530,12 +530,12 @@ fn init_renderers(cx: &mut App) {
                     settings_window,
                     item,
                     settings_file,
-                    Button::new("open-in-settings-file", "Edit in settings.json")
+                    Button::new("open-in-settings-file", locale::t("Edit in settings.json"))
                         .style(ButtonStyle::Outlined)
                         .size(ButtonSize::Medium)
                         .tab_index(0_isize)
                         .tooltip(Tooltip::for_action_title_in(
-                            "Edit in settings.json",
+                            locale::t("Edit in settings.json"),
                             &OpenCurrentFile,
                             &settings_window.focus_handle,
                         ))
@@ -1241,9 +1241,15 @@ impl SettingsPageItem {
                         .child(
                             Button::new(
                                 ("sub-page".into(), sub_page_link.title.clone()),
-                                "Configure",
+                                locale::t("Configure"),
                             )
-                            .aria_label(format!("Configure {}", sub_page_link.title))
+                            .aria_label(
+                                locale::t_format(
+                                    "Configure {title}",
+                                    &[("{title}", sub_page_link.title.as_str())],
+                                )
+                                .to_string(),
+                            )
                             .tab_index(0_isize)
                             .end_icon(
                                 Icon::new(IconName::ChevronRight)
@@ -1440,8 +1446,8 @@ fn render_settings_item_layout(
                                 IconButton::new("reset-to-default-btn", IconName::Undo)
                                     .icon_color(Color::Muted)
                                     .icon_size(IconSize::Small)
-                                    .aria_label("Reset to Default")
-                                    .tooltip(Tooltip::text("Reset to Default"))
+                                    .aria_label(locale::t("Reset to Default"))
+                                    .tooltip(Tooltip::text(locale::t("Reset to Default")))
                                     .on_click(move |_, window, cx| {
                                         reset_to_default(window, cx);
                                     }),
@@ -1449,9 +1455,15 @@ fn render_settings_item_layout(
                         })
                         .when_some(modified_in, |this, modified_in| {
                             this.child(
-                                Label::new(format!("\u{2014}  Modified in {modified_in}"))
-                                    .color(Color::Muted)
-                                    .size(LabelSize::Small),
+                                Label::new(
+                                    locale::t_format(
+                                        "\u{2014}  Modified in {file}",
+                                        &[("{file}", &modified_in)],
+                                    )
+                                    .to_string(),
+                                )
+                                .color(Color::Muted)
+                                .size(LabelSize::Small),
                             )
                         }),
                 )
@@ -1513,9 +1525,9 @@ fn render_settings_item(
                     )
                     .tooltip(|_, cx| {
                         Tooltip::with_meta(
-                            "Overridden by Organization",
+                            locale::t("Overridden by Organization"),
                             None,
-                            "Contact your organization admins to adjust this setting.",
+                            locale::t("Contact your organization admins to adjust this setting."),
                             cx,
                         )
                     }),
@@ -1572,8 +1584,8 @@ fn render_settings_item_link(
                 .icon_color(link_icon_color)
                 .icon_size(IconSize::Small)
                 .shape(IconButtonShape::Square)
-                .aria_label("Copy Link")
-                .tooltip(Tooltip::text("Copy Link"))
+                .aria_label(locale::t("Copy Link"))
+                .tooltip(Tooltip::text(locale::t("Copy Link")))
                 .when_some(json_path, |this, path| {
                     this.on_click(cx.listener(move |this, _, _, cx| {
                         let link = format!("zed://settings/{}", path);
@@ -2873,7 +2885,7 @@ impl SettingsWindow {
         h_flex()
             .id("settings-ui-files-header")
             .role(Role::Group)
-            .aria_label("Settings File")
+            .aria_label(locale::t("Settings File"))
             .w_full()
             .gap_1()
             .justify_between()
@@ -2938,7 +2950,9 @@ impl SettingsWindow {
                                         }),
                                     )
                                     .style(DropdownStyle::Subtle)
-                                    .trigger_tooltip(Tooltip::text("View Other Projects"))
+                                    .trigger_tooltip(Tooltip::text(locale::t(
+                                        "View Other Projects",
+                                    )))
                                     .trigger_icon(IconName::ChevronDown)
                                     .attach(gpui::Anchor::BottomLeft)
                                     .offset(gpui::Point {
@@ -2951,11 +2965,11 @@ impl SettingsWindow {
                     }),
             )
             .child(
-                Button::new(edit_in_json_id, "Edit in settings.json")
+                Button::new(edit_in_json_id, locale::t("Edit in settings.json"))
                     .tab_index(0_isize)
                     .style(ButtonStyle::OutlinedGhost)
                     .tooltip(Tooltip::for_action_title_in(
-                        "Edit in settings.json",
+                        locale::t("Edit in settings.json"),
                         &OpenCurrentFile,
                         &self.focus_handle,
                     ))
@@ -2967,7 +2981,7 @@ impl SettingsWindow {
 
     pub(crate) fn display_name(&self, file: &SettingsUiFile) -> Option<String> {
         match file {
-            SettingsUiFile::User => Some("User".to_string()),
+            SettingsUiFile::User => Some(locale::t("User").to_string()),
             SettingsUiFile::Project((worktree_id, path)) => self
                 .worktree_root_dirs
                 .get(&worktree_id)
@@ -3023,7 +3037,7 @@ impl SettingsWindow {
         h_flex()
             .id("settings-ui-search")
             .role(Role::SearchInput)
-            .aria_label("Search Settings")
+            .aria_label(locale::t("Search Settings"))
             .aria_value(a11y_value)
             .track_focus(&self.search_bar.focus_handle(cx))
             .a11y_synthetic_children(a11y_text_runs)
@@ -3044,7 +3058,7 @@ impl SettingsWindow {
                     IconButton::new("clear-btn", IconName::Close)
                         .icon_color(Color::Muted)
                         .icon_size(IconSize::Small)
-                        .tooltip(Tooltip::text("Clear"))
+                        .tooltip(Tooltip::text(locale::t("Clear")))
                         .on_click(cx.listener(|settings_window, _, window, cx| {
                             settings_window.clear_search(window, cx);
                         })),
@@ -3068,9 +3082,9 @@ impl SettingsWindow {
                 .visible_navbar_entries()
                 .any(|(_, entry)| entry.focus_handle.is_focused(window))
         {
-            "Focus Content"
+            locale::t("Focus Content")
         } else {
-            "Focus Navbar"
+            locale::t("Focus Navbar")
         };
 
         let mut key_context = KeyContext::new_with_defaults();
@@ -3211,7 +3225,7 @@ impl SettingsWindow {
                 v_flex()
                     .id("settings-ui-nav")
                     .role(Role::Tree)
-                    .aria_label("Settings Navigation")
+                    .aria_label(locale::t("Settings Navigation"))
                     .flex_1()
                     .overflow_hidden()
                     .track_focus(&self.navbar_focus_handle.focus_handle(cx))
@@ -3494,7 +3508,7 @@ impl SettingsWindow {
                 "sub-page-scope-picker",
                 scope_name,
                 ContextMenu::build(window, cx, move |mut menu, _, _| {
-                    menu = menu.header("Scope");
+                    menu = menu.header(locale::t("Scope"));
 
                     for ix in allowed_file_indices {
                         let (file, focus_handle) = &self.files[ix];
@@ -3524,7 +3538,7 @@ impl SettingsWindow {
                 }),
             )
             .style(DropdownStyle::Subtle)
-            .trigger_tooltip(Tooltip::text("Change Scope"))
+            .trigger_tooltip(Tooltip::text(locale::t("Change Scope")))
             .attach(gpui::Anchor::BottomLeft)
             .offset(gpui::Point {
                 x: px(0.0),
@@ -3571,11 +3585,17 @@ impl SettingsWindow {
             .items_center()
             .justify_center()
             .gap_1()
-            .child(Label::new("No Results"))
+            .child(Label::new(locale::t("No Results")))
             .child(
-                Label::new(format!("No settings match \"{}\"", search_query))
-                    .size(LabelSize::Small)
-                    .color(Color::Muted),
+                Label::new(
+                    locale::t_format(
+                        "No settings match \"{query}\"",
+                        &[("{query}", search_query.as_str())],
+                    )
+                    .to_string(),
+                )
+                .size(LabelSize::Small)
+                .color(Color::Muted),
             )
     }
 
@@ -3588,7 +3608,7 @@ impl SettingsWindow {
         let mut page_content = v_flex()
             .id("settings-ui-page")
             .role(Role::Group)
-            .aria_label("Settings Content")
+            .aria_label(locale::t("Settings Content"))
             .size_full();
 
         let has_active_search = !self.search_bar.read(cx).is_empty(cx);
@@ -3807,17 +3827,22 @@ impl SettingsWindow {
                         .flex_shrink_0()
                         .when(current_sub_page.link.in_json, |this| {
                             this.child(
-                                Button::new("open-in-settings-file", "Edit in settings.json")
-                                    .tab_index(0_isize)
-                                    .style(ButtonStyle::OutlinedGhost)
-                                    .tooltip(Tooltip::for_action_title_in(
-                                        "Edit in settings.json",
-                                        &OpenCurrentFile,
-                                        &self.focus_handle,
-                                    ))
-                                    .on_click(cx.listener(|this, _, window, cx| {
+                                Button::new(
+                                    "open-in-settings-file",
+                                    locale::t("Edit in settings.json"),
+                                )
+                                .tab_index(0_isize)
+                                .style(ButtonStyle::OutlinedGhost)
+                                .tooltip(Tooltip::for_action_title_in(
+                                    locale::t("Edit in settings.json"),
+                                    &OpenCurrentFile,
+                                    &self.focus_handle,
+                                ))
+                                .on_click(cx.listener(
+                                    |this, _, window, cx| {
                                         this.open_current_settings_file(window, cx);
-                                    })),
+                                    },
+                                )),
                             )
                         })
                         .when(is_llm_providers_page, |this| {

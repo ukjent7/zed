@@ -55,7 +55,12 @@ _SOURCE_ESCAPES = {
 
 def decode_source_key(raw: str) -> str:
     """Decode backslash escapes in a Rust string literal captured from source."""
-    return re.sub(r"\\(.)", lambda m: _SOURCE_ESCAPES.get(m.group(1), m.group(0)), raw)
+    decoded = re.sub(r"\\(.)", lambda m: _SOURCE_ESCAPES.get(m.group(1), m.group(0)), raw)
+    return re.sub(
+        r"\\u\{([0-9a-fA-F]+)\}",
+        lambda m: chr(int(m.group(1), 16)),
+        decoded,
+    )
 
 
 def repo_root() -> Path:

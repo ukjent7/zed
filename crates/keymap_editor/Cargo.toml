@@ -23,6 +23,7 @@ gpui.workspace = true
 itertools.workspace = true
 json_schema_store.workspace = true
 language.workspace = true
+locale.workspace = true
 log.workspace = true
 menu.workspace = true
 notifications.workspace = true

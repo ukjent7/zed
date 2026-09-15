@@ -609,11 +609,11 @@ impl Render for KeystrokeInput {
                                     .shape(IconButtonShape::Square)
                                     .map(|this| {
                                         this.tooltip(Tooltip::for_action_title(
-                                            if self.search {
+                                            locale::t(if self.search {
                                                 "Stop Searching"
                                             } else {
                                                 "Stop Recording"
-                                            },
+                                            }),
                                             &StopRecording,
                                         ))
                                     })
@@ -628,11 +628,11 @@ impl Render for KeystrokeInput {
                                     .shape(IconButtonShape::Square)
                                     .map(|this| {
                                         this.tooltip(Tooltip::for_action_title(
-                                            if self.search {
+                                            locale::t(if self.search {
                                                 "Start Searching"
                                             } else {
                                                 "Start Recording"
-                                            },
+                                            }),
                                             &StartRecording,
                                         ))
                                     })
@@ -650,9 +650,9 @@ impl Render for KeystrokeInput {
                                 .shape(IconButtonShape::Square)
                                 .tooltip(move |_, cx| {
                                     Tooltip::with_meta(
-                                        "Clear Keystrokes",
+                                        locale::t("Clear Keystrokes"),
                                         Some(&ClearKeystrokes),
-                                        "Hit it three times to execute",
+                                        locale::t("Hit it three times to execute"),
                                         cx,
                                     )
                                 })
