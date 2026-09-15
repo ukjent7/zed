@@ -365,23 +365,23 @@ impl Render for LanguageServerPrompt {
                                             "copy-description",
                                             request.message.clone(),
                                         )
-                                        .tooltip_label("Copy Description"),
+                                        .tooltip_label(locale::t("Copy Description")),
                                     )
                                     .child(
                                         IconButton::new(close_id, close_icon)
                                             .tooltip(move |_window, cx| {
                                                 if suppress {
                                                     Tooltip::with_meta(
-                                                        "Suppress",
+                                                        locale::t("Suppress"),
                                                         Some(&SuppressNotification),
-                                                        "Click to close",
+                                                        locale::t("Click to close"),
                                                         cx,
                                                     )
                                                 } else {
                                                     Tooltip::with_meta(
-                                                        "Close",
+                                                        locale::t("Close"),
                                                         Some(&menu::Cancel),
-                                                        "Suppress with shift-click",
+                                                        locale::t("Suppress with shift-click"),
                                                         cx,
                                                     )
                                                 }
@@ -1000,7 +1000,7 @@ pub mod simple_message_notification {
                 .when_some(copy_text, |el, text| {
                     el.child(
                         CopyButton::new("copy-notification-message", text)
-                            .tooltip_label("Copy Message"),
+                            .tooltip_label(locale::t("Copy Message")),
                     )
                 })
                 .when(show_close_button, |el| {
@@ -1009,20 +1009,20 @@ pub mod simple_message_notification {
                             .tooltip(move |_window, cx| {
                                 if suppress {
                                     Tooltip::with_meta(
-                                        "Suppress",
+                                        locale::t("Suppress"),
                                         Some(&SuppressNotification),
-                                        "Click to Close",
+                                        locale::t("Click to Close"),
                                         cx,
                                     )
                                 } else if show_suppress_button {
                                     Tooltip::with_meta(
-                                        "Close",
+                                        locale::t("Close"),
                                         Some(&menu::Cancel),
-                                        "Shift-click to Suppress",
+                                        locale::t("Shift-click to Suppress"),
                                         cx,
                                     )
                                 } else {
-                                    Tooltip::for_action("Close", &menu::Cancel, cx)
+                                    Tooltip::for_action(locale::t("Close"), &menu::Cancel, cx)
                                 }
                             })
                             .on_click(cx.listener(move |_, _, _, cx| {
@@ -1684,7 +1684,14 @@ where
                         display.push('.');
                     }
                     let detail = f(err, window, cx).unwrap_or(display);
-                    window.prompt(PromptLevel::Critical, &msg, Some(&detail), &["OK"], cx)
+                    let ok = locale::t("OK");
+                    window.prompt(
+                        PromptLevel::Critical,
+                        &msg,
+                        Some(&detail),
+                        &[ok.as_str()],
+                        cx,
+                    )
                 }) {
                     prompt.await.ok();
                 }

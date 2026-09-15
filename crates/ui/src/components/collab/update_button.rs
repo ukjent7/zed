@@ -100,52 +100,59 @@ impl UpdateButton {
     }
 
     pub fn checking() -> Self {
-        Self::new(IconName::LoadCircle, "Checking for Zed Updates…")
+        Self::new(IconName::LoadCircle, locale::t("Checking for Zed Updates…"))
             .icon_animate(true)
             .disabled(true)
     }
 
     pub fn downloading(progress: Option<f32>) -> Self {
-        Self::new(IconName::Download, "Downloading Zed Update…")
+        Self::new(IconName::Download, locale::t("Downloading Zed Update…"))
             .progress(progress)
             .disabled(true)
     }
 
     pub fn installing(version: impl Into<SharedString>) -> Self {
-        Self::new(IconName::LoadCircle, "Installing Zed Update…")
+        Self::new(IconName::LoadCircle, locale::t("Installing Zed Update…"))
             .icon_animate(true)
             .tooltip(version)
             .disabled(true)
     }
 
     pub fn updated(version: impl Into<SharedString>) -> Self {
-        Self::new(IconName::Download, "Restart to Update")
+        Self::new(IconName::Download, locale::t("Restart to Update"))
             .tooltip(version)
             .with_dismiss()
     }
 
     pub fn errored(error: impl Into<SharedString>) -> Self {
-        Self::new(IconName::Warning, "Failed to Update")
+        Self::new(IconName::Warning, locale::t("Failed to Update"))
             .icon_color(Color::Warning)
             .tooltip(error)
             .with_dismiss()
     }
 
     pub fn version_tooltip_message(version: impl std::fmt::Display) -> String {
-        format!("Update to Version: {version}")
+        locale::t_format(
+            "Update to Version: {version}",
+            &[("{version}", &version.to_string())],
+        )
+        .to_string()
     }
 
     pub fn downloading_tooltip_message(
         version: impl std::fmt::Display,
         progress: Option<f32>,
     ) -> String {
-        let message = Self::version_tooltip_message(version);
         match progress {
-            Some(progress) => format!(
-                "{message} ({:.0}% downloaded)",
-                progress.clamp(0.0, 1.0) * 100.0
-            ),
-            None => message,
+            Some(progress) => {
+                let percent = format!("{:.0}", progress.clamp(0.0, 1.0) * 100.0);
+                locale::t_format(
+                    "Update to Version: {version} ({percent}% downloaded)",
+                    &[("{version}", &version.to_string()), ("{percent}", &percent)],
+                )
+                .to_string()
+            }
+            None => Self::version_tooltip_message(version),
         }
     }
 }
@@ -210,7 +217,7 @@ impl RenderOnce for UpdateButton {
                         IconButton::new(dismiss_button_id, IconName::Close)
                             .icon_size(IconSize::Indicator)
                             .when_some(self.on_dismiss, |this, handler| this.on_click(handler))
-                            .tooltip(Tooltip::text("Dismiss")),
+                            .tooltip(Tooltip::text(locale::t("Dismiss"))),
                     ),
                 )
             })

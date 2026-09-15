@@ -49,10 +49,10 @@ const NIGHTLY_POLL_INTERVAL: Duration = Duration::from_secs(15 * 60);
 const REMOTE_SERVER_CACHE_LIMIT: usize = 5;
 
 #[cfg(target_os = "linux")]
-fn linux_rsync_install_hint() -> &'static str {
+fn linux_rsync_install_hint() -> gpui::SharedString {
     let os_release = match std::fs::read_to_string("/etc/os-release") {
         Ok(os_release) => os_release,
-        Err(_) => return "Please install rsync using your package manager",
+        Err(_) => return locale::t("Please install rsync using your package manager"),
     };
 
     let mut distribution_ids = Vec::new();
@@ -71,12 +71,12 @@ fn linux_rsync_install_hint() -> &'static str {
         .iter()
         .any(|distribution_id| distribution_id == "arch")
     {
-        Some("Install it with: sudo pacman -S rsync")
+        Some(locale::t("Install it with: sudo pacman -S rsync"))
     } else if distribution_ids
         .iter()
         .any(|distribution_id| distribution_id == "debian" || distribution_id == "ubuntu")
     {
-        Some("Install it with: sudo apt install rsync")
+        Some(locale::t("Install it with: sudo apt install rsync"))
     } else if distribution_ids.iter().any(|distribution_id| {
         distribution_id == "fedora"
             || distribution_id == "rhel"
@@ -84,17 +84,18 @@ fn linux_rsync_install_hint() -> &'static str {
             || distribution_id == "rocky"
             || distribution_id == "almalinux"
     }) {
-        Some("Install it with: sudo dnf install rsync")
+        Some(locale::t("Install it with: sudo dnf install rsync"))
     } else if distribution_ids
         .iter()
         .any(|distribution_id| distribution_id == "nixos")
     {
-        Some("Install pkgs.rsync from nixpkgs")
+        Some(locale::t("Install pkgs.rsync from nixpkgs"))
     } else {
         None
     };
 
-    package_manager_hint.unwrap_or("Please install rsync using your package manager")
+    package_manager_hint
+        .unwrap_or_else(|| locale::t("Please install rsync using your package manager"))
 }
 
 actions!(
@@ -307,11 +308,12 @@ pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
         .map(ToOwned::to_owned)
         .or_else(|| env::var("ZED_UPDATE_EXPLANATION").ok())
     {
+        let ok = locale::t("OK");
         drop(window.prompt(
             gpui::PromptLevel::Info,
-            "Zed was installed via a package manager.",
+            locale::t("Zed was installed via a package manager.").as_str(),
             Some(&message),
-            &["OK"],
+            &[ok.as_str()],
             cx,
         ));
         return;
@@ -327,11 +329,12 @@ pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
     if let Some(updater) = AutoUpdater::get(cx) {
         updater.update(cx, |updater, cx| updater.poll(UpdateCheckType::Manual, cx));
     } else {
+        let ok = locale::t("OK");
         drop(window.prompt(
             gpui::PromptLevel::Info,
-            "Could not check for updates",
-            Some("Auto-updates disabled for non-bundled app."),
-            &["OK"],
+            locale::t("Could not check for updates").as_str(),
+            Some(locale::t("Auto-updates disabled for non-bundled app.").as_str()),
+            &[ok.as_str()],
             cx,
         ));
     }
@@ -604,7 +607,7 @@ impl AutoUpdater {
                 .context("auto-update not initialized")
         })?;
 
-        set_status("Fetching remote server release", cx);
+        set_status(locale::t("Fetching remote server release").as_str(), cx);
         let release = Self::get_release_asset(
             &this,
             release_channel,
@@ -629,7 +632,7 @@ impl AutoUpdater {
                 "downloading zed-remote-server {os} {arch} version {}",
                 release.version
             );
-            set_status("Downloading remote server", cx);
+            set_status(locale::t("Downloading remote server").as_str(), cx);
             download_remote_server_binary(&version_path, release, client).await?;
         }
 
@@ -894,16 +897,21 @@ impl AutoUpdater {
         #[cfg(target_os = "linux")]
         if which::which("rsync").is_err() {
             let install_hint = linux_rsync_install_hint();
-            return Err(MissingDependencyError(format!(
-                "rsync is required for auto-updates but is not installed. {install_hint}"
-            ))
+            return Err(MissingDependencyError(
+                locale::t_format(
+                    "rsync is required for auto-updates but is not installed. {hint}",
+                    &[("{hint}", install_hint.as_str())],
+                )
+                .to_string(),
+            )
             .into());
         }
 
         #[cfg(target_os = "macos")]
         anyhow::ensure!(
             which::which("rsync").is_ok(),
-            "Could not auto-update because the required rsync utility was not found."
+            "{}",
+            locale::t("Could not auto-update because the required rsync utility was not found.")
         );
 
         Ok(())
