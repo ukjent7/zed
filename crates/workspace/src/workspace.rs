@@ -1707,6 +1707,7 @@ impl Workspace {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
+        locale::set_language(settings::LanguageSetting::get_global(cx).into());
         if let Some(trusted_worktrees) = TrustedWorktrees::try_get_global(cx) {
             cx.subscribe(&trusted_worktrees, |_, worktrees_store, e, cx| {
                 if let TrustedWorktreesEvent::Trusted(..) = e {

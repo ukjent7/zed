@@ -129,6 +129,22 @@ pub fn t(key: &str) -> SharedString {
         .unwrap_or_else(|| SharedString::from(key))
 }
 
+/// Translate a GUI label containing `{placeholder}` slots, substituting each
+/// pair after lookup. Falls back to the English source text like [`t`].
+/// Placeholders must match `assets/locales/SCHEMA.md` (checked by tests).
+pub fn t_format(key: &str, replacements: &[(&str, &str)]) -> SharedString {
+    let translated = if use_chinese() {
+        dictionary().get(key).map(String::as_str).unwrap_or(key)
+    } else {
+        key
+    };
+    let mut result = translated.to_string();
+    for (placeholder, value) in replacements {
+        result = result.replacen(placeholder, value, 1);
+    }
+    SharedString::from(result)
+}
+
 /// Display name for a command palette action: `中文 (english)` when Chinese
 /// is active and a translation exists, otherwise the English name unchanged.
 ///
@@ -212,8 +228,22 @@ mod tests {
     }
 
     #[test]
+    fn formats_placeholders() {
+        let _guard = TEST_LOCK.lock().unwrap();
+        set_language(Language::English);
+        assert_eq!(t_format("Hello {name}", &[("{name}", "Zed")]), "Hello Zed");
+        // Real dictionary entry, substituted after lookup.
+        set_language(Language::SimplifiedChinese);
+        assert_eq!(
+            t_format("Currently In Use: {name}", &[("{name}", "main")]),
+            "正在使用：main"
+        );
+        clear_language_override();
+    }
+
+    #[test]
     fn dictionary_parses() {
-        // Empty today (PR-1 skeleton); must stay a valid string-to-string map.
+        // Must stay a valid string-to-string map with no empty entries.
         let dictionary = dictionary();
         for (source, translation) in dictionary {
             assert!(!source.is_empty());
