@@ -10245,6 +10245,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "locale"
+version = "0.1.0"
+dependencies = [
+ "collections",
+ "gpui_shared_string",
+ "serde_json",
+ "sys-locale",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"

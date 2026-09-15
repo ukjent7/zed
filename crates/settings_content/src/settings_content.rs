@@ -224,6 +224,14 @@ pub struct SettingsContent {
     /// Default: VSCode
     pub base_keymap: Option<BaseKeymapContent>,
 
+    /// The language of Zed's user interface.
+    ///
+    /// Only GUI labels are translated; prompts sent to AI models always
+    /// stay in English. Takes effect after restarting Zed.
+    ///
+    /// Default: system
+    pub language: Option<LanguageContent>,
+
     /// Configuration for the collab panel visual settings.
     pub collaboration_panel: Option<PanelSettingsContent>,
 
@@ -406,7 +414,7 @@ fallible_options::flattened_deserialize!(SettingsContent {
         agent_servers, audio, auto_update, base_keymap, collaboration_panel, debugger, diagnostics,
         git,
         global_lsp_settings, image_viewer, markdown_preview, repl, helix_mode, hide_mouse,
-        journal, log, line_indicator_format, language_models, outline_panel, project_panel,
+        journal, log, line_indicator_format, language, language_models, outline_panel, project_panel,
         node, proxy, reduce_motion, server_url, credentials_url, session, telemetry, terminal,
         title_bar, vim_mode, calls, which_key, vim, modeline_lines, feature_flags,
         instrumentation,
@@ -555,6 +563,40 @@ impl strum::VariantNames for BaseKeymapContent {
         "Cursor",
         "None",
     ];
+}
+
+/// The language of Zed's user interface.
+///
+/// Only GUI labels are translated; prompts sent to AI models always stay
+/// in English.
+///
+/// Default: system
+#[derive(
+    Copy,
+    Clone,
+    Debug,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    MergeFrom,
+    PartialEq,
+    Eq,
+    strum::VariantArray,
+    strum::VariantNames,
+)]
+pub enum LanguageContent {
+    /// Follow the operating system locale
+    /// (Simplified Chinese on Chinese systems).
+    #[default]
+    #[serde(rename = "system")]
+    System,
+    /// Always English.
+    #[serde(rename = "en")]
+    English,
+    /// Always Simplified Chinese.
+    #[serde(rename = "zh-CN")]
+    SimplifiedChinese,
 }
 
 /// Configuration of audio in Zed.

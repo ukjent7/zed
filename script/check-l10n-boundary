@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.." || exit 1
+
+# Paths whose strings may reach AI models. GUI translation must only touch
+# what is rendered, never what is sent to a model.
+blocklist=(
+  'assets/prompts/'
+  'crates/acp_thread/'
+  'crates/acp_tools/'
+  'crates/agent/'
+  'crates/agent_servers/'
+  'crates/copilot/'
+  'crates/copilot_chat/'
+  'crates/copilot_ui/'
+  'crates/edit_prediction/'
+  'crates/edit_prediction_context/'
+  'crates/edit_prediction_metrics/'
+  'crates/edit_prediction_types/'
+  'crates/edit_prediction_ui/'
+  'crates/eval_cli/'
+  'crates/eval_utils/'
+  'crates/language_model/'
+  'crates/language_model_core/'
+  'crates/language_models/'
+  'crates/language_models_cloud/'
+  'crates/prompt_store/'
+  'crates/proto/'
+  'crates/rpc/'
+  'crates/zeta_prompt/'
+)
+
+result=$(git grep --no-color --line-number -e 'locale::' -- "${blocklist[@]}" || true)
+if [[ -n "${result}" ]]; then
+  echo "${result}"
+  echo "Error: locale:: must not be used in model-facing paths (see assets/locales/SCHEMA.md)."
+  exit 1
+fi
+
+python3 -m json.tool assets/locales/zh-CN.json > /dev/null
+python3 -m json.tool assets/locales/actions-zh-CN.json > /dev/null
+
+echo "l10n boundary check passed."

@@ -1,0 +1,19 @@
+[package]
+name = "locale"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+license = "GPL-3.0-or-later"
+
+[lints]
+workspace = true
+
+[lib]
+path = "src/locale.rs"
+doctest = false
+
+[dependencies]
+collections.workspace = true
+gpui_shared_string.workspace = true
+serde_json.workspace = true
+sys-locale.workspace = true

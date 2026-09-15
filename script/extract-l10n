@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+"""Report GUI strings wrapped in t("...") that lack a zh-CN translation.
+
+Read-only in V1: prints missing/unused keys and always exits 0.
+Run from anywhere inside the repo.
+"""
+
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+# Must stay in sync with script/check-l10n-boundary.
+BLOCKLIST = (
+    "assets/prompts/",
+    "crates/acp_thread/",
+    "crates/acp_tools/",
+    "crates/agent/",
+    "crates/agent_servers/",
+    "crates/copilot/",
+    "crates/copilot_chat/",
+    "crates/copilot_ui/",
+    "crates/edit_prediction/",
+    "crates/edit_prediction_context/",
+    "crates/edit_prediction_metrics/",
+    "crates/edit_prediction_types/",
+    "crates/edit_prediction_ui/",
+    "crates/eval_cli/",
+    "crates/eval_utils/",
+    "crates/language_model/",
+    "crates/language_model_core/",
+    "crates/language_models/",
+    "crates/language_models_cloud/",
+    "crates/prompt_store/",
+    "crates/proto/",
+    "crates/rpc/",
+    "crates/zeta_prompt/",
+)
+
+CALL_PATTERN = re.compile(r'(?<!\w)t\(\s*"((?:[^"\\]|\\.)*)"')
+MAX_LISTED = 50
+
+
+def repo_root() -> Path:
+    out = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return Path(out.stdout.strip())
+
+
+def main() -> int:
+    root = repo_root()
+    used: set[str] = set()
+    for path in sorted((root / "crates").rglob("*.rs")):
+        rel = path.relative_to(root).as_posix() + "/"
+        if rel.startswith(BLOCKLIST):
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for match in CALL_PATTERN.finditer(text):
+            key = match.group(1).replace('\\"', '"').replace("\\\\", "\\")
+            if key:
+                used.add(key)
+
+    dictionary_path = root / "assets" / "locales" / "zh-CN.json"
+    translated = set(json.loads(dictionary_path.read_text(encoding="utf-8")).keys())
+
+    missing = sorted(used - translated)
+    unused = sorted(translated - used)
+    print(f"used: {len(used)}, translated: {len(translated)}")
+    print(f"missing: {len(missing)}")
+    for key in missing[:MAX_LISTED]:
+        print(f"  MISSING  {key}")
+    print(f"unused: {len(unused)}")
+    for key in unused[:MAX_LISTED]:
+        print(f"  UNUSED   {key}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
