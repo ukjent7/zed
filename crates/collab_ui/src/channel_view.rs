@@ -412,11 +412,11 @@ impl ChannelView {
                 self.channel_buffer.read(cx).is_connected(),
             ) {
                 (false, true) => None,
-                (true, true) => Some(locale::t("read-only").as_str()),
-                (_, false) => Some(locale::t("disconnected").as_str()),
+                (true, true) => Some(locale::t("read-only")),
+                (_, false) => Some(locale::t("disconnected")),
             };
 
-            (channel.name.clone(), status.map(Into::into))
+            (channel.name.clone(), status)
         } else {
             ("<unknown>".into(), Some(locale::t("disconnected")))
         }

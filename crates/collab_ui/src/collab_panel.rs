@@ -2376,17 +2376,15 @@ impl CollabPanel {
             }
 
             self.channel_store.update(cx, |store, cx| {
+                // Bound first: `detach_and_prompt_err` borrows the message, so
+                // the translated `SharedString` has to outlive the call.
+                let message = match direction {
+                    Direction::Up => locale::t("Failed to move channel up"),
+                    Direction::Down => locale::t("Failed to move channel down"),
+                };
                 store
                     .reorder_channel(channel.id, direction, cx)
-                    .detach_and_prompt_err(
-                        match direction {
-                            Direction::Up => locale::t("Failed to move channel up").as_str(),
-                            Direction::Down => locale::t("Failed to move channel down").as_str(),
-                        },
-                        window,
-                        cx,
-                        |_, _, _| None,
-                    )
+                    .detach_and_prompt_err(message.as_str(), window, cx, |_, _, _| None)
             });
         }
     }
@@ -3664,8 +3662,10 @@ impl CollabPanel {
                                 this.toggle_favorite_channel(channel_id, cx)
                             }))
                             .tooltip(move |_window, cx| {
+                                // `Fn` closure: the tooltip is rebuilt on every
+                                // call, so the captured title is cloned, not moved.
                                 Tooltip::for_action_in(
-                                    favorite_tooltip,
+                                    favorite_tooltip.clone(),
                                     &ToggleSelectedChannelFavorite,
                                     &focus_handle,
                                     cx,
