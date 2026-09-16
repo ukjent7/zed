@@ -44,7 +44,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag || github.ref }}
       - uses: dtolnay/rust-toolchain@stable
@@ -113,7 +113,7 @@ jobs:
       RELEASE_VERSION: ${{ needs.version.outputs.version }}
       ZED_WORKSPACE: ${{ github.workspace }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag || github.ref }}
       - uses: dtolnay/rust-toolchain@stable
@@ -147,7 +147,7 @@ jobs:
         if: runner.os == 'Linux'
         run: ./script/download-wasi-sdk
       # bundle-mac shells out to npm for `dmg-license`.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: runner.os == 'macOS'
       - name: bundle
         if: runner.os != 'Windows'
@@ -162,7 +162,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: ${{ matrix.bundle }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
           path: ${{ matrix.assets }}
@@ -178,7 +178,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       TAG: ${{ inputs.tag || github.ref_name }}
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
