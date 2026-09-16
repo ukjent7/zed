@@ -208,12 +208,16 @@ impl ChannelView {
             editor.set_custom_context_menu(move |_, position, window, cx| {
                 let this = this.clone();
                 Some(ui::ContextMenu::build(window, cx, move |menu, _, _| {
-                    menu.entry("Copy Link to Section", None, move |window, cx| {
-                        this.update(cx, |this, cx| {
-                            this.copy_link_for_position(position, window, cx)
-                        })
-                        .ok();
-                    })
+                    menu.entry(
+                        locale::t("Copy Link to Section"),
+                        None,
+                        move |window, cx| {
+                            this.update(cx, |this, cx| {
+                                this.copy_link_for_position(position, window, cx)
+                            })
+                            .ok();
+                        },
+                    )
                 }))
             });
             editor.set_show_bookmarks(false, cx);
@@ -333,7 +337,7 @@ impl ChannelView {
                 workspace.show_toast(
                     Toast::new(
                         NotificationId::unique::<CopyLinkForPositionToast>(),
-                        "Link copied to clipboard",
+                        locale::t("Link copied to clipboard").to_string(),
                     ),
                     cx,
                 );
@@ -408,13 +412,13 @@ impl ChannelView {
                 self.channel_buffer.read(cx).is_connected(),
             ) {
                 (false, true) => None,
-                (true, true) => Some("read-only"),
-                (_, false) => Some("disconnected"),
+                (true, true) => Some(locale::t("read-only").as_str()),
+                (_, false) => Some(locale::t("disconnected").as_str()),
             };
 
             (channel.name.clone(), status.map(Into::into))
         } else {
-            ("<unknown>".into(), Some("disconnected".into()))
+            ("<unknown>".into(), Some(locale::t("disconnected")))
         }
     }
 }
