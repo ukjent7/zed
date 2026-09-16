@@ -40,9 +40,47 @@ function Get-VSArch {
     }
 }
 
-Push-Location
-& "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1" -Arch (Get-VSArch -Arch $Architecture) -HostArch (Get-VSArch -Arch $OSArchitecture)
-Pop-Location
+$vsDevShell = $null
+$vswhere = if (Get-Command "vswhere.exe" -ErrorAction SilentlyContinue) {
+    "vswhere.exe"
+} elseif (Test-Path "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe") {
+    "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+} else {
+    $null
+}
+
+if ($vswhere) {
+    $vsPath = & $vswhere -products * -latest -property installationPath
+    if ($vsPath) {
+        $candidate = Join-Path $vsPath "Common7\Tools\Launch-VsDevShell.ps1"
+        if (Test-Path $candidate) {
+            $vsDevShell = $candidate
+        }
+    }
+}
+
+if (-not $vsDevShell) {
+    $candidates = @(
+        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1",
+        "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1",
+        "C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\Tools\Launch-VsDevShell.ps1",
+        "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\Launch-VsDevShell.ps1"
+    )
+    foreach ($cand in $candidates) {
+        if (Test-Path $cand) {
+            $vsDevShell = $cand
+            break
+        }
+    }
+}
+
+if ($vsDevShell) {
+    Push-Location
+    & $vsDevShell -Arch (Get-VSArch -Arch $Architecture) -HostArch (Get-VSArch -Arch $OSArchitecture) -SkipAutomaticLocation
+    Pop-Location
+} else {
+    Write-Warning "Launch-VsDevShell.ps1 not found. Continuing with current environment."
+}
 
 $target = "$Architecture-pc-windows-msvc"
 
@@ -209,6 +247,12 @@ function MakeAppx {
     Copy-Item -Path "$manifestFile" -Destination "$innoDir\make_appx\AppxManifest.xml"
     # Add makeAppx.exe to Path
     $sdk = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64"
+    if (-not (Test-Path "$sdk\makeAppx.exe")) {
+        $found = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "makeappx.exe" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match "\\x64\\makeappx\.exe$" } | Select-Object -First 1
+        if ($found) {
+            $sdk = $found.DirectoryName
+        }
+    }
     $env:Path += ';' + $sdk
     makeAppx.exe pack /d "$innoDir\make_appx" /p "$innoDir\zed_explorer_command_injector.appx" /nv
 }
@@ -328,7 +372,13 @@ function BuildInstaller {
     # Windows runner 2022 default has iscc in PATH, https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
     # Currently, we are using Windows 2022 runner.
     # Windows runner 2025 doesn't have iscc in PATH for now, https://github.com/actions/runner-images/issues/11228
-    $innoSetupPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+    $innoSetupPath = if (Get-Command "ISCC.exe" -ErrorAction SilentlyContinue) {
+        (Get-Command "ISCC.exe").Source
+    } elseif (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
+        "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+    } else {
+        "ISCC.exe"
+    }
 
     $definitions = @{
         "AppId"          = $appId
