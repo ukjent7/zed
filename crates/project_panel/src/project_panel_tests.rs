@@ -12010,6 +12010,9 @@ async fn test_focus_follows_mouse_into_blank_area(cx: &mut gpui::TestAppContext)
 }
 
 pub(crate) fn init_test(cx: &mut TestAppContext) {
+    // Prompt labels and messages are asserted in English; pin the UI language
+    // so the machine's locale cannot translate them.
+    locale::set_language(locale::Language::English);
     cx.update(|cx| {
         let settings_store = SettingsStore::test(cx);
         cx.set_global(settings_store);
@@ -12031,6 +12034,8 @@ pub(crate) fn init_test(cx: &mut TestAppContext) {
 }
 
 fn init_test_with_editor(cx: &mut TestAppContext) {
+    // Prompt labels are asserted in English (see `submit_deletion`).
+    locale::set_language(locale::Language::English);
     cx.update(|cx| {
         let app_state = AppState::test(cx);
         theme_settings::init(theme::LoadThemes::JustBase, cx);
@@ -12115,8 +12120,6 @@ fn ensure_single_file_is_opened(
 }
 
 fn submit_deletion(panel: &Entity<ProjectPanel>, cx: &mut VisualTestContext) {
-    // Prompt button labels below are asserted in English.
-    locale::set_language(locale::Language::English);
     assert!(
         !cx.has_pending_prompt(),
         "Should have no prompts before the deletion"
@@ -12243,8 +12246,6 @@ impl Render for TestProjectItemView {
 #[gpui::test]
 async fn test_delete_prompt_escapes_markdown_in_file_name(cx: &mut gpui::TestAppContext) {
     init_test(cx);
-    // Prompt message below is asserted in English.
-    locale::set_language(locale::Language::English);
 
     let fs = FakeFs::new(cx.executor());
     fs.insert_tree(
@@ -12281,8 +12282,6 @@ async fn test_delete_prompt_escapes_markdown_in_file_name(cx: &mut gpui::TestApp
 #[gpui::test]
 async fn test_restore_file_prompt_escapes_markdown_in_file_name(cx: &mut gpui::TestAppContext) {
     init_test(cx);
-    // Prompt message below is asserted in English.
-    locale::set_language(locale::Language::English);
 
     let fs = FakeFs::new(cx.executor());
     fs.insert_tree(

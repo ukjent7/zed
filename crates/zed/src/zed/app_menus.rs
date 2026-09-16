@@ -7,7 +7,6 @@ use terminal_view::terminal_panel;
 use zed_actions::{Quit, assistant, debug_panel, dev, git_panel, project_panel};
 
 pub fn app_menus(cx: &mut App) -> Vec<Menu> {
-    locale::set_language(settings::LanguageSetting::get_global(cx).into());
     let mut view_items = vec![
         MenuItem::action(
             locale::t("Zoom In"),

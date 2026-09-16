@@ -32,43 +32,51 @@ pub enum Language {
     SimplifiedChinese,
 }
 
-impl Language {
-    /// Parse the `language` setting value (`system` | `en` | `zh-CN`).
-    /// Unknown values fall back to following the system locale.
-    pub fn from_setting(value: &str) -> Self {
-        match value {
-            "en" => Self::English,
-            "zh-CN" | "zh_CN" | "zh" => Self::SimplifiedChinese,
-            _ => Self::System,
-        }
-    }
+// Where the language comes from, in priority order:
+//
+// 1. an explicit override (`set_language`, used by tests to assert against
+//    the English source strings regardless of the machine's locale);
+// 2. the `language` setting (`sync_language`, refreshed by
+//    `LanguageSetting::from_settings` whenever settings are (re)loaded);
+// 3. the operating system locale (`Language::System`).
 
-    /// Serialize back to the `language` setting value.
-    pub fn as_setting(self) -> &'static str {
-        match self {
-            Self::System => "system",
-            Self::English => "en",
-            Self::SimplifiedChinese => "zh-CN",
-        }
-    }
+/// Explicit override set via [`set_language`]; never overwritten by the
+/// settings layer, so a test that pins English stays English.
+static EXPLICIT_LANGUAGE: RwLock<Option<Language>> = RwLock::new(None);
+
+/// Mirror of the `language` setting, refreshed by [`sync_language`].
+static SETTING_LANGUAGE: RwLock<Option<Language>> = RwLock::new(None);
+
+/// Parses a compiled-in dictionary of English source text to translation.
+///
+/// Values are stored as [`SharedString`] so that a lookup only bumps a
+/// reference count instead of rebuilding the string on every call — `t()` runs
+/// once per label per frame. `SharedString` is not `Deserialize`, hence the
+/// intermediate `HashMap<String, String>`.
+fn parse_dictionary(json: &str) -> HashMap<String, SharedString> {
+    serde_json::from_str::<HashMap<String, String>>(json)
+        .unwrap_or_default()
+        .into_iter()
+        .map(|(source, translation)| (source, SharedString::from(translation)))
+        .collect()
 }
 
-/// Explicit override set via [`set_language`]; `None` follows the setting.
-static LANGUAGE_OVERRIDE: RwLock<Option<Language>> = RwLock::new(None);
-
-fn dictionary() -> &'static HashMap<String, String> {
-    static DICTIONARY: OnceLock<HashMap<String, String>> = OnceLock::new();
-    DICTIONARY.get_or_init(|| serde_json::from_str(DEFAULT_DICTIONARY_JSON).unwrap_or_default())
+fn dictionary() -> &'static HashMap<String, SharedString> {
+    static DICTIONARY: OnceLock<HashMap<String, SharedString>> = OnceLock::new();
+    DICTIONARY.get_or_init(|| parse_dictionary(DEFAULT_DICTIONARY_JSON))
 }
 
-fn actions_dictionary() -> &'static HashMap<String, String> {
-    static ACTIONS_DICTIONARY: OnceLock<HashMap<String, String>> = OnceLock::new();
-    ACTIONS_DICTIONARY
-        .get_or_init(|| serde_json::from_str(ACTIONS_DICTIONARY_JSON).unwrap_or_default())
+fn actions_dictionary() -> &'static HashMap<String, SharedString> {
+    static ACTIONS_DICTIONARY: OnceLock<HashMap<String, SharedString>> = OnceLock::new();
+    ACTIONS_DICTIONARY.get_or_init(|| parse_dictionary(ACTIONS_DICTIONARY_JSON))
 }
 
-fn language_override() -> Option<Language> {
-    LANGUAGE_OVERRIDE.read().ok().and_then(|guard| *guard)
+fn explicit_language() -> Option<Language> {
+    EXPLICIT_LANGUAGE.read().ok().and_then(|guard| *guard)
+}
+
+fn setting_language() -> Option<Language> {
+    SETTING_LANGUAGE.read().ok().and_then(|guard| *guard)
 }
 
 /// Returns true for Chinese locale identifiers
@@ -81,10 +89,13 @@ pub fn is_chinese_locale(locale: &str) -> bool {
         .is_some_and(|language| language.eq_ignore_ascii_case("zh"))
 }
 
-/// Resolve the effective language: the explicit override when set, otherwise
-/// the given setting, with [`Language::System`] following the OS locale.
-pub fn resolve_language(setting: Language) -> Language {
-    match language_override().unwrap_or(setting) {
+/// The language the UI currently renders in, resolving [`Language::System`]
+/// against the operating system locale.
+fn effective_language() -> Language {
+    match explicit_language()
+        .or_else(setting_language)
+        .unwrap_or(Language::System)
+    {
         Language::System => {
             let system_locale = sys_locale::get_locale().unwrap_or_else(|| String::from("en-US"));
             if is_chinese_locale(&system_locale) {
@@ -99,20 +110,41 @@ pub fn resolve_language(setting: Language) -> Language {
 
 /// Whether the UI should currently render Simplified Chinese.
 pub fn use_chinese() -> bool {
-    resolve_language(Language::System) == Language::SimplifiedChinese
+    effective_language() == Language::SimplifiedChinese
 }
 
-/// Override the UI language (wired to the `language` setting later).
-/// Takes effect immediately; callers re-render on the next frame.
+/// Pin the UI language to an explicit override.
+///
+/// The override outranks the `language` setting, so it is not clobbered when
+/// settings are reloaded. Tests use it to assert against the English source
+/// strings no matter which locale the machine runs; remember to
+/// [`clear_language_overrides`] afterwards if the language matters.
 pub fn set_language(language: Language) {
-    if let Ok(mut guard) = LANGUAGE_OVERRIDE.write() {
+    if let Ok(mut guard) = EXPLICIT_LANGUAGE.write() {
         *guard = Some(language);
     }
 }
 
-/// Clear an override previously set with [`set_language`].
-pub fn clear_language_override() {
-    if let Ok(mut guard) = LANGUAGE_OVERRIDE.write() {
+/// Follow the `language` setting.
+///
+/// Called by `LanguageSetting::from_settings` on every settings (re)load;
+/// ignored while an explicit override is set via [`set_language`].
+pub fn sync_language(language: Language) {
+    if explicit_language().is_some() {
+        return;
+    }
+    if let Ok(mut guard) = SETTING_LANGUAGE.write() {
+        *guard = Some(language);
+    }
+}
+
+/// Drop the explicit override and the setting mirror, falling back to the
+/// operating system locale.
+pub fn clear_language_overrides() {
+    if let Ok(mut guard) = EXPLICIT_LANGUAGE.write() {
+        *guard = None;
+    }
+    if let Ok(mut guard) = SETTING_LANGUAGE.write() {
         *guard = None;
     }
 }
@@ -125,7 +157,7 @@ pub fn t(key: &str) -> SharedString {
     }
     dictionary()
         .get(key)
-        .map(SharedString::from)
+        .cloned()
         .unwrap_or_else(|| SharedString::from(key))
 }
 
@@ -134,7 +166,10 @@ pub fn t(key: &str) -> SharedString {
 /// Placeholders must match `assets/locales/SCHEMA.md` (checked by tests).
 pub fn t_format(key: &str, replacements: &[(&str, &str)]) -> SharedString {
     let translated = if use_chinese() {
-        dictionary().get(key).map(String::as_str).unwrap_or(key)
+        dictionary()
+            .get(key)
+            .map(|translated| translated.as_str())
+            .unwrap_or(key)
     } else {
         key
     };
@@ -185,18 +220,46 @@ mod tests {
     use super::*;
     use std::sync::Mutex;
 
-    // `LANGUAGE_OVERRIDE` is process-global; serialize tests that mutate it.
+    // The language cells are process-global; serialize tests that mutate them.
     static TEST_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
-    fn language_setting_round_trip() {
-        assert_eq!(Language::from_setting("system"), Language::System);
-        assert_eq!(Language::from_setting("en"), Language::English);
-        assert_eq!(Language::from_setting("zh-CN"), Language::SimplifiedChinese);
-        assert_eq!(Language::from_setting("unexpected"), Language::System);
-        assert_eq!(Language::System.as_setting(), "system");
-        assert_eq!(Language::English.as_setting(), "en");
-        assert_eq!(Language::SimplifiedChinese.as_setting(), "zh-CN");
+    fn setting_sync_applies_without_explicit_override() {
+        let _guard = TEST_LOCK.lock().unwrap();
+        clear_language_overrides();
+
+        // The settings layer mirrors the `language` setting.
+        sync_language(Language::English);
+        assert!(!use_chinese());
+        sync_language(Language::SimplifiedChinese);
+        assert!(use_chinese());
+
+        // `System` falls back to the machine's locale, which is not asserted
+        // here: the point is that the synced value is what gets used.
+        sync_language(Language::System);
+        clear_language_overrides();
+    }
+
+    #[test]
+    fn explicit_override_survives_setting_sync() {
+        let _guard = TEST_LOCK.lock().unwrap();
+        clear_language_overrides();
+
+        // A test pins English; the settings layer then re-syncs the default
+        // `system` setting (as `Workspace::new` used to do). English must win,
+        // otherwise prompt labels render in Chinese on a Chinese machine and
+        // `simulate_prompt_answer("Trash")` cannot find its button.
+        set_language(Language::English);
+        sync_language(Language::System);
+        assert!(!use_chinese());
+        assert_eq!(t("Trash"), "Trash");
+
+        // …symmetrically for a pinned Chinese UI.
+        set_language(Language::SimplifiedChinese);
+        sync_language(Language::English);
+        assert!(use_chinese());
+
+        clear_language_overrides();
     }
 
     #[test]
@@ -238,13 +301,22 @@ mod tests {
             t_format("Currently In Use: {name}", &[("{name}", "main")]),
             "正在使用：main"
         );
-        clear_language_override();
+        clear_language_overrides();
     }
 
     #[test]
     fn dictionary_parses() {
         // Must stay a valid string-to-string map with no empty entries.
+        //
+        // The emptiness check is load-bearing: `dictionary()` falls back to an
+        // empty map when the JSON does not deserialize into the expected
+        // shape, and an empty map satisfies the loop below without running a
+        // single assertion.
         let dictionary = dictionary();
+        assert!(
+            !dictionary.is_empty(),
+            "zh-CN.json did not deserialize into a dictionary"
+        );
         for (source, translation) in dictionary {
             assert!(!source.is_empty());
             assert!(!translation.is_empty());
@@ -281,12 +353,16 @@ mod tests {
             localized_action_name("no_such::Action", "no such: action"),
             "no such: action"
         );
-        clear_language_override();
+        clear_language_overrides();
     }
 
     #[test]
     fn actions_dictionary_parses() {
         // Guard against malformed JSON and non-string entries.
+        assert!(
+            !actions_dictionary().is_empty(),
+            "actions-zh-CN.json did not deserialize into a dictionary"
+        );
         for (action_id, translation) in actions_dictionary() {
             assert!(action_id.contains("::"), "{action_id} is not an action ID");
             assert!(!translation.is_empty());

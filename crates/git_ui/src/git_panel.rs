@@ -9475,7 +9475,7 @@ impl RenderOnce for PanelRepoFooter {
                         this.child(div().child(repo_selector).min_w_0()).when(
                             show_separator,
                             |this| {
-                                this.child(Label::new(locale::t("/")).size(LabelSize::Small).color(
+                                this.child(Label::new("/").size(LabelSize::Small).color(
                                     Color::Custom(cx.theme().colors().text_muted.opacity(0.4)),
                                 ))
                             },
@@ -9778,6 +9778,9 @@ mod tests {
 
     fn init_test(cx: &mut gpui::TestAppContext) {
         zlog::init_test();
+        // Prompt labels and messages are asserted in English; pin the UI
+        // language so the machine's locale cannot translate them.
+        locale::set_language(locale::Language::English);
 
         cx.update(|cx| {
             let settings_store = SettingsStore::test(cx);
@@ -10608,8 +10611,6 @@ mod tests {
 
     #[gpui::test]
     async fn test_discard_prompt_escapes_markdown_in_file_name(cx: &mut TestAppContext) {
-        // Prompt message below is asserted in English.
-        locale::set_language(locale::Language::English);
         init_test(cx);
         let fs = FakeFs::new(cx.background_executor.clone());
         fs.insert_tree(
@@ -14015,8 +14016,6 @@ mod tests {
 
     #[gpui::test]
     async fn test_discard_tracked_changes_respects_staging(cx: &mut TestAppContext) {
-        // Prompt message below is asserted in English.
-        locale::set_language(locale::Language::English);
         init_test(cx);
         let fs = FakeFs::new(cx.background_executor.clone());
         fs.insert_tree(
@@ -15082,8 +15081,6 @@ mod tests {
 
     #[gpui::test]
     async fn test_bulk_revert_prompt_cancel_mixed(cx: &mut TestAppContext) {
-        // Prompt buttons below are answered in English.
-        locale::set_language(locale::Language::English);
         init_test(cx);
         let (fs, _project, panel, mut cx) = setup_flat_marks_fixture(cx).await;
 

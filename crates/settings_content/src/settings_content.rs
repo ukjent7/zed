@@ -227,7 +227,8 @@ pub struct SettingsContent {
     /// The language of Zed's user interface.
     ///
     /// Only GUI labels are translated; prompts sent to AI models always
-    /// stay in English. Takes effect after restarting Zed.
+    /// stay in English. Takes effect as the UI repaints; the native menu bar
+    /// is rebuilt only at startup, so it needs a restart.
     ///
     /// Default: system
     pub language: Option<LanguageContent>,

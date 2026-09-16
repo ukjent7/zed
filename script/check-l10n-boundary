@@ -6,16 +6,27 @@ cd "$(dirname "$0")/.." || exit 1
 
 # Paths whose strings may reach AI models. GUI translation must only touch
 # what is rendered, never what is sent to a model.
+#
+# Best-effort list, kept in sync with `script/extract-l10n`. Being listed is
+# not a claim that a path is model-facing-only (agent_ui and context_server
+# mix GUI and model-bound strings); it means "do not translate anything here
+# without checking". `script/extract-l10n --strict` covers the other
+# direction: a dictionary entry whose English source exists only inside one
+# of these paths is reported as a violation.
 blocklist=(
   'assets/prompts/'
   'crates/acp_thread/'
   'crates/acp_tools/'
   'crates/agent/'
   'crates/agent_servers/'
+  'crates/agent_settings/'   # ships src/prompts/*.txt, reads AGENTS.md
+  'crates/agent_ui/'         # pushes model-bound MessageContent::Text
+  'crates/context_server/'   # JSON-RPC protocol, forwards tool schemas
   'crates/copilot/'
   'crates/copilot_chat/'
   'crates/copilot_ui/'
   'crates/edit_prediction/'
+  'crates/edit_prediction_cli/'   # prompts the teacher model
   'crates/edit_prediction_context/'
   'crates/edit_prediction_metrics/'
   'crates/edit_prediction_types/'

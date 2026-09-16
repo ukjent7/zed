@@ -1,8 +1,23 @@
 #!/usr/bin/env python3
 """Report GUI strings wrapped in t("...") that lack a zh-CN translation.
 
-Read-only in V1: prints missing/unused keys and always exits 0.
+Read-only by default: prints missing/unused keys and always exits 0.
+With `--strict` it exits 1 when a violation is found, which is how CI runs it.
 Run from anywhere inside the repo.
+
+`unused` is split in two, because "not a t("...") argument" has three
+different causes:
+
+- UNUSED-DYNAMIC: the key's literal does exist in a non-blocklisted crate,
+  so a dynamic `t(<variable>)` call can resolve it at runtime (match arms,
+  `t(&format!(...))`, ...). Keep the entry.
+- UNUSED: the key's literal does not exist anywhere; either the string was
+  renamed upstream (deprecated, keep per SCHEMA.md) or the entry was never
+  wired up (review it).
+- VIOLATION: the key's literal exists only inside a model-facing path
+  (see BLOCKLIST). Translating it would change what a model receives, so it
+  must be removed from the dictionary. Only computed for UNUSED keys, since
+  a literal that also occurs in GUI code is ambiguous, not a violation.
 """
 
 import json
@@ -18,10 +33,14 @@ BLOCKLIST = (
     "crates/acp_tools/",
     "crates/agent/",
     "crates/agent_servers/",
+    "crates/agent_settings/",
+    "crates/agent_ui/",
+    "crates/context_server/",
     "crates/copilot/",
     "crates/copilot_chat/",
     "crates/copilot_ui/",
     "crates/edit_prediction/",
+    "crates/edit_prediction_cli/",
     "crates/edit_prediction_context/",
     "crates/edit_prediction_metrics/",
     "crates/edit_prediction_types/",
@@ -38,7 +57,7 @@ BLOCKLIST = (
     "crates/zeta_prompt/",
 )
 
-CALL_PATTERN = re.compile(r'(?<!\w)t(?:_format)?\(\s*"((?:[^"\\]|\\.)*)"')
+CALL_PATTERN = re.compile(r'(?<!\w)t(?:_format)?\(\s*"((?:[^"\\]|\\.)*)"', re.DOTALL)
 # t()/t_format() calls whose argument is not a string literal (variable,
 # match/if expression). Their runtime values cannot be extracted statically,
 # so they are listed for manual audit instead of entering missing/unused.
@@ -46,6 +65,9 @@ CALL_PATTERN = re.compile(r'(?<!\w)t(?:_format)?\(\s*"((?:[^"\\]|\\.)*)"')
 # is on the next line are not misreported; skips the fn definitions in
 # crates/locale itself.)
 DYNAMIC_PATTERN = re.compile(r"(?<!\w)(?<!fn )(?<!\$)t(?:_format)?\(\s*(?!\s*\")")
+# DOTALL: `\\.` must also match a `\` + newline line continuation inside a
+# string literal, or pairing silently derails for the rest of the file.
+LITERAL_PATTERN = re.compile(r'"((?:[^"\\]|\\.)*)"', re.DOTALL)
 MAX_LISTED = 50
 
 # Rust string escapes that may appear inside t("...") keys.
@@ -70,6 +92,88 @@ def decode_source_key(raw: str) -> str:
     )
 
 
+def strip_rust_noise(text: str) -> str:
+    """Blank out comments and char literals, preserving every byte offset.
+
+    Quote characters inside comments (`// the "foo" panel`) would otherwise
+    shift string-literal pairing and produce phantom literals. Replacing the
+    comment bytes with spaces keeps line numbers and offsets intact.
+    """
+    out = list(text)
+    i, n = 0, len(text)
+
+    def blank(start: int, end: int) -> None:
+        for k in range(start, min(end, n)):
+            if text[k] != "\n":
+                out[k] = " "
+
+    while i < n:
+        ch = text[i]
+        two = text[i : i + 2]
+        if two == "//":
+            end = text.find("\n", i)
+            blank(i, n if end == -1 else end)
+            i = n if end == -1 else end
+        elif two == "/*":
+            depth, end = 1, i + 2
+            while end < n and depth:
+                if text.startswith("/*", end):
+                    depth += 1
+                    end += 2
+                elif text.startswith("*/", end):
+                    depth -= 1
+                    end += 2
+                else:
+                    end += 1
+            blank(i, end)
+            i = end
+        elif ch == '"':
+            i += 1
+            while i < n and text[i] != '"':
+                i += 2 if text[i] == "\\" else 1
+            i += 1
+        elif ch == "r" and i + 1 < n and text[i + 1] in "#\"":
+            hashes = 0
+            while text[i + 1 + hashes : i + 2 + hashes] == "#":
+                hashes += 1
+            # `r#"…"#` is a raw string, but `r#type` is a raw identifier:
+            # require the quote, or the terminator search would swallow the
+            # rest of the file.
+            if text[i + 1 + hashes] != '"':
+                i += 1
+                continue
+            opening = i + 1 + hashes
+            end = text.find('"' + "#" * hashes, opening + 1)
+            if end == -1:
+                i = n
+            else:
+                # Blank the contents; the delimiting quotes stay behind as a
+                # balanced empty pair for the literal regex.
+                blank(opening + 1, end)
+                i = end + 1 + hashes
+        elif ch == "'":
+            # A char literal ('x', '\n', '\u{1F600}') and not a lifetime ('a).
+            j = i + 1
+            if j < n and text[j] == "\\":
+                j += 1
+                if text[j : j + 2] == "u{":
+                    j = text.find("}", j)
+                else:
+                    j += 1
+            elif j < n and text[j] not in "'":
+                j += 1
+            if j < n and text[j] == "'" and text[i + 1] != "'":
+                # Blank fully: a `"` inside ('"') must not reach the literal
+                # regex, and the apostrophes themselves are irrelevant to it.
+                blank(i, j + 1)
+                i = j + 1
+            else:
+                i += 1
+        else:
+            i += 1
+    return "".join(out)
+
+
 def repo_root() -> Path:
     out = subprocess.run(
         ["git", "rev-parse", "--show-toplevel"],
@@ -80,10 +184,38 @@ def repo_root() -> Path:
     return Path(out.stdout.strip())
 
 
+def blocked_only_keys(root: Path, keys: list[str]) -> list[str]:
+    """Keys whose English source occurs inside a model-facing path.
+
+    Callers pass only keys that appear in no non-blocklisted file, so a hit
+    means the text exists exclusively on the model side. Multi-line keys are
+    probed by their first line: `git grep` is line-based and would never match
+    a pattern containing a newline, and a first line long enough to be
+    distinctive is a sound superset test.
+    """
+    violations = []
+    for key in keys:
+        needle = key if "\n" not in key else key.split("\n")[0].strip()
+        if len(needle) < 15:
+            continue
+        result = subprocess.run(
+            ["git", "grep", "--no-color", "-F", "-l", "-e", needle, "--", *BLOCKLIST],
+            cwd=root,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            violations.append(key)
+    return violations
+
+
 def main() -> int:
     root = repo_root()
     used: set[str] = set()
     dynamic: set[str] = set()
+    # First non-blocklisted file in which each string literal occurs, used to
+    # tell "reachable through a dynamic t() call" from "no call site at all".
+    literal_files: dict[str, str] = {}
     for path in sorted((root / "crates").rglob("*.rs")):
         rel = path.relative_to(root).as_posix() + "/"
         if rel.startswith(BLOCKLIST):
@@ -92,30 +224,43 @@ def main() -> int:
             text = path.read_text(encoding="utf-8")
         except OSError:
             continue
-        for match in CALL_PATTERN.finditer(text):
+        masked = strip_rust_noise(text)
+        for match in CALL_PATTERN.finditer(masked):
             key = decode_source_key(match.group(1))
             if key:
                 used.add(key)
-        for match in DYNAMIC_PATTERN.finditer(text):
-            line = text.count("\n", 0, match.start()) + 1
+        for match in DYNAMIC_PATTERN.finditer(masked):
+            line = masked.count("\n", 0, match.start()) + 1
             dynamic.add(f"{rel.rstrip('/')}:{line}")
+        for match in LITERAL_PATTERN.finditer(masked):
+            literal_files.setdefault(decode_source_key(match.group(1)), rel)
 
     dictionary_path = root / "assets" / "locales" / "zh-CN.json"
     translated = set(json.loads(dictionary_path.read_text(encoding="utf-8")).keys())
 
     missing = sorted(used - translated)
     unused = sorted(translated - used)
+    unused_dynamic = [key for key in unused if key in literal_files]
+    unused_dead = [key for key in unused if key not in literal_files]
     print(f"used: {len(used)}, translated: {len(translated)}")
     print(f"missing: {len(missing)}")
     for key in missing[:MAX_LISTED]:
-        print(f"  MISSING  {key}")
-    print(f"unused: {len(unused)}")
-    for key in unused[:MAX_LISTED]:
-        print(f"  UNUSED   {key}")
+        print(f"  MISSING  {key!r}")
+    print(f"unused: {len(unused)} ({len(unused_dynamic)} reachable via a dynamic t() call)")
+    for key in unused_dead[:MAX_LISTED]:
+        print(f"  UNUSED   {key!r}")
+    for key in unused_dynamic[:MAX_LISTED]:
+        print(f"  UNUSED-DYNAMIC  {key!r}  ({literal_files[key]})")
+    violations = blocked_only_keys(root, unused_dead)
+    print(f"violations: {len(violations)}")
+    for key in violations[:MAX_LISTED]:
+        print(f"  VIOLATION  {key!r}  (exists only in a model-facing path)")
     dynamic_sorted = sorted(dynamic)
     print(f"dynamic: {len(dynamic_sorted)}")
     for site in dynamic_sorted[:MAX_LISTED]:
         print(f"  DYNAMIC  {site}")
+    if "--strict" in sys.argv and violations:
+        return 1
     return 0
 
 

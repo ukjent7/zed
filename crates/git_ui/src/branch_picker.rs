@@ -2159,6 +2159,9 @@ mod tests {
     use workspace::MultiWorkspace;
 
     fn init_test(cx: &mut TestAppContext) {
+        // Prompt buttons are answered by their English labels below; pin the
+        // UI language so the machine's locale cannot translate them.
+        locale::set_language(locale::Language::English);
         cx.update(|cx| {
             let settings_store = SettingsStore::test(cx);
             cx.set_global(settings_store);
@@ -2591,8 +2594,6 @@ mod tests {
 
     #[gpui::test]
     async fn test_delete_unmerged_branch_prompts_for_force_delete(cx: &mut TestAppContext) {
-        // Prompt buttons below are answered in English.
-        locale::set_language(locale::Language::English);
         init_test(cx);
         let (fs, _project, repository) = init_fake_repository_with_fs(cx).await;
 
@@ -2666,8 +2667,6 @@ mod tests {
 
     #[gpui::test]
     async fn test_delete_unmerged_branch_cancel_keeps_branch(cx: &mut TestAppContext) {
-        // Prompt buttons below are answered in English.
-        locale::set_language(locale::Language::English);
         init_test(cx);
         let (fs, _project, repository) = init_fake_repository_with_fs(cx).await;
 

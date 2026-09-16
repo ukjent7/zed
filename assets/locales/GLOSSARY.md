@@ -50,7 +50,8 @@
 | Diff | 差异 | |
 | Commit | 提交 | |
 | Branch | 分支 | |
-| Stash | 暂存 | |
+| Stash | 储藏 | 与 Stage（暂存）区分，避免同词异义 |
+| Fetch | 获取 | 与 Pull（拉取）区分：Fetch 只下载不合并 |
 | Push / Pull | 推送 / 拉取 | |
 | Merge / Rebase | 合并 / 变基 | |
 | Remote | 远程 | |

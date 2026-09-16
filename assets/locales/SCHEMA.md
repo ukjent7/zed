@@ -23,10 +23,13 @@
 
 1. 键是代码里的英文原文，一字不差（含大小写与标点）。
 2. 原文中的 `{name}` 占位符必须在译文中原样保留且不增删；
-   `crates/locale` 单测与 `script/check-l10n-boundary` 会校验。
+   `crates/locale` 的单测 `dictionary_keeps_placeholders` 会校验
+   （随 `cargo test -p locale` 在 CI 中运行）。
 3. 快捷键、代码片段、专有名词（Vim、Git、Agent、Zed）不翻译。
 4. 只收 GUI 文案。会进入模型的字符串（prompts、agent、language_model、
-   edit_prediction、tool 描述等）一律不收，见 `script/check-l10n-boundary`
-   的 blocklist。
+   edit_prediction、tool 描述等）一律不收。blocklist 同时维护在
+   `script/check-l10n-boundary`（禁止在这些路径里调用 `locale::`）和
+   `script/extract-l10n`（`--strict` 在 CI 中运行：词典键若只出现在
+   模型侧路径，即判定为 VIOLATION 并让 CI 失败）。
 5. 上游改了英文原文导致旧键失效时，运行时回退英文，并在下次同步时
    用 `script/extract-l10n` 报出缺词/废弃键。废弃键不删除，只停止使用。

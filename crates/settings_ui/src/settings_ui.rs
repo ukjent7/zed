@@ -850,8 +850,6 @@ fn open_settings_editor_with(
 ) {
     telemetry::event!("Settings Viewed");
 
-    locale::set_language(settings::LanguageSetting::get_global(cx).into());
-
     let existing_window = cx
         .windows()
         .into_iter()
@@ -1198,7 +1196,8 @@ impl SettingsPageItem {
 
         match self {
             SettingsPageItem::SectionHeader(header) => {
-                SettingsSectionHeader::new(SharedString::new_static(header)).into_any_element()
+                // Same key as the navbar entry, so the tree and the pane agree.
+                SettingsSectionHeader::new(locale::t(header)).into_any_element()
             }
             SettingsPageItem::SettingItem(setting_item) => {
                 let (field_with_padding, _) =
