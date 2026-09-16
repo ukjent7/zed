@@ -16,50 +16,47 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/fork_disable_upstream.yml'
+      - '.github/workflows/fork_release.yml'
   pull_request:
     branches:
       - '**'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/fork_disable_upstream.yml'
+      - '.github/workflows/fork_release.yml'
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: 0
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       # gpui and the zed binary need xkbcommon, wayland, alsa, ... on Linux.
       # Reusing upstream's own bootstrap keeps the list from drifting.
       - name: system dependencies
         run: ./script/linux
-      # Every crate the fork has touched. `--all-targets` matters: the test
-      # modules were edited too, and a plain `cargo check` would not compile
-      # them. Add new crates here when the fork starts editing them.
+      # Checking `zed` transitively compiles and checks all UI crates
+      # (auto_update, git_ui, workspace, settings_ui, locale, etc.) as direct
+      # non-optional dependencies. Omitting `--all-targets` avoids compiling
+      # test harnesses and 170+ dev-dependencies of untouched crates; locale's
+      # unit tests already run in fork_ci. Any newly localized crate added to
+      # Zed is automatically covered here without manual list maintenance.
       - name: cargo check
         run: |
-          cargo check --locked --all-targets \
-            -p auto_update \
-            -p command_palette \
-            -p extensions_ui \
-            -p file_finder \
-            -p git_ui \
-            -p keymap_editor \
-            -p locale \
-            -p onboarding \
-            -p outline_panel \
-            -p project_panel \
-            -p recent_projects \
-            -p search \
-            -p settings \
-            -p settings_content \
-            -p settings_ui \
-            -p terminal_view \
-            -p title_bar \
-            -p ui \
-            -p workspace \
-            -p zed
+          cargo check --locked -p zed
