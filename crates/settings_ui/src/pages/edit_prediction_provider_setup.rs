@@ -129,7 +129,8 @@ fn render_provider_dropdown(window: &mut Window, cx: &mut App) -> AnyElement {
     let current_provider = AllLanguageSettings::get_global(cx)
         .edit_predictions
         .provider;
-    let current_provider_name = current_provider.display_name().unwrap_or("No provider set");
+    let current_provider_name =
+        locale::t(current_provider.display_name().unwrap_or("No provider set"));
 
     let menu = ContextMenu::build(window, cx, move |mut menu, _, cx| {
         let available_providers = get_available_providers(cx);
@@ -155,7 +156,7 @@ fn render_provider_dropdown(window: &mut Window, cx: &mut App) -> AnyElement {
         .id("provider-selector")
         .min_w_0()
         .gap_1p5()
-        .child(SettingsSectionHeader::new("Active Provider").no_padding(true))
+        .child(SettingsSectionHeader::new(locale::t_static("Active Provider")).no_padding(true))
         .child(
             h_flex()
                 .pt_2p5()
@@ -253,7 +254,7 @@ fn render_api_key_provider(
 
     let description = match docs {
         ApiKeyDocs::Custom { message } => div().min_w_0().w_full().child(
-            Label::new(message)
+            Label::new(locale::t(message.as_str()))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
         ),
@@ -294,10 +295,13 @@ fn render_api_key_provider(
                 .disabled(is_from_env_var)
                 .when_some(env_var_name, |this, env_var_name| {
                     this.when(is_from_env_var, |this| {
-                        this.tooltip_label(format!(
-                            "To reset your API key, unset the {} environment variable.",
-                            env_var_name
-                        ))
+                        this.tooltip_label(
+                            locale::t_format(
+                                "To reset your API key, unset the {env_var_name} environment variable.",
+                                &[("{env_var_name}", &env_var_name.to_string())],
+                            )
+                            .to_string(),
+                        )
                     })
                 })
                 .on_click(move |_, _, cx| {
@@ -321,9 +325,9 @@ fn render_api_key_provider(
                         .child(description)
                         .when_some(env_var_name, |this, env_var_name| {
                             this.child({
-                                let label = format!(
-                                    "Or set the {} env var and restart Zed.",
-                                    env_var_name.as_ref()
+                                let label = locale::t_format(
+                                    "Or set the {env_var_name} env var and restart Zed.",
+                                    &[("{env_var_name}", env_var_name.as_ref())],
                                 );
                                 Label::new(label).size(LabelSize::Small).color(Color::Muted)
                             })
