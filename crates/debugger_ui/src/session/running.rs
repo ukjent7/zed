@@ -294,7 +294,7 @@ impl Item for SubView {
         _: &Window,
         cx: &App,
     ) -> AnyElement {
-        let label = Label::new(self.kind.to_shared_string())
+        let label = Label::new(locale::t(&self.kind.to_shared_string()))
             .size(ui::LabelSize::Small)
             .color(params.text_color())
             .line_height_style(ui::LineHeightStyle::UiLabel);
@@ -595,7 +595,11 @@ fn render_debugger_tab_bar(
                     .tooltip({
                         let focus_handle = focus_handle.clone();
                         move |_window, cx| {
-                            let zoomed_text = if zoomed { "Minimize" } else { "Expand" };
+                            let zoomed_text = if zoomed {
+                                locale::t("Minimize")
+                            } else {
+                                locale::t("Expand")
+                            };
                             Tooltip::for_action_in(
                                 zoomed_text,
                                 &ToggleExpandItem,
