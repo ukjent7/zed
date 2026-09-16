@@ -2169,5 +2169,20 @@
   "Link copied to clipboard": "链接已复制到剪贴板",
   "read-only": "只读",
   "disconnected": "已断开",
-  "Call {username}": "呼叫 {username}"
+  "Call {username}": "呼叫 {username}",
+  "Selection Controls": "选区控制",
+  "Editor Controls": "编辑器控制",
+  "You can't toggle edit predictions for this file as it is within the excluded files list.": "无法为此文件切换编辑预测，因为它位于排除文件列表中。",
+  "Inline diagnostics are not available until regular diagnostics are enabled.": "启用常规诊断后才能使用内联诊断。",
+  "Clear Outputs": "清除输出",
+  "Shut Down Kernel": "关闭内核",
+  "Restart Kernel": "重启内核",
+  "REPL Menu": "REPL 菜单",
+  "Select Kernel": "选择内核",
+  "Installing Zed…": "正在安装 Zed…",
+  "Moving Zed to Applications": "正在将 Zed 移动到「应用程序」",
+  "Zed will reopen when installation is complete.": "安装完成后 Zed 会重新打开。",
+  "Backup and Update": "备份并更新",
+  "Paste a URL to open.": "粘贴要打开的网址。",
+  "Invalid user settings file\n{error}": "用户设置文件无效\n{error}"
 }
