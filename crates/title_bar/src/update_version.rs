@@ -145,8 +145,6 @@ mod tests {
 
     #[test]
     fn test_version_tooltip_message() {
-        // Tooltip messages below are asserted in English.
-        locale::set_language(locale::Language::English);
         let message = UpdateVersion::version_tooltip_message(&Version::new(1, 0, 0));
 
         assert_eq!(message, "Update to Version: 1.0.0");
@@ -165,8 +163,6 @@ mod tests {
 
     #[test]
     fn test_downloading_tooltip_message() {
-        // Tooltip messages below are asserted in English.
-        locale::set_language(locale::Language::English);
         let version = Version::new(1, 0, 0);
 
         let message = UpdateButton::downloading_tooltip_message(&version, None);

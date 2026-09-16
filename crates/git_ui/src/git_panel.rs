@@ -9778,9 +9778,6 @@ mod tests {
 
     fn init_test(cx: &mut gpui::TestAppContext) {
         zlog::init_test();
-        // Prompt labels and messages are asserted in English; pin the UI
-        // language so the machine's locale cannot translate them.
-        locale::set_language(locale::Language::English);
 
         cx.update(|cx| {
             let settings_store = SettingsStore::test(cx);

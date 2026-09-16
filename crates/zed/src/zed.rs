@@ -18,8 +18,45 @@ pub(crate) mod windows_only_instance;
 use agent_settings::{UserAgentsMdState, init_user_agents_md};
 use agent_ui::AgentDiffToolbar;
 use anyhow::Context as _;
-pub use app_menus::*;
 use assets::Assets;
+
+pub fn app_menus(cx: &mut App) -> Vec<Menu> {
+    localize_menus(app_menus::app_menus(cx))
+}
+
+fn localize_menu_item(item: MenuItem) -> MenuItem {
+    match item {
+        MenuItem::Action {
+            name,
+            action,
+            os_action,
+            checked,
+            disabled,
+        } => MenuItem::Action {
+            name: locale::t(&name),
+            action,
+            os_action,
+            checked,
+            disabled,
+        },
+        MenuItem::Submenu(menu) => MenuItem::Submenu(localize_menu(menu)),
+        MenuItem::SystemMenu(mut os_menu) => {
+            os_menu.name = locale::t(&os_menu.name);
+            MenuItem::SystemMenu(os_menu)
+        }
+        MenuItem::Separator => MenuItem::Separator,
+    }
+}
+
+fn localize_menu(mut menu: Menu) -> Menu {
+    menu.name = locale::t(&menu.name);
+    menu.items = menu.items.into_iter().map(localize_menu_item).collect();
+    menu
+}
+
+fn localize_menus(menus: impl IntoIterator<Item = Menu>) -> Vec<Menu> {
+    menus.into_iter().map(localize_menu).collect()
+}
 
 use breadcrumbs::Breadcrumbs;
 use client::zed_urls;
@@ -40,10 +77,10 @@ use git_ui::staged_diff::StagedDiffToolbar;
 use git_ui::unstaged_diff::UnstagedDiffToolbar;
 use gpui::{
     Action, App, AppContext as _, AsyncWindowContext, ClipboardItem, Context, DismissEvent,
-    Element, Entity, FocusHandle, Focusable, Image, ImageFormat, KeyBinding, ParentElement,
-    PathPromptOptions, PromptLevel, ReadGlobal, SharedString, Size, Task, TaskExt, TitlebarOptions,
-    UpdateGlobal, WeakEntity, Window, WindowBounds, WindowHandle, WindowKind, WindowOptions,
-    actions, image_cache, img, point, px, retain_all,
+    Element, Entity, FocusHandle, Focusable, Image, ImageFormat, KeyBinding, Menu, MenuItem,
+    ParentElement, PathPromptOptions, PromptLevel, ReadGlobal, SharedString, Size, Task, TaskExt,
+    TitlebarOptions, UpdateGlobal, WeakEntity, Window, WindowBounds, WindowHandle, WindowKind,
+    WindowOptions, actions, image_cache, img, point, px, retain_all,
 };
 use image_viewer::ImageInfo;
 use language::Capability;
@@ -72,9 +109,10 @@ use rope::Rope;
 use search::project_search::ProjectSearchBar;
 use settings::{
     BaseKeymap, DEFAULT_KEYMAP_PATH, DefaultOpenBehavior, InvalidSettingsError, KeybindSource,
-    KeymapFile, KeymapFileLoadResult, MigrationStatus, SPECIFIC_OVERRIDES_KEYMAP_PATH, Settings,
-    SettingsFile, SettingsStore, VIM_KEYMAP_PATH, initial_local_debug_tasks_content,
-    initial_project_settings_content, initial_tasks_content, update_settings_file,
+    KeymapFile, KeymapFileLoadResult, LanguageSetting, MigrationStatus,
+    SPECIFIC_OVERRIDES_KEYMAP_PATH, Settings, SettingsFile, SettingsStore, VIM_KEYMAP_PATH,
+    initial_local_debug_tasks_content, initial_project_settings_content, initial_tasks_content,
+    update_settings_file,
 };
 use sidebar::Sidebar;
 #[cfg(debug_assertions)]
@@ -2136,14 +2174,16 @@ pub fn handle_keymap_file_changes(
     let mut old_vim_enabled = VimModeSetting::get_global(cx).0;
     let mut old_helix_enabled = vim_mode_setting::HelixModeSetting::get_global(cx).0;
     let mut old_disable_ai = DisableAiSettings::get_global(cx).disable_ai;
+    let mut old_language = *LanguageSetting::get_global(cx);
 
     cx.observe_global::<SettingsStore>(move |cx| {
         let new_base_keymap = *BaseKeymap::get_global(cx);
         let new_vim_enabled = VimModeSetting::get_global(cx).0;
         let new_helix_enabled = vim_mode_setting::HelixModeSetting::get_global(cx).0;
         let new_disable_ai = DisableAiSettings::get_global(cx).disable_ai;
+        let new_language = *LanguageSetting::get_global(cx);
 
-        if new_disable_ai != old_disable_ai {
+        if new_disable_ai != old_disable_ai || new_language != old_language {
             reload_menus(cx);
         }
 
@@ -2151,11 +2191,13 @@ pub fn handle_keymap_file_changes(
             || new_vim_enabled != old_vim_enabled
             || new_helix_enabled != old_helix_enabled
             || new_disable_ai != old_disable_ai
+            || new_language != old_language
         {
             old_base_keymap = new_base_keymap;
             old_vim_enabled = new_vim_enabled;
             old_helix_enabled = new_helix_enabled;
             old_disable_ai = new_disable_ai;
+            old_language = new_language;
 
             base_keymap_tx.unbounded_send(()).unwrap();
         }
@@ -2334,7 +2376,7 @@ fn reload_keymaps(cx: &mut App, mut user_key_bindings: Vec<KeyBinding>) {
     // On Windows, this is set in the `update_jump_list` method of the `HistoryManager`.
     #[cfg(not(target_os = "windows"))]
     cx.set_dock_menu(vec![gpui::MenuItem::action(
-        "New Window",
+        locale::t("New Window"),
         workspace::NewWindow,
     )]);
     // todo: nicer api here?

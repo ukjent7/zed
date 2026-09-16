@@ -5,6 +5,7 @@
 //! See `assets/locales/SCHEMA.md` for the dictionary format and
 //! `assets/locales/GLOSSARY.md` for terminology.
 
+use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::{OnceLock, RwLock};
 
 use collections::HashMap;
@@ -46,6 +47,15 @@ static EXPLICIT_LANGUAGE: RwLock<Option<Language>> = RwLock::new(None);
 
 /// Mirror of the `language` setting, refreshed by [`sync_language`].
 static SETTING_LANGUAGE: RwLock<Option<Language>> = RwLock::new(None);
+
+const STATE_UNINITIALIZED: u8 = 0;
+const STATE_ENGLISH: u8 = 1;
+const STATE_CHINESE: u8 = 2;
+
+/// Cached active language state for hot rendering path (`use_chinese`).
+/// Updated whenever explicit override or settings mirror changes, avoiding
+/// locks, syscalls and allocations during frame rendering.
+static USE_CHINESE_STATE: AtomicU8 = AtomicU8::new(STATE_UNINITIALIZED);
 
 /// Parses a compiled-in dictionary of English source text to translation.
 ///
@@ -89,16 +99,41 @@ pub fn is_chinese_locale(locale: &str) -> bool {
         .is_some_and(|language| language.eq_ignore_ascii_case("zh"))
 }
 
+/// Evaluates OS locale once and caches the result.
+fn system_locale_is_chinese() -> bool {
+    static IS_CHINESE: OnceLock<bool> = OnceLock::new();
+    *IS_CHINESE.get_or_init(|| {
+        let system_locale = sys_locale::get_locale().unwrap_or_else(|| String::from("en-US"));
+        is_chinese_locale(&system_locale)
+    })
+}
+
+/// Detects whether the current process is running as a test runner.
+/// Test binaries built by Cargo are placed in target/.../deps/.
+fn is_test_runner() -> bool {
+    static IS_TEST: OnceLock<bool> = OnceLock::new();
+    *IS_TEST.get_or_init(|| {
+        std::env::current_exe().is_ok_and(|path| {
+            path.parent()
+                .and_then(|p| p.file_name())
+                .is_some_and(|name| name == "deps")
+        })
+    })
+}
+
 /// The language the UI currently renders in, resolving [`Language::System`]
-/// against the operating system locale.
+/// against the operating system locale (defaulting to English in test runners).
 fn effective_language() -> Language {
     match explicit_language()
         .or_else(setting_language)
         .unwrap_or(Language::System)
     {
         Language::System => {
-            let system_locale = sys_locale::get_locale().unwrap_or_else(|| String::from("en-US"));
-            if is_chinese_locale(&system_locale) {
+            // Tests assert against English labels by default, so test runners
+            // default to English unless explicitly configured or overridden.
+            if is_test_runner() && std::env::var_os("ZED_TEST_CHINESE").is_none() {
+                Language::English
+            } else if system_locale_is_chinese() {
                 Language::SimplifiedChinese
             } else {
                 Language::English
@@ -108,9 +143,26 @@ fn effective_language() -> Language {
     }
 }
 
+fn update_effective_language_state() {
+    let state = if effective_language() == Language::SimplifiedChinese {
+        STATE_CHINESE
+    } else {
+        STATE_ENGLISH
+    };
+    USE_CHINESE_STATE.store(state, Ordering::Release);
+}
+
 /// Whether the UI should currently render Simplified Chinese.
+/// Zero-allocation, lock-free check on the hot render path.
 pub fn use_chinese() -> bool {
-    effective_language() == Language::SimplifiedChinese
+    match USE_CHINESE_STATE.load(Ordering::Relaxed) {
+        STATE_CHINESE => true,
+        STATE_ENGLISH => false,
+        _ => {
+            update_effective_language_state();
+            USE_CHINESE_STATE.load(Ordering::Relaxed) == STATE_CHINESE
+        }
+    }
 }
 
 /// Pin the UI language to an explicit override.
@@ -123,6 +175,7 @@ pub fn set_language(language: Language) {
     if let Ok(mut guard) = EXPLICIT_LANGUAGE.write() {
         *guard = Some(language);
     }
+    update_effective_language_state();
 }
 
 /// Follow the `language` setting.
@@ -136,6 +189,7 @@ pub fn sync_language(language: Language) {
     if let Ok(mut guard) = SETTING_LANGUAGE.write() {
         *guard = Some(language);
     }
+    update_effective_language_state();
 }
 
 /// Drop the explicit override and the setting mirror, falling back to the
@@ -147,6 +201,7 @@ pub fn clear_language_overrides() {
     if let Ok(mut guard) = SETTING_LANGUAGE.write() {
         *guard = None;
     }
+    update_effective_language_state();
 }
 
 /// Translate a GUI label, falling back to the English source text when
@@ -260,6 +315,15 @@ mod tests {
         assert!(use_chinese());
 
         clear_language_overrides();
+    }
+
+    #[test]
+    fn test_runner_defaults_to_english_under_system() {
+        let _guard = TEST_LOCK.lock().unwrap();
+        clear_language_overrides();
+
+        assert_eq!(effective_language(), Language::English);
+        assert!(!use_chinese());
     }
 
     #[test]

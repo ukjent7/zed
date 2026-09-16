@@ -12010,9 +12010,6 @@ async fn test_focus_follows_mouse_into_blank_area(cx: &mut gpui::TestAppContext)
 }
 
 pub(crate) fn init_test(cx: &mut TestAppContext) {
-    // Prompt labels and messages are asserted in English; pin the UI language
-    // so the machine's locale cannot translate them.
-    locale::set_language(locale::Language::English);
     cx.update(|cx| {
         let settings_store = SettingsStore::test(cx);
         cx.set_global(settings_store);
@@ -12034,8 +12031,6 @@ pub(crate) fn init_test(cx: &mut TestAppContext) {
 }
 
 fn init_test_with_editor(cx: &mut TestAppContext) {
-    // Prompt labels are asserted in English (see `submit_deletion`).
-    locale::set_language(locale::Language::English);
     cx.update(|cx| {
         let app_state = AppState::test(cx);
         theme_settings::init(theme::LoadThemes::JustBase, cx);

@@ -2159,9 +2159,6 @@ mod tests {
     use workspace::MultiWorkspace;
 
     fn init_test(cx: &mut TestAppContext) {
-        // Prompt buttons are answered by their English labels below; pin the
-        // UI language so the machine's locale cannot translate them.
-        locale::set_language(locale::Language::English);
         cx.update(|cx| {
             let settings_store = SettingsStore::test(cx);
             cx.set_global(settings_store);
