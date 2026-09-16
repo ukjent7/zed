@@ -150,7 +150,7 @@ impl SectionEntry {
     fn render(&self, button_index: usize, focus: &FocusHandle) -> Option<impl IntoElement> {
         self.visibility_guard.is_visible().then(|| {
             SectionButton::new(
-                self.title,
+                locale::t_static(self.title),
                 self.icon,
                 self.action,
                 button_index,
@@ -227,7 +227,7 @@ impl<const COLS: usize> Section<COLS> {
     fn render(self, index_offset: usize, focus: &FocusHandle) -> impl IntoElement {
         v_flex()
             .min_w_full()
-            .child(SectionHeader::new(self.title))
+            .child(SectionHeader::new(locale::t_static(self.title)))
             .children(
                 self.entries
                     .iter()
@@ -351,16 +351,16 @@ impl WelcomePage {
                             .color(Color::Muted)
                             .size(IconSize::Small),
                     )
-                    .child(Label::new("Collaborate with Agents")),
+                    .child(Label::new(locale::t_static("Collaborate with Agents"))),
             )
             .child(
-                Label::new(description)
+                Label::new(locale::t_static(description))
                     .size(LabelSize::Small)
                     .color(Color::Muted)
                     .mb_2(),
             )
             .child(
-                Button::new("open-agent", "Open Agent Panel")
+                Button::new("open-agent", locale::t_static("Open Agent Panel"))
                     .full_width()
                     .tab_index(tab_index as isize)
                     .style(ButtonStyle::Outlined)
@@ -381,7 +381,7 @@ impl WelcomePage {
     ) -> impl IntoElement {
         v_flex()
             .w_full()
-            .child(SectionHeader::new("Recent Projects"))
+            .child(SectionHeader::new(locale::t_static("Recent Projects")))
             .children(recent_projects)
     }
 
@@ -448,9 +448,9 @@ impl Render for WelcomePage {
         };
 
         let welcome_label = if self.fallback_to_recent_projects {
-            "Welcome back to Zed"
+            locale::t_static("Welcome back to Zed")
         } else {
-            "Welcome to Zed"
+            locale::t_static("Welcome to Zed")
         };
 
         h_flex()
@@ -480,7 +480,7 @@ impl Render for WelcomePage {
                             .child(Vector::square(VectorName::ZedLogo, rems_from_px(45_f32)))
                             .child(
                                 v_flex().child(Headline::new(welcome_label)).child(
-                                    Label::new("The editor for what's next")
+                                    Label::new(locale::t_static("The editor for what's next"))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted)
                                         .italic(),
@@ -497,13 +497,16 @@ impl Render for WelcomePage {
                     .when(!self.fallback_to_recent_projects, |this| {
                         this.child(
                             v_flex().gap_4().child(Divider::horizontal()).child(
-                                Button::new("welcome-exit", "Return to Onboarding")
-                                    .tab_index(next_tab_index as isize)
-                                    .full_width()
-                                    .label_size(LabelSize::XSmall)
-                                    .on_click(|_, window, cx| {
-                                        window.dispatch_action(OpenOnboarding.boxed_clone(), cx);
-                                    }),
+                                Button::new(
+                                    "welcome-exit",
+                                    locale::t_static("Return to Onboarding"),
+                                )
+                                .tab_index(next_tab_index as isize)
+                                .full_width()
+                                .label_size(LabelSize::XSmall)
+                                .on_click(|_, window, cx| {
+                                    window.dispatch_action(OpenOnboarding.boxed_clone(), cx);
+                                }),
                             ),
                         )
                     }),
@@ -523,7 +526,7 @@ impl Item for WelcomePage {
     type Event = ItemEvent;
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Welcome".into()
+        locale::t_static("Welcome")
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -660,7 +663,7 @@ fn project_name(paths: &PathList) -> String {
         .collect::<Vec<_>>()
         .join(", ");
     if joined.is_empty() {
-        "Untitled".to_string()
+        locale::t_static("Untitled").to_string()
     } else {
         joined
     }

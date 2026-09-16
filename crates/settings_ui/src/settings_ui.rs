@@ -1225,12 +1225,12 @@ impl SettingsPageItem {
                                 .relative()
                                 .w_full()
                                 .max_w_1_2()
-                                .child(Label::new(sub_page_link.title.clone()))
+                                .child(Label::new(locale::t(sub_page_link.title.as_str())))
                                 .when_some(
                                     sub_page_link.description.as_ref(),
                                     |this, description| {
                                         this.child(
-                                            Label::new(description.clone())
+                                            Label::new(locale::t(description.as_str()))
                                                 .size(LabelSize::Small)
                                                 .color(Color::Muted),
                                         )
@@ -1245,7 +1245,10 @@ impl SettingsPageItem {
                             .aria_label(
                                 locale::t_format(
                                     "Configure {title}",
-                                    &[("{title}", sub_page_link.title.as_str())],
+                                    &[(
+                                        "{title}",
+                                        locale::t(sub_page_link.title.as_str()).as_str(),
+                                    )],
                                 )
                                 .to_string(),
                             )
@@ -1367,12 +1370,12 @@ impl SettingsPageItem {
                                 .relative()
                                 .w_full()
                                 .max_w_1_2()
-                                .child(Label::new(action_link.title.clone()))
+                                .child(Label::new(locale::t(action_link.title.as_str())))
                                 .when_some(
                                     action_link.description.as_ref(),
                                     |this, description| {
                                         this.child(
-                                            Label::new(description.clone())
+                                            Label::new(locale::t(description.as_str()))
                                                 .size(LabelSize::Small)
                                                 .color(Color::Muted),
                                         )
@@ -1382,7 +1385,7 @@ impl SettingsPageItem {
                         .child(
                             Button::new(
                                 ("action-link".into(), action_link.title.clone()),
-                                action_link.button_text.clone(),
+                                locale::t(action_link.button_text.as_str()),
                             )
                             .tab_index(0_isize)
                             .end_icon(
@@ -1410,6 +1413,10 @@ impl SettingsPageItem {
 ///
 /// Renders title + description on the left, control on the right, with
 /// optional reset button and copy-link icon.
+///
+/// `title` and `description` stay English at the call sites (they double as
+/// element ids and as the dictionary key); only the rendered labels are
+/// translated, so switching language never remounts a row.
 fn render_settings_item_layout(
     settings_window: &SettingsWindow,
     title: &'static str,
@@ -1439,7 +1446,7 @@ fn render_settings_item_layout(
                     h_flex()
                         .w_full()
                         .gap_1()
-                        .child(Label::new(SharedString::new_static(title)))
+                        .child(Label::new(locale::t_static(title)))
                         .when_some(reset_fn, |this, reset_to_default| {
                             this.child(
                                 IconButton::new("reset-to-default-btn", IconName::Undo)
@@ -1467,7 +1474,7 @@ fn render_settings_item_layout(
                         }),
                 )
                 .child(
-                    Label::new(SharedString::new_static(description))
+                    Label::new(locale::t_static(description))
                         .size(LabelSize::Small)
                         .color(Color::Muted)
                         .render_code_spans(),
@@ -3572,7 +3579,7 @@ impl SettingsWindow {
                     ),
                     "/".into(),
                 )
-                .map(|item| Label::new(item).color(Color::Muted)),
+                .map(|item| Label::new(locale::t(item.as_str())).color(Color::Muted)),
             )
     }
 
@@ -3977,7 +3984,7 @@ impl SettingsWindow {
                             .child(Label::new("Restricted Mode"))
                             .child(
                                 Label::new(
-                                    "This project is in restricted mode. Some project settings may not apply.",
+                                    locale::t("This project is in restricted mode. Some project settings may not apply."),
                                 )
                                 .size(LabelSize::Small)
                                 .color(Color::Muted),

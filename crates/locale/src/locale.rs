@@ -219,6 +219,24 @@ pub fn t(key: &str) -> SharedString {
         .unwrap_or_else(|| SharedString::from(key))
 }
 
+/// Translate a GUI label whose English source is statically known.
+///
+/// Same result as [`t`], but the fallback reuses the `'static` allocation
+/// instead of copying the key. [`t`] cannot do this: a `&str` parameter does
+/// not tell it whether the caller's text is static, so an untranslated key
+/// allocates on every call. Prefer `t_static` for string literals and for
+/// `&'static str` fields rendered once per frame — setting descriptions in
+/// the settings UI run into hundreds of calls per frame, all long enough to
+/// leave `SmolStr`'s inline capacity.
+pub fn t_static(key: &'static str) -> SharedString {
+    if use_chinese()
+        && let Some(translated) = dictionary().get(key)
+    {
+        return translated.clone();
+    }
+    SharedString::new_static(key)
+}
+
 /// Translate a GUI label containing `{placeholder}` slots, substituting each
 /// pair after lookup. Every occurrence of a placeholder is replaced.
 /// Falls back to the English source text like [`t`].

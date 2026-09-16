@@ -244,7 +244,7 @@ fn render_empty_state(border_color: gpui::Hsla) -> AnyElement {
         .border_dashed()
         .border_color(border_color)
         .child(
-            Label::new("Nothing configured")
+            Label::new(locale::t("Nothing configured"))
                 .size(LabelSize::Small)
                 .color(Color::Disabled),
         )
@@ -265,7 +265,7 @@ fn render_host_row(index: usize, host: String, cx: &mut Context<SettingsWindow>)
             IconButton::new(format!("sandbox-host-delete-{}", index), IconName::Trash)
                 .icon_size(IconSize::Small)
                 .icon_color(Color::Muted)
-                .tooltip(Tooltip::text("Remove Domain"))
+                .tooltip(Tooltip::text(locale::t("Remove Domain")))
                 .on_click(cx.listener(move |_, _, _, cx| {
                     remove_network_host(host_for_delete.clone(), cx);
                 })),
@@ -348,7 +348,7 @@ fn render_path_row(index: usize, path: PathBuf, cx: &mut Context<SettingsWindow>
             IconButton::new(format!("sandbox-path-delete-{}", index), IconName::Trash)
                 .icon_size(IconSize::Small)
                 .icon_color(Color::Muted)
-                .tooltip(Tooltip::text("Remove Path"))
+                .tooltip(Tooltip::text(locale::t("Remove Path")))
                 .on_click(cx.listener(move |_, _, _, cx| {
                     remove_write_path(path_for_delete.clone(), cx);
                 })),

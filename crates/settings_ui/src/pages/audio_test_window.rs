@@ -219,13 +219,13 @@ impl Render for AudioTestWindow {
             .child(
                 v_flex()
                     .gap_1()
-                    .child(Label::new("Output Device"))
+                    .child(Label::new(locale::t("Output Device")))
                     .child(output_dropdown),
             )
             .child(
                 v_flex()
                     .gap_1()
-                    .child(Label::new("Input Device"))
+                    .child(Label::new(locale::t("Input Device")))
                     .child(input_dropdown),
             )
             .child(

@@ -149,7 +149,7 @@ fn render_skill_row(
             .shape(ui::IconButtonShape::Square)
             .icon_size(IconSize::Small)
             .icon_color(share_icon_color)
-            .tooltip(Tooltip::text("Copy Share Link"))
+            .tooltip(Tooltip::text(locale::t("Copy Share Link")))
             .visible_on_hover(&group)
             .on_click(cx.listener(move |_settings_window, _event, _window, cx| {
                 let skill_file_path = share_skill_file_path.clone();
@@ -219,7 +219,7 @@ fn render_skill_row(
                     )
                     .tab_index(0_isize)
                     .icon_size(IconSize::Small)
-                    .tooltip(Tooltip::text("Delete Skill"))
+                    .tooltip(Tooltip::text(locale::t("Delete Skill")))
                     .on_click(cx.listener(
                         move |settings_window, _event, window, cx| {
                             let directory_path = directory_path.clone();

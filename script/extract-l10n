@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Report GUI strings wrapped in t("...") that lack a zh-CN translation.
+"""Report GUI strings wrapped in t("...")/t_static("...") that lack a
+zh-CN translation.
 
 Read-only by default: prints missing/unused keys and always exits 0.
 With `--strict` it exits 1 when a violation is found, which is how CI runs it.
@@ -57,7 +58,7 @@ BLOCKLIST = (
     "crates/zeta_prompt/",
 )
 
-CALL_PATTERN = re.compile(r'(?<!\w)t(?:_format)?\(\s*"((?:[^"\\]|\\.)*)"', re.DOTALL)
+CALL_PATTERN = re.compile(r'(?<!\w)t(?:_format|_static)?\(\s*"((?:[^"\\]|\\.)*)"', re.DOTALL)
 # Dictionary keys built at runtime via `format!`, so their full text never
 # appears as a string literal for LITERAL_PATTERN to find. Without this list
 # they are misreported as UNUSED (dead) while the UI still resolves them
@@ -74,13 +75,14 @@ KNOWN_FORMAT_KEYS = frozenset(
         "Dock Bottom",
     }
 )
-# t()/t_format() calls whose argument is not a string literal (variable,
-# match/if expression). Their runtime values cannot be extracted statically,
+# t()/t_format()/t_static() calls whose argument is not a string literal
+# (variable, match/if expression). Their runtime values cannot be extracted
+# statically,
 # so they are listed for manual audit instead of entering missing/unused.
 # (Allows newlines between `(` and a literal, so multi-line calls whose key
 # is on the next line are not misreported; skips the fn definitions in
 # crates/locale itself.)
-DYNAMIC_PATTERN = re.compile(r"(?<!\w)(?<!fn )(?<!\$)t(?:_format)?\(\s*(?!\s*\")")
+DYNAMIC_PATTERN = re.compile(r"(?<!\w)(?<!fn )(?<!\$)t(?:_format|_static)?\(\s*(?!\s*\")")
 # DOTALL: `\\.` must also match a `\` + newline line continuation inside a
 # string literal, or pairing silently derails for the rest of the file.
 LITERAL_PATTERN = re.compile(r'"((?:[^"\\]|\\.)*)"', re.DOTALL)

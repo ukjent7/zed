@@ -50,9 +50,11 @@ pub(crate) fn render_external_agents_page(
         .overflow_y_scroll()
         .child(Label::new("External Agents"))
         .child(
-            Label::new("Agents connected through the Agent Client Protocol.")
-                .size(LabelSize::Small)
-                .color(Color::Muted),
+            Label::new(locale::t(
+                "Agents connected through the Agent Client Protocol.",
+            ))
+            .size(LabelSize::Small)
+            .color(Color::Muted),
         )
         .child(agent_list)
         .into_any_element()
@@ -117,9 +119,11 @@ fn render_empty_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new("No external agents added yet. Click \"Add Agent\" to get started.")
-                .color(Color::Muted)
-                .size(LabelSize::Small),
+            Label::new(locale::t(
+                "No external agents added yet. Click \"Add Agent\" to get started.",
+            ))
+            .color(Color::Muted)
+            .size(LabelSize::Small),
         )
         .into_any_element()
 }
@@ -133,9 +137,11 @@ fn render_no_project_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new("No active project found. Open a workspace to manage external agents.")
-                .color(Color::Muted)
-                .size(LabelSize::Small),
+            Label::new(locale::t(
+                "No active project found. Open a workspace to manage external agents.",
+            ))
+            .color(Color::Muted)
+            .size(LabelSize::Small),
         )
         .into_any_element()
 }
@@ -182,7 +188,7 @@ fn render_agent(
             .icon_size(IconSize::Small)
             .size(ButtonSize::Medium)
             .tab_index(0isize)
-            .tooltip(Tooltip::text("Configure Agent"))
+            .tooltip(Tooltip::text(locale::t("Configure Agent")))
             .on_click(cx.listener({
                 let id = id.clone();
                 move |this, _event, window, cx| {
@@ -436,7 +442,7 @@ fn new_input(
     let initial = initial.map(|text| text.to_string());
     cx.new(|cx| {
         let mut editor = Editor::single_line(window, cx);
-        editor.set_placeholder_text(placeholder.as_str(), window, cx);
+        editor.set_placeholder_text(locale::t(placeholder.as_str()).as_str(), window, cx);
         if let Some(text) = initial {
             editor.set_text(text, window, cx);
         }
