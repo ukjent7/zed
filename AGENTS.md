@@ -1,5 +1,6 @@
 Rust/GPUI 代码规范见 `.rules`（上游的 AGENTS.md 是指向它的符号链接，本 fork 改用普通文件承载下面的规则，故需手动引用）。
 合并上游后若 `.rules` 有更新，需手动合入本文件；本文件在 git 中必须保持普通文件模式（100644），若变成 symlink 模式（120000）会导致 Linux 下检出为断链。
+本 fork 豁免上游 `.rules` 中的 README 横幅 HARD RULE：改源码时不在 `README.md` 加横幅，质量门槛由 `fork_ci` / `fork_check` 等承担（上游该规则为多贡献者 PR 送审模式设计，与本 fork 直接 push 到 main 的流程不契合）。
 
 # 严禁未经用户允许私自安装任何依赖、程序或者环境
 本机有 Rust 环境，但请勿尝试编译（项目太大、依赖太多）
