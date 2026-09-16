@@ -1667,7 +1667,7 @@ fn open_about_window(cx: &mut App) {
                                 .child(Label::new(commit).size(LabelSize::Small))
                             })
                             .child(
-                                Label::new("Version")
+                                Label::new(locale::t("Version"))
                                     .color(Color::Muted)
                                     .size(LabelSize::XSmall),
                             )
