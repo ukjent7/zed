@@ -33,6 +33,9 @@
 | Watch | 监视 | 调试语境 |
 | Task | 任务 | tasks.json 的任务 |
 | Snippet | 代码片段 | |
+| Language Server | 语言服务器 | 扩展能力标签沿用 |
+| Debug Adapter | 调试适配器 | 扩展能力标签沿用 |
+| Remote Project | 远程项目 | 标题栏远程连接 tooltip |
 | Completion | 补全 | |
 | Hover | 悬停 | |
 | Definition | 定义 | |
@@ -59,6 +62,7 @@
 | Selection | 选区 | |
 | Cursor | 光标 | |
 | Fold | 折叠 | |
+| Unfold | 展开 | 与 Fold 配对 |
 | Format | 格式化 | |
 | Session | 会话 | |
 | Profile | 配置方案 | 设置配置方案 |

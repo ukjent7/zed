@@ -39,6 +39,13 @@ BLOCKLIST = (
 )
 
 CALL_PATTERN = re.compile(r'(?<!\w)t(?:_format)?\(\s*"((?:[^"\\]|\\.)*)"')
+# t()/t_format() calls whose argument is not a string literal (variable,
+# match/if expression). Their runtime values cannot be extracted statically,
+# so they are listed for manual audit instead of entering missing/unused.
+# (Allows newlines between `(` and a literal, so multi-line calls whose key
+# is on the next line are not misreported; skips the fn definitions in
+# crates/locale itself.)
+DYNAMIC_PATTERN = re.compile(r"(?<!\w)(?<!fn )(?<!\$)t(?:_format)?\(\s*(?!\s*\")")
 MAX_LISTED = 50
 
 # Rust string escapes that may appear inside t("...") keys.
@@ -76,6 +83,7 @@ def repo_root() -> Path:
 def main() -> int:
     root = repo_root()
     used: set[str] = set()
+    dynamic: set[str] = set()
     for path in sorted((root / "crates").rglob("*.rs")):
         rel = path.relative_to(root).as_posix() + "/"
         if rel.startswith(BLOCKLIST):
@@ -88,6 +96,9 @@ def main() -> int:
             key = decode_source_key(match.group(1))
             if key:
                 used.add(key)
+        for match in DYNAMIC_PATTERN.finditer(text):
+            line = text.count("\n", 0, match.start()) + 1
+            dynamic.add(f"{rel.rstrip('/')}:{line}")
 
     dictionary_path = root / "assets" / "locales" / "zh-CN.json"
     translated = set(json.loads(dictionary_path.read_text(encoding="utf-8")).keys())
@@ -101,6 +112,10 @@ def main() -> int:
     print(f"unused: {len(unused)}")
     for key in unused[:MAX_LISTED]:
         print(f"  UNUSED   {key}")
+    dynamic_sorted = sorted(dynamic)
+    print(f"dynamic: {len(dynamic_sorted)}")
+    for site in dynamic_sorted[:MAX_LISTED]:
+        print(f"  DYNAMIC  {site}")
     return 0
 
 
