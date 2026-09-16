@@ -851,7 +851,7 @@ impl Sidebar {
 
         let filter_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Search threads…", window, cx);
+            editor.set_placeholder_text(locale::t("Search threads…").as_str(), window, cx);
             editor
         });
         let rename_editor = cx.new(|cx| Editor::single_line(window, cx));
@@ -2513,7 +2513,7 @@ impl Sidebar {
                             Color::Custom(cx.theme().colors().icon_placeholder.opacity(0.1)),
                         ))
                         .child(
-                            Label::new("No threads yet")
+                            Label::new(locale::t("No threads yet"))
                                 .size(LabelSize::Small)
                                 .color(Color::Placeholder),
                         ),
@@ -2559,7 +2559,12 @@ impl Sidebar {
             let key = key.clone();
             return button
                 .tooltip(move |_, cx| {
-                    Tooltip::for_action_in("Start New Agent Thread", &NewThread, &focus_handle, cx)
+                    Tooltip::for_action_in(
+                        locale::t("Start New Agent Thread"),
+                        &NewThread,
+                        &focus_handle,
+                        cx,
+                    )
                 })
                 .on_click(cx.listener(move |this, _, window, cx| {
                     this.set_group_expanded(&key, true, cx);
@@ -2586,7 +2591,12 @@ impl Sidebar {
         )))
         .with_handle(menu_handle)
         .trigger_with_tooltip(button, move |_, cx| {
-            Tooltip::for_action_in("Start New Agent Thread", &NewThread, &focus_handle, cx)
+            Tooltip::for_action_in(
+                locale::t("Start New Agent Thread"),
+                &NewThread,
+                &focus_handle,
+                cx,
+            )
         })
         .anchor(gpui::Anchor::TopLeft)
         .on_open(Rc::new({
@@ -2617,7 +2627,7 @@ impl Sidebar {
                 window,
                 cx,
                 move |mut menu, _window, cx| {
-                    menu = menu.header("New Thread In…");
+                    menu = menu.header(locale::t("New Thread In…"));
 
                     for (workspace, labels) in open_workspaces
                         .iter()
@@ -2994,7 +3004,7 @@ impl Sidebar {
                         let menu = if open_workspaces.is_empty() {
                             menu
                         } else {
-                            let mut menu = menu.separator().header("Open Worktrees");
+                            let mut menu = menu.separator().header(locale::t("Open Worktrees"));
 
                             for (
                                 workspace_index,
@@ -3062,7 +3072,9 @@ impl Sidebar {
                                                     )
                                                     .icon_size(IconSize::Small)
                                                     .visible_on_hover(&row_group_name)
-                                                    .tooltip(Tooltip::text("Close Worktree"))
+                                                    .tooltip(Tooltip::text(locale::t(
+                                                        "Close Worktree",
+                                                    )))
                                                     .on_click(move |_, window, cx| {
                                                         cx.stop_propagation();
                                                         window.prevent_default();
@@ -3119,7 +3131,7 @@ impl Sidebar {
 
                             this.separator()
                                 .item(
-                                    ContextMenuEntry::new("Move Up")
+                                    ContextMenuEntry::new(locale::t("Move Up"))
                                         .action(Box::new(MoveProjectUp))
                                         .disabled(!can_move_up)
                                         .handler(move |_window, cx| {
@@ -3134,7 +3146,7 @@ impl Sidebar {
                                         }),
                                 )
                                 .item(
-                                    ContextMenuEntry::new("Move Down")
+                                    ContextMenuEntry::new(locale::t("Move Down"))
                                         .action(Box::new(MoveProjectDown))
                                         .disabled(!can_move_down)
                                         .handler(move |_window, cx| {
@@ -6319,7 +6331,7 @@ impl Sidebar {
                         let focus_handle = focus_handle.clone();
                         move |_window, cx| {
                             Tooltip::for_action_in(
-                                "Rename Thread",
+                                locale::t("Rename Thread"),
                                 &RenameSelectedThread,
                                 &focus_handle,
                                 cx,
@@ -6345,7 +6357,7 @@ impl Sidebar {
                             .icon_size(IconSize::Small)
                             .icon_color(Color::Error)
                             .style(ButtonStyle::Tinted(TintColor::Error))
-                            .tooltip(Tooltip::text("Stop Generation"))
+                            .tooltip(Tooltip::text(locale::t("Stop Generation")))
                             .on_click(cx.listener(move |this, _, _window, cx| {
                                 this.stop_thread(&thread_id_for_actions, cx);
                             }))
@@ -6357,7 +6369,7 @@ impl Sidebar {
                         Some(DraftKind::WithContent) => Some(
                             IconButton::new("discard_thread", IconName::Close)
                                 .icon_size(IconSize::Small)
-                                .tooltip(Tooltip::text("Discard Draft"))
+                                .tooltip(Tooltip::text(locale::t("Discard Draft")))
                                 .on_click({
                                     let thread_workspace = thread_workspace.clone();
                                     cx.listener(move |this, _, window, cx| {
@@ -6378,7 +6390,7 @@ impl Sidebar {
                                     let focus_handle = focus_handle.clone();
                                     move |_window, cx| {
                                         Tooltip::for_action_in(
-                                            "Archive Thread",
+                                            locale::t("Archive Thread"),
                                             &ArchiveSelectedThread,
                                             &focus_handle,
                                             cx,
@@ -6625,7 +6637,7 @@ impl Sidebar {
                             let focus_handle = focus_handle.clone();
                             move |_window, cx| {
                                 Tooltip::for_action_in(
-                                    "Close Terminal",
+                                    locale::t("Close Terminal"),
                                     &ArchiveSelectedThread,
                                     &focus_handle,
                                     cx,
@@ -6729,7 +6741,9 @@ impl Sidebar {
                 IconButton::new("open-project", IconName::FolderAdd)
                     .icon_size(IconSize::Small)
                     .selected_style(ButtonStyle::Tinted(TintColor::Accent)),
-                |_window, cx| Tooltip::for_action("Add Project", &OpenRecent::default(), cx),
+                |_window, cx| {
+                    Tooltip::for_action(locale::t("Add Project"), &OpenRecent::default(), cx)
+                },
             )
             .offset(gpui::Point {
                 x: px(-2.0),
@@ -7386,7 +7400,7 @@ impl Sidebar {
                                 this.child(
                                     IconButton::new("clear_filter", IconName::Close)
                                         .icon_size(IconSize::Small)
-                                        .tooltip(Tooltip::text("Clear Search"))
+                                        .tooltip(Tooltip::text(locale::t("Clear Search")))
                                         .on_click(cx.listener(|this, _, window, cx| {
                                             this.reset_filter_editor_text(window, cx);
                                             this.update_entries(cx);
@@ -7445,7 +7459,7 @@ impl Sidebar {
                                 h_flex()
                                     .gap_2()
                                     .justify_between()
-                                    .child(Label::new("Toggle Sidebar"))
+                                    .child(Label::new(locale::t("Toggle Sidebar")))
                                     .child(KeyBinding::for_action(&ToggleWorkspaceSidebar, cx)),
                             )
                             .child(
@@ -7455,7 +7469,7 @@ impl Sidebar {
                                     .border_t_1()
                                     .border_color(cx.theme().colors().border_variant)
                                     .justify_between()
-                                    .child(Label::new("Focus Sidebar"))
+                                    .child(Label::new(locale::t("Focus Sidebar")))
                                     .child(KeyBinding::for_action(&FocusWorkspaceSidebar, cx)),
                             )
                             .into_any_element()
@@ -7491,7 +7505,7 @@ impl Sidebar {
                         } else {
                             "Show Thread History"
                         };
-                        Tooltip::for_action(label, &ToggleThreadHistory, cx)
+                        Tooltip::for_action(locale::t(label), &ToggleThreadHistory, cx)
                     })
                     .on_click(cx.listener(|this, _, window, cx| {
                         this.toggle_archive(&ToggleThreadHistory, window, cx);
