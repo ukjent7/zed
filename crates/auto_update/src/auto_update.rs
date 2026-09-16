@@ -314,7 +314,8 @@ fn fork_release_repo() -> Option<&'static str> {
 }
 
 /// The asset a fork publishes for this platform, mirroring the names the
-/// `script/bundle-*` scripts produce.
+/// `script/bundle-*` scripts produce (kept in sync with the `matrix.include`
+/// assets in `.github/workflows/fork_release.yml`: only these three are built).
 fn fork_release_asset_name(os: &str, arch: &str) -> Option<&'static str> {
     match (os, arch) {
         ("macos", "aarch64") => Some("Zed-aarch64.dmg"),

@@ -58,6 +58,22 @@ BLOCKLIST = (
 )
 
 CALL_PATTERN = re.compile(r'(?<!\w)t(?:_format)?\(\s*"((?:[^"\\]|\\.)*)"', re.DOTALL)
+# Dictionary keys built at runtime via `format!`, so their full text never
+# appears as a string literal for LITERAL_PATTERN to find. Without this list
+# they are misreported as UNUSED (dead) while the UI still resolves them
+# through the DYNAMIC call sites below. Verified: `dock.rs` builds them as
+# `t(&format!("Close {} Dock", position.label()))` / `t(&format!("Dock {}",
+# position.label()))` with `DockPosition::label()` returning Left/Right/Bottom.
+KNOWN_FORMAT_KEYS = frozenset(
+    {
+        "Close Left Dock",
+        "Close Right Dock",
+        "Close Bottom Dock",
+        "Dock Left",
+        "Dock Right",
+        "Dock Bottom",
+    }
+)
 # t()/t_format() calls whose argument is not a string literal (variable,
 # match/if expression). Their runtime values cannot be extracted statically,
 # so they are listed for manual audit instead of entering missing/unused.
@@ -220,6 +236,11 @@ def main() -> int:
         rel = path.relative_to(root).as_posix() + "/"
         if rel.startswith(BLOCKLIST):
             continue
+        # `crates/locale` defines `t()` itself; its tests call `t("Hello {name}")`
+        # and `t("No Such Translation Key")` as fixtures. Scanning it would report
+        # those fixtures as MISSING translations for real GUI strings.
+        if rel.startswith("crates/locale/"):
+            continue
         try:
             text = path.read_text(encoding="utf-8")
         except OSError:
@@ -240,8 +261,8 @@ def main() -> int:
 
     missing = sorted(used - translated)
     unused = sorted(translated - used)
-    unused_dynamic = [key for key in unused if key in literal_files]
-    unused_dead = [key for key in unused if key not in literal_files]
+    unused_dynamic = [key for key in unused if key in literal_files or key in KNOWN_FORMAT_KEYS]
+    unused_dead = [key for key in unused if key not in literal_files and key not in KNOWN_FORMAT_KEYS]
     print(f"used: {len(used)}, translated: {len(translated)}")
     print(f"missing: {len(missing)}")
     for key in missing[:MAX_LISTED]:
@@ -250,7 +271,7 @@ def main() -> int:
     for key in unused_dead[:MAX_LISTED]:
         print(f"  UNUSED   {key!r}")
     for key in unused_dynamic[:MAX_LISTED]:
-        print(f"  UNUSED-DYNAMIC  {key!r}  ({literal_files[key]})")
+        print(f"  UNUSED-DYNAMIC  {key!r}  ({literal_files.get(key, 'runtime format! key')})")
     violations = blocked_only_keys(root, unused_dead)
     print(f"violations: {len(violations)}")
     for key in violations[:MAX_LISTED]:
