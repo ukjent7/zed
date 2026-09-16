@@ -1814,7 +1814,12 @@ impl PickerDelegate for FileFinderDelegate {
             .icon_size(IconSize::Small)
             .toggle_state(including_ignored)
             .tooltip(move |_window, cx| {
-                Tooltip::for_action_in(tooltip_label, &ToggleIncludeIgnored, &focus_handle, cx)
+                Tooltip::for_action_in(
+                    tooltip_label.clone(),
+                    &ToggleIncludeIgnored,
+                    &focus_handle,
+                    cx,
+                )
             })
             .on_click(|_, window, cx| {
                 window.dispatch_action(ToggleIncludeIgnored.boxed_clone(), cx)
