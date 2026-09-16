@@ -3961,7 +3961,8 @@ impl ProjectPanel {
                                     locale::t_format(
                                         "Downloading {done}/{total} files...",
                                         &[("{done}", "0"), ("{total}", &total_files.to_string())],
-                                    ),
+                                    )
+                                    .to_string(),
                                 ),
                                 cx,
                             );
@@ -3983,7 +3984,8 @@ impl ProjectPanel {
                                                 ("{done}", &(index + 1).to_string()),
                                                 ("{total}", &total_files.to_string()),
                                             ],
-                                        ),
+                                        )
+                                        .to_string(),
                                     ),
                                     cx,
                                 );
@@ -4019,7 +4021,8 @@ impl ProjectPanel {
                                     locale::t_format(
                                         "Downloaded {count} files",
                                         &[("{count}", &total_files.to_string())],
-                                    ),
+                                    )
+                                    .to_string(),
                                 ),
                                 cx,
                             );

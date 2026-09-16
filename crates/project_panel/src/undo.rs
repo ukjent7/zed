@@ -988,11 +988,12 @@ impl Inner {
         let answer = self
             .panel
             .update_in(cx, |_panel, window, cx| {
+                let cancel = locale::t("Cancel");
                 window.prompt(
                     PromptLevel::Info,
                     &prompt.message,
-                    prompt.detail,
-                    &[prompt.confirmation_label, "Cancel"],
+                    prompt.detail.as_deref(),
+                    &[prompt.confirmation_label.as_str(), cancel.as_str()],
                     cx,
                 )
             })?
