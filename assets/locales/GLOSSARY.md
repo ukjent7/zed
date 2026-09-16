@@ -84,3 +84,24 @@
 | Telemetry | 遥测 | 设置页用“遥测” |
 | Proxy | 代理 | |
 | Update | 更新 | |
+| Buffer | 缓冲区 | 文本缓冲区；但 Buffer Font 译作“编辑器字体”（用户视角） |
+| Minimap | 缩略图 | 编辑器右侧的行级缩略视图 |
+| Scrollback | 回滚 | 终端可回溯的历史 |
+| Worktree | 工作树 | Git worktree |
+| Worktree（项目） | 工作树 | 项目面板中的根目录条目 |
+| Sandbox | 沙箱 | Agent 权限语境 |
+| Tool | 工具 | Agent 工具 |
+| Tool Permissions | 工具权限 | |
+| Rule（工具权限） | 规则 | 一组匹配模式的集合 |
+| Pattern | 匹配模式 | 正则匹配项（tool permissions / file scan） |
+| Glob | 匹配模式 | 文件匹配模式 |
+| Escalation | 权限升级 | 沙箱越权请求 |
+| Tooltip | 提示框 | 悬停提示 |
+| Placeholder | 占位符 | 译文须与原文占位符集合一致 |
+| Token | Token | 模型令牌，保留英文 |
+| Prompt Format | 提示词格式 | 代码补全模型的提示词模板 |
+| Edit Prediction | 编辑预测 | |
+| Completion（补全菜单项） | 补全 | |
+| Skill | 技能 | Agent Skills |
+| Front-matter | Front-matter | SKILL.md 头部的 YAML 块，保留英文 |
+| Artifact / Card | 卡片 | Agent 面板中的卡片 |
