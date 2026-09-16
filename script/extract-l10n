@@ -101,7 +101,15 @@ _SOURCE_ESCAPES = {
 
 
 def decode_source_key(raw: str) -> str:
-    """Decode backslash escapes in a Rust string literal captured from source."""
+    """Decode backslash escapes in a Rust string literal captured from source.
+
+    A backslash at the end of a line is a line continuation: Rust removes it
+    together with the following whitespace, so the compiled key has a single
+    space there, not a newline. Without this the long, wrapped descriptions
+    would be reported as MISSING under a key that differs from the one the
+    runtime actually looks up.
+    """
+    raw = re.sub(r"\\\n[ \t]*", "", raw)
     decoded = re.sub(r"\\(.)", lambda m: _SOURCE_ESCAPES.get(m.group(1), m.group(0)), raw)
     return re.sub(
         r"\\u\{([0-9a-fA-F]+)\}",

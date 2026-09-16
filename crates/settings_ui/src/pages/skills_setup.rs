@@ -58,9 +58,9 @@ pub(crate) fn render_skills_setup_page(
         .map(|this| {
             if skills.is_empty() {
                 let message = match &settings_window.current_file {
-                    SettingsUiFile::User => "No global skills installed.",
-                    SettingsUiFile::Project(_) => "No project skills found.",
-                    _ => "No skills available for this context.",
+                    SettingsUiFile::User => locale::t_static("No global skills installed."),
+                    SettingsUiFile::Project(_) => locale::t_static("No project skills found."),
+                    _ => locale::t_static("No skills available for this context."),
                 };
 
                 this.px_8().items_center().justify_center().child(
@@ -69,21 +69,26 @@ pub(crate) fn render_skills_setup_page(
                         .gap_2()
                         .child(Label::new(message).color(Color::Muted))
                         .child(
-                            Button::new("open-skill-creator-empty", "Create a Skill")
-                                .tab_index(0_isize)
-                                .style(ButtonStyle::Outlined)
-                                .start_icon(
-                                    Icon::new(IconName::Plus)
-                                        .size(IconSize::Small)
-                                        .color(Color::Muted),
-                                )
-                                .on_click(cx.listener(move |this, _event, window, cx| {
+                            Button::new(
+                                "open-skill-creator-empty",
+                                locale::t_static("Create a Skill"),
+                            )
+                            .tab_index(0_isize)
+                            .style(ButtonStyle::Outlined)
+                            .start_icon(
+                                Icon::new(IconName::Plus)
+                                    .size(IconSize::Small)
+                                    .color(Color::Muted),
+                            )
+                            .on_click(cx.listener(
+                                move |this, _event, window, cx| {
                                     this.open_skill_creator_sub_page(
                                         SkillCreatorOpenMode::Form,
                                         window,
                                         cx,
                                     );
-                                })),
+                                },
+                            )),
                         ),
                 )
             } else {
@@ -119,8 +124,14 @@ fn render_skill_row(
     let skill_name = skill.name.clone();
 
     let (skill_scope, shared_scope) = match &skill.source {
-        SkillSource::ProjectLocal { .. } => ("project", "used in this project"),
-        _ => ("global", "on this machine"),
+        SkillSource::ProjectLocal { .. } => (
+            locale::t_static("project"),
+            locale::t_static("used in this project"),
+        ),
+        _ => (
+            locale::t_static("global"),
+            locale::t_static("on this machine"),
+        ),
     };
 
     let share_copied = settings_window.last_copied_skill_directory_path.as_deref()
@@ -230,19 +241,30 @@ fn render_skill_row(
                                 return;
                             }
 
-                            let prompt_message =
-                                format!("Delete the {skill_scope} skill \"{skill_name}\"?");
-                            let prompt_detail = format!(
-                                "This will move {} to the trash. This skill is shared with other \
-                                 agent tools {shared_scope}, so it will no longer be available to \
-                                 them either.",
-                                directory_path.compact().display(),
+                            let prompt_message = locale::t_format(
+                                "Delete the {scope} skill \"{name}\"?",
+                                &[
+                                    ("{scope}", skill_scope.as_str()),
+                                    ("{name}", skill_name.as_str()),
+                                ],
+                            );
+                            let prompt_detail = locale::t_format(
+                                "This will move {path} to the trash. This skill is shared with \
+                                 other agent tools {scope}, so it will no longer be available \
+                                 to them either.",
+                                &[
+                                    ("{path}", &directory_path.compact().display().to_string()),
+                                    ("{scope}", shared_scope.as_str()),
+                                ],
                             );
                             let answer = window.prompt(
                                 PromptLevel::Info,
                                 &prompt_message,
                                 Some(&prompt_detail),
-                                &["Delete", "Cancel"],
+                                &[
+                                    locale::t_static("Delete").as_str(),
+                                    locale::t_static("Cancel").as_str(),
+                                ],
                                 cx,
                             );
 
