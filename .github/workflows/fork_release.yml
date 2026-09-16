@@ -78,7 +78,6 @@ jobs:
             # the 2022 image ships and the 2025 image does not.
             os: windows-2022
             bundle: script/bundle-windows.ps1 -Architecture x86_64
-            shell: pwsh
             assets: |
               target/Zed-x86_64.exe
               target/zed-remote-server-windows-x86_64.zip
@@ -128,8 +127,16 @@ jobs:
       - uses: actions/setup-node@v4
         if: runner.os == 'macOS'
       - name: bundle
+        if: runner.os != 'Windows'
         run: ${{ matrix.bundle }}
-        shell: ${{ matrix.shell || 'bash' }}
+      # Split from the step above instead of `shell: ${{ matrix.shell }}`:
+      # `shell` does not accept the `matrix` context. Upstream pins
+      # `shell: pwsh` for the Windows bundle rather than trusting the runner
+      # default, so keep it explicit.
+      - name: bundle (windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ${{ matrix.bundle }}
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}
