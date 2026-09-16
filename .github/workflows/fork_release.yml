@@ -1,0 +1,185 @@
+# Fork-only release pipeline.
+#
+# Upstream's `release.yml` cannot be used on a fork: same owner gate as
+# `run_tests.yml`, namespace/self-hosted runners, Apple + Azure signing
+# secrets, and it uploads to `zed-industries/zed`. This workflow runs the
+# repo's *own* bundle scripts on GitHub-hosted runners and attaches the
+# artifacts to a release on this repository.
+#
+# Deliberate limitations, all consequences of having no signing secrets:
+#   - macOS: ad-hoc signed only (`--sign -`), not notarized. First launch needs
+#     right-click -> Open, or `xattr -dr com.apple.quarantine`.
+#   - Windows: unsigned, so SmartScreen warns about an unknown publisher.
+#   - Linux: self-contained tar.gz, no signing step exists there anyway.
+#   - Crash/symbol reporting stays off: ZED_SENTRY_* / ZED_MINIDUMP_ENDPOINT
+#     and ZED_CLIENT_CHECKSUM_SEED are unset, and every consumer treats them
+#     as optional (`option_env!`).
+#
+# The release channel stays `dev` (see `crates/zed/RELEASE_CHANNEL`), which
+# makes `ReleaseChannel::poll_for_updates()` return false: these builds never
+# auto-update. Do NOT switch it to `stable` to "look like real Zed" - stable
+# polls for updates and would silently replace this fork's localization with
+# the official build.
+name: fork_release
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build. Leave empty to build the selected ref.'
+        required: false
+        default: ''
+permissions:
+  contents: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  # `script/determine-release-channel` is not usable here: it rejects any
+  # channel other than stable/preview, and this fork builds on `dev`.
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: dtolnay/rust-toolchain@stable
+      - id: version
+        name: read crate version
+        run: echo "version=$(script/get-crate-version zed)" >> "$GITHUB_OUTPUT"
+      - name: show what is being built
+        run: |
+          echo "tag: ${{ inputs.tag || github.ref_name }}"
+          echo "crate version: ${{ steps.version.outputs.version }}"
+          echo "channel: $(cat crates/zed/RELEASE_CHANNEL)"
+
+  build:
+    needs: version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Upstream's bundle jobs for the 3 platforms this fork can build
+          # without signing secrets. Drop an entry to skip a platform.
+          # macos-latest is arm64, which is why only the aarch64 dmg is built.
+          - name: linux-x86_64
+            os: ubuntu-latest
+            bundle: ./script/bundle-linux
+            assets: |
+              target/release/zed-linux-x86_64.tar.gz
+              target/zed-remote-server-linux-x86_64.gz
+          - name: windows-x86_64
+            # windows-2022, not windows-latest: bundle-windows.ps1 runs Inno
+            # Setup 6 from `C:\Program Files (x86)\Inno Setup 6\ISCC.exe`, which
+            # the 2022 image ships and the 2025 image does not.
+            os: windows-2022
+            bundle: script/bundle-windows.ps1 -Architecture x86_64
+            shell: pwsh
+            assets: |
+              target/Zed-x86_64.exe
+              target/zed-remote-server-windows-x86_64.zip
+          - name: macos-aarch64
+            os: macos-latest
+            bundle: ./script/bundle-mac aarch64-apple-darwin
+            assets: |
+              target/aarch64-apple-darwin/release/Zed-aarch64.dmg
+              target/zed-remote-server-macos-aarch64.gz
+    runs-on: ${{ matrix.os }}
+    # A release build on a free 4-vCPU runner is slow; the job limit is 6h.
+    timeout-minutes: 350
+    env:
+      CARGO_INCREMENTAL: 0
+      # bundle-windows.ps1 requires these two once CI is set.
+      RELEASE_VERSION: ${{ needs.version.outputs.version }}
+      ZED_WORKSPACE: ${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # A release build of Zed is tens of GB; the hosted runners are far
+      # tighter than upstream's. Free what the build cannot possibly need.
+      - name: free disk space
+        if: runner.os == 'Linux'
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc \
+                      /usr/local/share/boost "$AGENT_TOOLSDIRECTORY/CodeQL"
+          sudo apt-get clean
+          df -h /
+      - name: free disk space
+        if: runner.os == 'macOS'
+        run: |
+          sudo rm -rf /Library/Developer/CoreSimulator/Caches \
+                      /Library/Developer/CoreSimulator/Profiles/Runtimes \
+                      ~/Library/Developer/Xcode/DerivedData
+          df -h /
+      - name: system dependencies
+        if: runner.os == 'Linux'
+        run: ./script/linux
+      - name: download wasi sdk
+        if: runner.os == 'Linux'
+        run: ./script/download-wasi-sdk
+      # bundle-mac shells out to npm for `dmg-license`.
+      - uses: actions/setup-node@v4
+        if: runner.os == 'macOS'
+      - name: bundle
+        run: ${{ matrix.bundle }}
+        shell: ${{ matrix.shell || 'bash' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.assets }}
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    needs:
+      - version
+      - build
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: list assets
+        run: ls -lh dist
+      - name: publish
+        run: |
+          set -euo pipefail
+          cat > notes.md <<'EOF'
+          Zed 汉化版 · ${{ needs.version.outputs.version }}
+
+          ## 下载
+
+          | 平台 | 文件 |
+          | --- | --- |
+          | Windows x86_64 | `Zed-x86_64.exe` |
+          | Linux x86_64 | `zed-linux-x86_64.tar.gz` |
+          | macOS arm64 (Apple Silicon) | `Zed-aarch64.dmg` |
+
+          `zed-remote-server-*` 是远程开发用的服务端组件，正常使用编辑器不需要单独下载。
+
+          ## 注意
+
+          - 本构建**未做代码签名**：macOS 首次打开请右键 → 打开（或执行
+            `xattr -dr com.apple.quarantine /Applications/Zed\ Dev.app`）；Windows 会看到
+            SmartScreen 的未知发布者提示。
+          - 构建渠道为 `dev`，应用名显示为 **Zed Dev**（Linux 上为 `Zed Devel`），并且
+            **不会自动更新**——这是刻意的，否则自动更新会用官方版覆盖汉化。
+          - 界面语言默认跟随系统区域；可在设置里用 `language` 项改为 `zh-CN` / `en`。
+          EOF
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber dist/*
+          else
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" \
+              --title "$TAG" --notes-file notes.md dist/*
+          fi

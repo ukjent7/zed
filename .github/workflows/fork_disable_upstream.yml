@@ -1,0 +1,103 @@
+# Fork-only maintenance: park the upstream workflows that cannot run here.
+#
+# Two reasons a workflow on this fork is pure noise:
+#   1. it is gated on `github.repository_owner == 'zed-industries'` (or
+#      'zed-extensions') and/or scheduled on namespace-profile / self-hosted
+#      runners that a fork does not have, so it always skips;
+#   2. it is upstream community automation that needs the upstream Projects
+#      board, Slack webhooks or GitHub App tokens, so on a fork it only fails.
+#
+# Disabling beats deleting: the files stay identical to upstream, so merging
+# upstream never conflicts, and this is GitHub's own recommendation for forks
+# ("Workflows on a forked repository that aren't needed").
+#
+# Deliberately NOT listed:
+#   - scheduled workflows: GitHub already parks those as `disabled_fork` when a
+#     public repository is forked, which is why a `schedule:` trigger here
+#     would not even run;
+#   - `workflow_dispatch`-only and `workflow_call`-only workflows
+#     (bump_*, cherry_pick, autofix_pr, publish_extension_cli, deploy_docs,
+#     extension_bump, extension_tests, ...): they never fire on their own, so
+#     disabling them would change nothing.
+#
+# Re-run this after merging upstream: a new or modified workflow file can come
+# back enabled, and a new upstream workflow will not be in the list yet. If the
+# API call returns 403, the repository's Actions token is read-only - either
+# allow write access (Settings -> Actions -> General -> Workflow permissions)
+# or disable the workflows by hand (Actions -> workflow -> "Disable workflow").
+name: fork_disable_upstream
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/fork_disable_upstream.yml'
+permissions:
+  actions: write
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+jobs:
+  disable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: disable workflows that can never run on a fork
+        run: |
+          set -euo pipefail
+
+          workflows=(
+            # --- gated on zed-industries / unavailable runners ---
+            run_tests.yml                     # owner gate + namespace mac/windows runners
+            release.yml                       # owner gate + Apple/Azure secrets, uploads to zed-industries/zed
+            run_bundling.yml                  # namespace/self-hosted runners
+            deploy_collab.yml                 # deploy step gated to zed-industries
+            deploy_nightly_docs.yml           # gated to zed-industries
+            nix_build.yml                     # gated to zed-industries
+            congrats.yml                      # gated to zed-industries
+            danger.yml                        # gated to zed-industries
+            extension_auto_bump.yml           # pushes to zed-industries/zed
+            after_release.yml                 # triggered by the `release` event, gated
+            # --- upstream community automation (Projects board / Slack / labels) ---
+            add_commented_closed_issue_to_project.yml
+            catch_blank_issues.yml
+            comment_on_potential_duplicate_issues.yml
+            community_pr_board.yml
+            docs_suggestions.yml
+            good_first_issue_notifier.yml
+            guild_assignment_status.yml
+            guild_new_pr_notify.yml
+            maintainer_edits_nudge.yml
+            pr_issue_labeler.yml
+            slack_notify_community_automation_failure.yml
+            slack_notify_first_responders.yml
+            slack_notify_label_created.yml
+          )
+
+          failed=()
+          for workflow in "${workflows[@]}"; do
+            printf '%-56s ' "${workflow}"
+            if gh api --silent -X PUT \
+                 "/repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/disable" 2>/dev/null; then
+              echo 'disabled'
+            else
+              # Keep going: one bad entry (a renamed workflow, or a read-only
+              # Actions token) should not stop the other 22.
+              echo 'FAILED'
+              failed+=("${workflow}")
+            fi
+          done
+
+          if ((${#failed[@]})); then
+            echo "::error::could not disable ${#failed[@]} workflow(s): ${failed[*]}"
+            echo "A 403 here means the repository's Actions token is read-only."
+            exit 1
+          fi
+
+      - name: show remaining non-active workflows
+        run: |
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/workflows?per_page=100" \
+            --jq '.workflows[] | select(.state != "active") | "\(.state)\t\(.path)"' | sort
