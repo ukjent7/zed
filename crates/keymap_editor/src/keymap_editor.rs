@@ -2744,7 +2744,7 @@ impl KeybindingEditorModal {
                         "{}",
                         locale::t_format(
                             "Action '{name}' not found",
-                            &[("{name}", action_name_str)]
+                            &[("{name}", &action_name_str)],
                         )
                     )
                 })
