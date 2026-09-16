@@ -109,7 +109,10 @@ fn system_locale_is_chinese() -> bool {
 }
 
 /// Detects whether the current process is running as a test runner.
-/// Test binaries built by Cargo are placed in target/.../deps/.
+/// Test binaries built by Cargo are placed in `target/.../deps/` (this holds
+/// for `cargo nextest` too, which executes the same binaries). Runners with a
+/// different layout fall back to the OS locale unless pinned via
+/// [`set_language`] or `ZED_TEST_CHINESE`.
 fn is_test_runner() -> bool {
     static IS_TEST: OnceLock<bool> = OnceLock::new();
     *IS_TEST.get_or_init(|| {
@@ -217,7 +220,8 @@ pub fn t(key: &str) -> SharedString {
 }
 
 /// Translate a GUI label containing `{placeholder}` slots, substituting each
-/// pair after lookup. Falls back to the English source text like [`t`].
+/// pair after lookup. Every occurrence of a placeholder is replaced.
+/// Falls back to the English source text like [`t`].
 /// Placeholders must match `assets/locales/SCHEMA.md` (checked by tests).
 pub fn t_format(key: &str, replacements: &[(&str, &str)]) -> SharedString {
     let translated = if use_chinese() {
@@ -230,7 +234,7 @@ pub fn t_format(key: &str, replacements: &[(&str, &str)]) -> SharedString {
     };
     let mut result = translated.to_string();
     for (placeholder, value) in replacements {
-        result = result.replacen(placeholder, value, 1);
+        result = result.replace(placeholder, value);
     }
     SharedString::from(result)
 }
@@ -359,6 +363,11 @@ mod tests {
         let _guard = TEST_LOCK.lock().unwrap();
         set_language(Language::English);
         assert_eq!(t_format("Hello {name}", &[("{name}", "Zed")]), "Hello Zed");
+        // Every occurrence of a repeated placeholder is replaced.
+        assert_eq!(
+            t_format("{name} invited {name}", &[("{name}", "Bob")]),
+            "Bob invited Bob"
+        );
         // Real dictionary entry, substituted after lookup.
         set_language(Language::SimplifiedChinese);
         assert_eq!(

@@ -773,22 +773,37 @@ impl AutoUpdater {
         client: Arc<HttpClientWithUrl>,
         repo: &str,
     ) -> Result<ReleaseAsset> {
-        let asset_name = fork_release_asset_name(OS, ARCH)
-            .with_context(|| format!("no release asset is published for {OS}/{ARCH}"))?;
+        let asset_name = fork_release_asset_name(OS, ARCH).with_context(|| {
+            locale::t_format(
+                "No release asset is published for {os}/{arch}",
+                &[("{os}", OS), ("{arch}", ARCH)],
+            )
+            .to_string()
+        })?;
 
         let release = http_client::github::latest_github_release(repo, true, false, client)
             .await
-            .with_context(|| format!("failed to fetch the latest release of {repo}"))?;
+            .with_context(|| {
+                locale::t_format(
+                    "Failed to fetch the latest release of {repo}",
+                    &[("{repo}", repo)],
+                )
+                .to_string()
+            })?;
 
         let asset = release
             .assets
             .iter()
             .find(|asset| asset.name == asset_name)
             .with_context(|| {
-                format!(
-                    "release {} has no asset named {asset_name}",
-                    release.tag_name
+                locale::t_format(
+                    "Release {tag} has no asset named {asset}",
+                    &[
+                        ("{tag}", release.tag_name.as_str()),
+                        ("{asset}", asset_name),
+                    ],
                 )
+                .to_string()
             })?;
 
         Ok(ReleaseAsset {

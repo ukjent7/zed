@@ -827,5 +827,8 @@
   "Also search files ignored by configuration": "同时搜索被配置忽略的文件",
   "Use Regular Expressions": "使用正则表达式",
   "One Match Per Line": "每行仅匹配一次",
-  "Search Backwards": "反向搜索"
+  "Search Backwards": "反向搜索",
+  "No release asset is published for {os}/{arch}": "暂未为 {os}/{arch} 发布更新包",
+  "Failed to fetch the latest release of {repo}": "获取 {repo} 的最新版本失败",
+  "Release {tag} has no asset named {asset}": "版本 {tag} 中没有名为 {asset} 的更新包"
 }
