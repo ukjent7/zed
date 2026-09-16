@@ -15,9 +15,16 @@ New-Item -Path "$outputFile" -ItemType File -Value "" -Force
     "\n# ###### CODE LICENSES ######\n"
 ) | Add-Content -Path $outputFile
 
+$cargoBin = if ($env:CARGO_HOME) { "$env:CARGO_HOME\bin" } else { "$env:USERPROFILE\.cargo\bin" }
+if (Test-Path $cargoBin) {
+    if ($env:Path -notlike "*$cargoBin*") {
+        $env:Path = "$cargoBin;$env:Path"
+    }
+}
+
 $needsInstall = $false
 try {
-    $versionOutput = cargo about --version
+    $versionOutput = & cargo about --version 2>$null
     if (-not ($versionOutput -match "cargo-about $CARGO_ABOUT_VERSION")) {
         $needsInstall = $true
     } else {
@@ -28,15 +35,32 @@ try {
 }
 
 if ($needsInstall) {
-    Write-Host "Installing cargo-about@$CARGO_ABOUT_VERSION..."
-    cargo install "cargo-about@$CARGO_ABOUT_VERSION"
+    if (Test-Path "$cargoBin\cargo-about.exe") {
+        Write-Host "Found cargo-about in $cargoBin"
+    } else {
+        Write-Host "Installing cargo-about@$CARGO_ABOUT_VERSION..."
+        cargo install "cargo-about@$CARGO_ABOUT_VERSION"
+    }
 }
 
 Write-Host "Generating cargo licenses"
 
 $failFlag = $env:ALLOW_MISSING_LICENSES ? "--fail" : ""
-$args = @('about', 'generate', $failFlag, '-c', 'script/licenses/zed-licenses.toml', $templateFile, '-o', $outputFile) | Where-Object { $_ }
-cargo @args
+$aboutExe = if (Test-Path "$cargoBin\cargo-about.exe") {
+    "$cargoBin\cargo-about.exe"
+} elseif (Get-Command "cargo-about.exe" -ErrorAction SilentlyContinue) {
+    "cargo-about.exe"
+} else {
+    $null
+}
+
+if ($aboutExe) {
+    $aboutArgs = @('generate', $failFlag, '-c', 'script/licenses/zed-licenses.toml', $templateFile, '-o', $outputFile) | Where-Object { $_ }
+    & $aboutExe @aboutArgs
+} else {
+    $args = @('about', 'generate', $failFlag, '-c', 'script/licenses/zed-licenses.toml', $templateFile, '-o', $outputFile) | Where-Object { $_ }
+    cargo @args
+}
 
 Write-Host "Applying replacements"
 $replacements = @{

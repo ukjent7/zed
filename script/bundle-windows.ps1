@@ -82,6 +82,14 @@ if ($vsDevShell) {
     Write-Warning "Launch-VsDevShell.ps1 not found. Continuing with current environment."
 }
 
+# Preserve Cargo/Rust toolchain in PATH (Launch-VsDevShell may not include user PATH additions)
+$cargoBin = if ($env:CARGO_HOME) { "$env:CARGO_HOME\bin" } else { "$env:USERPROFILE\.cargo\bin" }
+if (Test-Path $cargoBin) {
+    if ($env:Path -notlike "*$cargoBin*") {
+        $env:Path = "$cargoBin;$env:Path"
+    }
+}
+
 $target = "$Architecture-pc-windows-msvc"
 
 if ($Help) {

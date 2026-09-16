@@ -117,6 +117,10 @@ jobs:
         with:
           ref: ${{ inputs.tag || github.ref }}
       - uses: dtolnay/rust-toolchain@stable
+      - name: install cargo-about
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about@0.8.2
       - uses: Swatinem/rust-cache@v2
         with:
           # Release builds produce tens of GB of target/ artifacts across 3 platforms.
@@ -149,6 +153,9 @@ jobs:
       # bundle-mac shells out to npm for `dmg-license`.
       - uses: actions/setup-node@v7
         if: runner.os == 'macOS'
+      - name: generate licenses
+        if: runner.os != 'Windows'
+        run: ./script/generate-licenses
       - name: bundle
         if: runner.os != 'Windows'
         env:
