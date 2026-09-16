@@ -35,6 +35,7 @@ image.workspace = true
 jupyter-websocket-client.workspace = true
 jupyter-protocol.workspace = true
 language.workspace = true
+locale.workspace = true
 log.workspace = true
 markdown.workspace = true
 menu.workspace = true

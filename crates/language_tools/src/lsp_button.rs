@@ -251,14 +251,16 @@ impl LanguageServerState {
                                         .size(IconSize::XSmall),
                                 )
                                 .child(
-                                    Label::new("Project is in Restricted Mode")
+                                    Label::new(locale::t("Project is in Restricted Mode"))
                                         .size(LabelSize::Small),
                                 ),
                         )
                         .child(
-                            Label::new("Language Servers can't run until you trust this project.")
-                                .size(LabelSize::Small)
-                                .color(Color::Muted),
+                            Label::new(locale::t(
+                                "Language Servers can't run until you trust this project.",
+                            ))
+                            .size(LabelSize::Small)
+                            .color(Color::Muted),
                         )
                         .into_any_element()
                 },
@@ -1466,11 +1468,16 @@ impl Render for LspButton {
                         .when_some(indicator, IconButton::indicator)
                         .icon_size(IconSize::Small)
                         .tab_index(0isize)
-                        .aria_label("Language Servers")
+                        .aria_label(locale::t("Language Servers"))
                         .when(is_restricted, |s| s.icon_color(Color::Warning))
                         .indicator_border_color(Some(cx.theme().colors().status_bar_background)),
                     move |_window, cx| {
-                        Tooltip::with_meta("Language Servers", Some(&ToggleMenu), description, cx)
+                        Tooltip::with_meta(
+                            locale::t("Language Servers"),
+                            Some(&ToggleMenu),
+                            description,
+                            cx,
+                        )
                     },
                 ),
         )

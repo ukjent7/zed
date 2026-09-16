@@ -846,24 +846,24 @@ impl Render for HighlightsTreeView {
                             if self.editor.is_some() {
                                 let has_any = !self.cached_entries.is_empty();
                                 if has_any {
-                                    this.child(Label::new("All highlights are filtered out"))
+                                    this.child(Label::new(locale::t("All highlights are filtered out")))
                                         .child(
                                             Label::new(
-                                                "Enable text, syntax, or semantic highlights in the toolbar",
+                                                locale::t("Enable text, syntax, or semantic highlights in the toolbar"),
                                             )
                                             .size(LabelSize::Small),
                                         )
                                 } else {
-                                    this.child(Label::new("No highlights found")).child(
+                                    this.child(Label::new(locale::t("No highlights found"))).child(
                                         Label::new(
-                                            "The editor has no text, syntax, or semantic token highlights",
+                                            locale::t("The editor has no text, syntax, or semantic token highlights"),
                                         )
                                         .size(LabelSize::Small),
                                     )
                                 }
                             } else {
-                                this.child(Label::new("Not attached to an editor")).child(
-                                    Label::new("Focus an editor to show highlights")
+                                this.child(Label::new(locale::t("Not attached to an editor"))).child(
+                                    Label::new(locale::t("Focus an editor to show highlights"))
                                         .size(LabelSize::Small),
                                 )
                             }
@@ -893,7 +893,7 @@ impl Item for HighlightsTreeView {
     fn to_item_events(_: &Self::Event, _: &mut dyn FnMut(workspace::item::ItemEvent)) {}
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Highlights".into()
+        locale::t("Highlights")
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -985,7 +985,7 @@ impl HighlightsTreeToolbarItemView {
                 IconButton::new("toggle-highlights-settings-icon", IconName::Filter)
                     .icon_size(IconSize::Small)
                     .toggle_state(self.toggle_settings_handle.is_deployed()),
-                Tooltip::text("Highlights Settings"),
+                Tooltip::text(locale::t("Highlights Settings")),
             )
             .anchor(gpui::Anchor::TopRight)
             .with_handle(self.toggle_settings_handle.clone())

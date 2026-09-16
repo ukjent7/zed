@@ -199,7 +199,7 @@ impl Output {
                     el.child(
                         IconButton::new(ElementId::Name("copy-output".into()), IconName::Copy)
                             .style(ButtonStyle::Transparent)
-                            .tooltip(Tooltip::text("Copy Output"))
+                            .tooltip(Tooltip::text(locale::t("Copy Output")))
                             .on_click(move |_, window, cx| {
                                 let clipboard_content = v.clipboard_content(window, cx);
 
@@ -217,7 +217,7 @@ impl Output {
                             IconName::FileTextOutlined,
                         )
                         .style(ButtonStyle::Transparent)
-                        .tooltip(Tooltip::text("Open in Buffer"))
+                        .tooltip(Tooltip::text(locale::t("Open in Buffer")))
                         .on_click({
                             let workspace = workspace.clone();
                             move |_, window, cx| {
@@ -331,7 +331,7 @@ impl Output {
                                 IconName::FileTextOutlined,
                             )
                             .style(ButtonStyle::Transparent)
-                            .tooltip(Tooltip::text("Open Full Error in Buffer"))
+                            .tooltip(Tooltip::text(locale::t("Open Full Error in Buffer")))
                             .on_click({
                                 let ename = err.ename.clone();
                                 let evalue = err.evalue.clone();
@@ -536,7 +536,11 @@ impl ExecutionView {
 
             let editor = cx.new(|cx| {
                 let mut editor = Editor::single_line(window, cx);
-                editor.set_placeholder_text("Type here and press Enter", window, cx);
+                editor.set_placeholder_text(
+                    locale::t("Type here and press Enter").as_str(),
+                    window,
+                    cx,
+                );
                 if password {
                     editor.set_masked(true, cx);
                 }
@@ -753,7 +757,7 @@ impl ExecutionView {
 impl Render for ExecutionView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let status = match &self.status {
-            ExecutionStatus::ConnectingToKernel => Label::new("Connecting to kernel...")
+            ExecutionStatus::ConnectingToKernel => Label::new(locale::t("Connecting to kernel..."))
                 .color(Color::Muted)
                 .into_any_element(),
             ExecutionStatus::Executing => h_flex()
@@ -764,29 +768,32 @@ impl Render for ExecutionView {
                         .color(Color::Muted)
                         .with_rotate_animation(3),
                 )
-                .child(Label::new("Executing...").color(Color::Muted))
+                .child(Label::new(locale::t("Executing...")).color(Color::Muted))
                 .into_any_element(),
             ExecutionStatus::Finished => Icon::new(IconName::Check)
                 .size(IconSize::Small)
                 .into_any_element(),
-            ExecutionStatus::Unknown => Label::new("Unknown status")
+            ExecutionStatus::Unknown => Label::new(locale::t("Unknown status"))
                 .color(Color::Muted)
                 .into_any_element(),
-            ExecutionStatus::ShuttingDown => Label::new("Kernel shutting down...")
+            ExecutionStatus::ShuttingDown => Label::new(locale::t("Kernel shutting down..."))
                 .color(Color::Muted)
                 .into_any_element(),
-            ExecutionStatus::Restarting => Label::new("Kernel restarting...")
+            ExecutionStatus::Restarting => Label::new(locale::t("Kernel restarting..."))
                 .color(Color::Muted)
                 .into_any_element(),
-            ExecutionStatus::Shutdown => Label::new("Kernel shutdown")
+            ExecutionStatus::Shutdown => Label::new(locale::t("Kernel shutdown"))
                 .color(Color::Muted)
                 .into_any_element(),
-            ExecutionStatus::Queued => Label::new("Queued...")
+            ExecutionStatus::Queued => Label::new(locale::t("Queued..."))
                 .color(Color::Muted)
                 .into_any_element(),
-            ExecutionStatus::KernelErrored(error) => Label::new(format!("Kernel error: {}", error))
-                .color(Color::Error)
-                .into_any_element(),
+            ExecutionStatus::KernelErrored(error) => Label::new(locale::t_format(
+                "Kernel error: {error}",
+                &[("{error}", &error)],
+            ))
+            .color(Color::Error)
+            .into_any_element(),
         };
 
         let pending_input_element = self.pending_input.as_ref().map(|pending_input| {

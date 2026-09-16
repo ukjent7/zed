@@ -1218,7 +1218,9 @@ impl NotebookEditor {
                     .items_center()
                     .child(
                         Self::render_notebook_control("more-menu", IconName::Ellipsis, window, cx)
-                            .tooltip(move |window, cx| (Tooltip::text("More options"))(window, cx)),
+                            .tooltip(move |window, cx| {
+                                (Tooltip::text(locale::t("More options")))(window, cx)
+                            }),
                     )
                     .child(Self::button_group(window, cx).child({
                         let kernel_status = self.kernel.status();
@@ -1377,12 +1379,12 @@ impl NotebookEditor {
             .items_center()
             .justify_center()
             .gap_3()
-            .child(Label::new("This notebook is empty.").color(Color::Muted))
+            .child(Label::new(locale::t("This notebook is empty.")).color(Color::Muted))
             .child(
                 h_flex()
                     .gap_2()
                     .child(
-                        Button::new("empty-state-add-code", "Add code cell")
+                        Button::new("empty-state-add-code", locale::t("Add code cell"))
                             .start_icon(Icon::new(IconName::Code))
                             .key_binding(KeyBinding::for_action_in(
                                 &AddCodeBlock,
@@ -1394,7 +1396,7 @@ impl NotebookEditor {
                             ),
                     )
                     .child(
-                        Button::new("empty-state-add-markdown", "Add markdown cell")
+                        Button::new("empty-state-add-markdown", locale::t("Add markdown cell"))
                             .style(ButtonStyle::Subtle)
                             .start_icon(Icon::new(IconName::FileMarkdown))
                             .key_binding(KeyBinding::for_action_in(

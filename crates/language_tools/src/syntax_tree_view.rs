@@ -531,19 +531,24 @@ impl Render for SyntaxTreeView {
                         .max_w_3_5()
                         .map(|this| {
                             if editor_state.is_some_and(|state| !state.has_language()) {
-                                this.child(Label::new("Current editor has no associated language"))
+                                this.child(Label::new(locale::t(
+                                    "Current editor has no associated language",
+                                )))
+                                .child(
+                                    Label::new(concat!(
+                                        "Try assigning a language or",
+                                        "switching to a different buffer"
+                                    ))
+                                    .size(LabelSize::Small),
+                                )
+                            } else {
+                                this.child(Label::new(locale::t("Not attached to an editor")))
                                     .child(
-                                        Label::new(concat!(
-                                            "Try assigning a language or",
-                                            "switching to a different buffer"
+                                        Label::new(locale::t(
+                                            "Focus an editor to show a new tree view",
                                         ))
                                         .size(LabelSize::Small),
                                     )
-                            } else {
-                                this.child(Label::new("Not attached to an editor")).child(
-                                    Label::new("Focus an editor to show a new tree view")
-                                        .size(LabelSize::Small),
-                                )
                             }
                         });
 
@@ -571,7 +576,7 @@ impl Item for SyntaxTreeView {
     fn to_item_events(_: &Self::Event, _: &mut dyn FnMut(workspace::item::ItemEvent)) {}
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Syntax Tree".into()
+        locale::t("Syntax Tree")
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
