@@ -881,7 +881,7 @@ pub(crate) fn open_mcp_server_form(
     settings_window.mcp_server_form = Some(McpServerForm::new(transport, existing, window, cx));
 
     let title = if is_edit {
-        "Configure MCP Server"
+        locale::t_static("Configure MCP Server")
     } else {
         match transport {
             McpTransport::Stdio => locale::t_static("Add Local MCP Server"),

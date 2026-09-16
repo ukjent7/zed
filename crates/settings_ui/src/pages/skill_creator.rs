@@ -1224,7 +1224,7 @@ async fn write_skill_to_disk(
             anyhow::bail!(locale::t_format(
                 "A skill named \"{name}\" already exists at {path}. Pick a different name.",
                 &[
-                    ("{name}", name.as_str()),
+                    ("{name}", name),
                     ("{path}", &skill_dir.display().to_string()),
                 ],
             ));
