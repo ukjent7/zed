@@ -303,6 +303,33 @@ pub fn init(client: Arc<Client>, cx: &mut App) {
     cx.set_global(GlobalAutoUpdate(Some(auto_updater)));
 }
 
+/// GitHub repository a fork publishes its own releases to, baked in at compile
+/// time as `ZED_FORK_RELEASE_REPO=owner/repo` by the fork's release workflow.
+///
+/// `None` for upstream builds, which leaves the published behavior untouched:
+/// release discovery goes through the Zed Cloud endpoint and `check` stays a
+/// no-op on the dev channel.
+fn fork_release_repo() -> Option<&'static str> {
+    option_env!("ZED_FORK_RELEASE_REPO").filter(|repo| !repo.is_empty())
+}
+
+/// The asset a fork publishes for this platform, mirroring the names the
+/// `script/bundle-*` scripts produce.
+fn fork_release_asset_name(os: &str, arch: &str) -> Option<&'static str> {
+    match (os, arch) {
+        ("macos", "aarch64") => Some("Zed-aarch64.dmg"),
+        ("windows", "x86_64") => Some("Zed-x86_64.exe"),
+        ("linux", "x86_64") => Some("zed-linux-x86_64.tar.gz"),
+        _ => None,
+    }
+}
+
+/// Release tags are `vX.Y.Z`, but the version comparison parses semver, which
+/// rejects the leading `v`.
+fn fork_release_version(tag: &str) -> String {
+    tag.trim().trim_start_matches('v').to_string()
+}
+
 pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
     if let Some(message) = option_env!("ZED_UPDATE_EXPLANATION")
         .map(ToOwned::to_owned)
@@ -319,10 +346,13 @@ pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
         return;
     }
 
-    if !ReleaseChannel::try_global(cx)
+    // A dev-channel build never checks for updates. A fork build points at its
+    // own GitHub releases, so it is still worth honoring a manual check even
+    // though nothing polls in the background.
+    let polls_for_updates = ReleaseChannel::try_global(cx)
         .map(|channel| channel.poll_for_updates())
-        .unwrap_or(false)
-    {
+        .unwrap_or(false);
+    if !polls_for_updates && fork_release_repo().is_none() {
         return;
     }
 
@@ -733,6 +763,39 @@ impl AutoUpdater {
         })
     }
 
+    /// Discovers the newest release this build's GitHub repository publishes.
+    ///
+    /// Same shape as [`Self::get_release_asset`], which asks Zed Cloud instead;
+    /// everything downstream (version comparison, download, install, UI
+    /// states) is shared between the two.
+    async fn get_fork_release_asset(
+        client: Arc<HttpClientWithUrl>,
+        repo: &str,
+    ) -> Result<ReleaseAsset> {
+        let asset_name = fork_release_asset_name(OS, ARCH)
+            .with_context(|| format!("no release asset is published for {OS}/{ARCH}"))?;
+
+        let release = http_client::github::latest_github_release(repo, true, false, client)
+            .await
+            .with_context(|| format!("failed to fetch the latest release of {repo}"))?;
+
+        let asset = release
+            .assets
+            .iter()
+            .find(|asset| asset.name == asset_name)
+            .with_context(|| {
+                format!(
+                    "release {} has no asset named {asset_name}",
+                    release.tag_name
+                )
+            })?;
+
+        Ok(ReleaseAsset {
+            version: fork_release_version(&release.tag_name),
+            url: asset.browser_download_url.clone(),
+        })
+    }
+
     async fn update(this: Entity<Self>, cx: &mut AsyncApp) -> Result<()> {
         let (client, installed_version, previous_status, release_channel) =
             this.read_with(cx, |this, cx| {
@@ -752,8 +815,11 @@ impl AutoUpdater {
             cx.notify();
         });
 
-        let fetched_release_data =
-            Self::get_release_asset(&this, release_channel, None, "zed", OS, ARCH, cx).await?;
+        let fetched_release_data = if let Some(repo) = fork_release_repo() {
+            Self::get_fork_release_asset(client.clone(), repo).await?
+        } else {
+            Self::get_release_asset(&this, release_channel, None, "zed", OS, ARCH, cx).await?
+        };
         let fetched_version = fetched_release_data.clone().version;
         let app_commit_sha = Ok(cx.update(|cx| AppCommitSha::try_global(cx).map(|sha| sha.full())));
         let newer_version = Self::check_if_fetched_version_is_newer(
@@ -1879,6 +1945,47 @@ mod tests {
         assert_eq!(
             newer_version.unwrap(),
             Some(fetched_version.parse().unwrap())
+        );
+    }
+
+    #[test]
+    fn test_fork_release_asset_names_match_the_bundle_scripts() {
+        assert_eq!(
+            fork_release_asset_name("macos", "aarch64"),
+            Some("Zed-aarch64.dmg")
+        );
+        assert_eq!(
+            fork_release_asset_name("windows", "x86_64"),
+            Some("Zed-x86_64.exe")
+        );
+        assert_eq!(
+            fork_release_asset_name("linux", "x86_64"),
+            Some("zed-linux-x86_64.tar.gz")
+        );
+
+        // Platforms the fork does not publish for must fail loudly instead of
+        // silently downloading the wrong asset.
+        assert_eq!(fork_release_asset_name("linux", "aarch64"), None);
+        assert_eq!(fork_release_asset_name("freebsd", "x86_64"), None);
+    }
+
+    #[test]
+    fn test_fork_release_version_parses_the_published_tag() {
+        assert_eq!(fork_release_version("v0.200.0"), "0.200.0");
+        assert_eq!(fork_release_version("0.200.0"), "0.200.0");
+        assert_eq!(fork_release_version(" v0.200.0\n"), "0.200.0");
+    }
+
+    #[test]
+    fn test_fork_release_version_is_a_semver_the_update_check_can_compare() {
+        // Without stripping the `v` this parse fails and a manual check ends up
+        // reporting an error instead of offering the update.
+        let fetched: semver::Version = fork_release_version("v0.200.1").parse().unwrap();
+        let installed = semver::Version::new(0, 200, 0);
+
+        assert_eq!(
+            AutoUpdater::check_if_fetched_version_is_newer_non_nightly(installed, fetched),
+            Some(semver::Version::new(0, 200, 1))
         );
     }
 }

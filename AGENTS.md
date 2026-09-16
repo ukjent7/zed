@@ -10,6 +10,11 @@ Rust/GPUI 代码规范见 `.rules`（上游的 AGENTS.md 是指向它的符号�
 - `fork_release.yml`：推 `v*` tag 即三平台打包并发布 Release（不签名、dev 渠道、不自动更新）
 - `fork_disable_upstream.yml`：禁用上游跑不了的工作流；合并上游后需重跑一次
 
+# 发布与更新
+发版：递增 `crates/zed/Cargo.toml` 的版本号 → 提交 → 打 `v<版本>` tag（如 `v0.201.0`）。`fork_release` 会在发布前校验 tag 与 crate 版本一致，不一致直接失败。
+应用内更新：`fork_release` 构建时注入 `ZED_FORK_RELEASE_REPO=<owner/repo>`，`crates/auto_update` 据此把菜单里的「检查更新」指向**本仓库**的 Release，下载与安装复用上游原有流程（三个平台都从"运行中的 app 路径"推导目标名，所以 dev 渠道的产物天然兼容）。上游流程相关事实：更新源是 zed.dev，`ReleaseChannel::poll_for_updates()` 对 dev 返回 false，所以官方更新通道永远不会被触发，也不会被官方版覆盖汉化。
+只有手动检查，没有后台轮询：不想让一个未签名的自建包在后台静默安装。要开自动轮询的话，在 `auto_update::init` 的 `poll_for_updates` 条件里加上 `|| fork_release_repo().is_some()` 即可。
+
 # 由于该项目为 fork 项目，为防止上游合并冲突，所有对项目的改动都必须遵循以下原则：
 1. 最小化改动——仅修改必要的部分，避免大面积重构。
 2. 与上游冲突可能性最少
