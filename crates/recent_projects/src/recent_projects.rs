@@ -1553,7 +1553,7 @@ impl PickerDelegate for RecentProjectsDelegate {
                                     let focus_handle = self.focus_handle.clone();
                                     move |_, cx| {
                                         Tooltip::with_meta_in(
-                                            tooltip_title,
+                                            tooltip_title.clone(),
                                             Some(&AddToWorkspace),
                                             locale::t("As a multi-root folder"),
                                             &focus_handle,
@@ -1581,7 +1581,7 @@ impl PickerDelegate for RecentProjectsDelegate {
                             .tooltip({
                                 move |_, cx| {
                                     Tooltip::for_action_in(
-                                        secondary_confirm_tooltip,
+                                        secondary_confirm_tooltip.clone(),
                                         &menu::SecondaryConfirm,
                                         &focus_handle,
                                         cx,
@@ -1647,7 +1647,7 @@ impl PickerDelegate for RecentProjectsDelegate {
                                 })
                                 .tooltip(move |_, cx| {
                                     Tooltip::with_meta(
-                                        primary_confirm_tooltip,
+                                        primary_confirm_tooltip.clone(),
                                         None,
                                         tooltip_path.clone(),
                                         cx,
