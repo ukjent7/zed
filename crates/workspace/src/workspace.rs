@@ -9456,12 +9456,15 @@ fn notify_if_database_failed(window: WindowHandle<MultiWorkspace>, cx: &mut Asyn
                         cx,
                         |cx| {
                             cx.new(|cx| {
-                                MessageNotification::new("Failed to load the database file.", cx)
-                                    .primary_message("File an Issue")
-                                    .primary_icon(IconName::Plus)
-                                    .primary_on_click(|window, cx| {
-                                        window.dispatch_action(Box::new(FileBugReport), cx)
-                                    })
+                                MessageNotification::new(
+                                    locale::t("Failed to load the database file."),
+                                    cx,
+                                )
+                                .primary_message(locale::t("File an Issue"))
+                                .primary_icon(IconName::Plus)
+                                .primary_on_click(|window, cx| {
+                                    window.dispatch_action(Box::new(FileBugReport), cx)
+                                })
                             })
                         },
                     );
@@ -9616,7 +9619,7 @@ impl Render for Workspace {
                         .track_focus(&self.titlebar_focus_handle)
                         .tab_group()
                         .role(gpui::Role::Toolbar)
-                        .aria_label("Title bar")
+                        .aria_label(locale::t("Title bar"))
                         .on_key_down(cx.listener(
                             |workspace, event: &gpui::KeyDownEvent, window, cx| {
                                 if event.keystroke.modifiers.modified() {
@@ -11256,10 +11259,13 @@ pub fn open_paths(
                     workspace.update(cx, |workspace, cx| {
                         workspace.show_notification(NotificationId::unique::<OpenInWsl>(), cx, move |cx| {
                             let display_path = util::markdown::MarkdownInlineCode(&path.to_string_lossy());
-                            let msg = format!("{display_path} is inside a WSL filesystem, some features may not work unless you open it with WSL remote");
+                            let msg = locale::t_format(
+                                "{path} is inside a WSL filesystem, some features may not work unless you open it with WSL remote",
+                                &[("{path}", &display_path.to_string())],
+                            );
                             cx.new(move |cx| {
                                 MessageNotification::new(msg, cx)
-                                    .primary_message("Open in WSL")
+                                    .primary_message(locale::t("Open in WSL"))
                                     .primary_icon(IconName::FolderOpen)
                                     .primary_on_click(move |window, cx| {
                                         window.dispatch_action(Box::new(remote::OpenWslPath {

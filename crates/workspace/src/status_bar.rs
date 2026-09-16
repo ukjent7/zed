@@ -127,7 +127,7 @@ impl Render for StatusBar {
             // steps through them, and arrow keys move between them once focus is
             // inside.
             .role(Role::Toolbar)
-            .aria_label("Status bar")
+            .aria_label(locale::t("Status bar"))
             .tab_group()
             .on_key_down(
                 cx.listener(|status_bar, event: &gpui::KeyDownEvent, window, cx| {
@@ -260,13 +260,17 @@ impl StatusBar {
                 )
                 .icon_size(IconSize::Small)
                 .tab_index(0isize)
-                .aria_label("Open threads sidebar")
+                .aria_label(locale::t("Open threads sidebar"))
                 .when(has_notifications, |this| {
                     this.indicator(Indicator::dot().color(Color::Accent))
                         .indicator_border_color(Some(indicator_border))
                 })
                 .tooltip(move |_, cx| {
-                    Tooltip::for_action("Open Threads Sidebar", &ToggleWorkspaceSidebar, cx)
+                    Tooltip::for_action(
+                        locale::t("Open Threads Sidebar"),
+                        &ToggleWorkspaceSidebar,
+                        cx,
+                    )
                 })
                 .on_click(move |_, window, cx| {
                     if let Some(multi_workspace) = window.root::<MultiWorkspace>().flatten() {
