@@ -1,18 +1,26 @@
 """Whole-repo localization inventory.
 
 Reports, per crate:
-  * how many translate calls (locale::t / t_static / t_format) exist, split
-    into production and test code;
+  * how many translate calls (locale::t / t_static / t_format) exist in
+    production code;
   * how many user-visible-looking literals sit at a display call site but are
-    not wrapped in a translate call.
+    not wrapped in a translate call (`unwrapped`);
+  * how many single-word literals sit at those same call sites (`bare`), which
+    `unwrapped` deliberately leaves out.
 
 Descriptions and titles reach the screen through many call shapes, so the
 display-site heuristic is deliberately broad; the point is triage, not a gate.
 Test code is excluded everywhere: `#[cfg(test)]` helper functions named `t`
-(see crates/agent/src/tool_permissions.rs) otherwise swamp the counts.
+(see crates/agent/src/tool_permissions.rs) otherwise swamp the counts. So is
+storybook data: `Component::preview` bodies are blanked (see
+blank_gallery_previews), which is what used to put crates/ui at the top.
 
-Run: python target/l10n-audit.py            # per-crate summary
-     python target/l10n-audit.py -v <crate> # per-literal detail for one crate
+`bare` is reported apart because that class is dominated by icon names, HTTP
+header names and brands, yet it does hide one-word buttons ("Decline",
+"Contacts", "Evaluate"). Check it per crate with `-v` before trusting a zero.
+
+Run: python script/l10n-audit.py            # per-crate summary
+     python script/l10n-audit.py -v <crate> # per-literal detail for one crate
 """
 import json
 import pathlib
@@ -34,15 +42,23 @@ DISPLAY_CALLS = (
     r'Headline::new\(\s*',
     r'Text::new\(\s*',
     r'Button::new\(\s*[^,()]*,\s*',
+    r'Button::new_\w+\(\s*[^,()]*,\s*',
     r'ButtonLike::new\(\s*[^,()]*,\s*',
+    r'ButtonLike::new_\w+\(\s*[^,()]*,\s*',
     r'IconButton::new\(\s*[^,()]*,\s*',
     r'DropdownMenu::new\(\s*[^,()]*,\s*',
     r'ContextMenuEntry::new\(\s*',
     r'MenuItem::new\(\s*[^,()]*,\s*',
+    r'ListBulletItem::new\(\s*',
     r'Tooltip::text\(\s*',
+    r'Tooltip::simple\(\s*',
+    r'Tooltip::headered\(\s*',
     r'Tooltip::with_meta\(\s*[^,()]*,\s*',
     r'StatusToast::new\(\s*',
     r'EmptyState::new\(\s*',
+    r'EmptyState::\w+\(\s*',
+    r'MessagePopover::new\(\s*',
+    r'Tag::new\(\s*',
     r'Chip::new\(\s*',
     r'ListItem::new\(\s*',
     r'Banner::new\(\s*',
@@ -51,6 +67,7 @@ DISPLAY_CALLS = (
     r'SharedString::from\(\s*',
     r'InputField::new\([^,]*,',
     r'SwitchField::new\(\s*[^,()]*,\s*',
+    r'Switch::new\(\s*[^,()]*,\s*',
     r'Checkbox::new\(\s*[^,()]*,\s*',
     r'ToggleState::new\(\s*[^,()]*,\s*',
     r'\.aria_label\(\s*',
@@ -59,11 +76,21 @@ DISPLAY_CALLS = (
     r'\.placeholder_text\(\s*',
     r'\.set_placeholder_text\(\s*',
     r'\.label\(\s*',
+    r'\.label_trailing\(\s*',
+    r'\.secondary_label\(\s*',
+    r'\.set_label\(\s*',
     r'\.text\(\s*',
-    r'\.message\(\s*',
     r'\.title\(\s*',
+    r'\.header_title\(\s*',
     r'\.description\(\s*',
+    r'\.description_text\(\s*',
     r'\.header\(\s*',
+    r'\.message\(\s*',
+    r'\.primary_message\(\s*',
+    r'\.secondary_message\(\s*',
+    r'\.sub_message\(\s*',
+    r'\.confirm_label\(\s*',
+    r'\.dismiss_label\(\s*',
     r'\.tooltip\(Tooltip::text\(\s*',
     r'\.notification\(\s*',
 )
@@ -74,21 +101,29 @@ NOT_TEXT = (
     re.compile(r'^\{'),
     re.compile(r'^(https?|zed|mailto)://'),
     re.compile(r'^[\s,|:;/\\-]*$'),
-    re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$'),          # single bare word
 )
 
+# Single-word candidates ("Cancel", "Evaluate", but also "Authorization" and
+# every icon name) are reported apart from `unwrapped`; see the module docstring.
+SINGLE_WORD = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
 
-def looks_like_text(s: str) -> bool:
+
+def looks_like_text(s: str, allow_single_word: bool = False) -> bool:
     if len(s) < 2 or len(s) > 400 or '\n' in s:
         return False
-    return not any(p.match(s) for p in NOT_TEXT)
+    if any(p.match(s) for p in NOT_TEXT):
+        return False
+    if not allow_single_word and SINGLE_WORD.match(s):
+        return False
+    return True
 
 
 def strip_comments(text: str) -> str:
-    """Blank out comments and string bodies alike, keeping offsets intact.
+    """Blank out comments, keeping offsets intact.
 
-    String bodies are blanked so that a `"` inside a comment or an escaped
-    quote inside a literal cannot desynchronise the scan.
+    String bodies are walked over without being touched, so a `"` inside a
+    comment or an escaped quote inside a literal cannot desynchronise the scan.
+    Literals survive because scan() reads them out of the result.
     """
     out = list(text)
     i, n = 0, len(text)
@@ -130,6 +165,41 @@ def strip_comments(text: str) -> str:
     return ''.join(out)
 
 
+def blank_gallery_previews(text: str) -> str:
+    """Blank out `fn preview` bodies, keeping offsets intact.
+
+    `impl Component for X` lives next to the widget it documents, but its
+    `preview` returns storybook data - demo labels and sample copy that only
+    render in the developer UI gallery. Counting them as translatable buries
+    the real gaps (measured: crates/ui 164 -> 2, notifications 8 -> 0).
+    """
+    out = list(text)
+    n = len(text)
+
+    def skip(open: str, close: str, i: int) -> int:
+        """Return the index of the delimiter that closes the one at `i`."""
+        depth = 0
+        while i < n:
+            if text[i] == open:
+                depth += 1
+            elif text[i] == close:
+                depth -= 1
+                if depth == 0:
+                    return i
+            i += 1
+        return n
+
+    for m in re.finditer(r'\bfn\s+preview\w*\s*\(', text):
+        end_sig = skip('(', ')', text.index('(', m.start()))
+        body = text.find('{', end_sig)
+        if body == -1:
+            continue  # trait method declaration, no body
+        for k in range(body, min(skip('{', '}', body) + 1, n)):
+            if text[k] != '\n':
+                out[k] = ' '
+    return ''.join(out)
+
+
 # An *inline* test module: the only shape that pushes production code out of
 # the way. `#[cfg(test)] mod foo;` declares a module in a separate file and is
 # routinely placed near the top (crates/sidebar/src/sidebar.rs:86), so it must
@@ -143,23 +213,25 @@ TEST_MODULE = re.compile(
 
 
 def scan(path: pathlib.Path):
-    """Return (translate_calls, candidates) for one file."""
+    """Return (translate_calls, candidates, bare_candidates) for one file."""
     raw = path.read_text(encoding='utf-8', errors='ignore')
     text = strip_comments(raw)
     # Everything from the first inline test module on is test code.
     m = TEST_MODULE.search(text)
-    prod = text[:m.start()] if m else text
+    prod = blank_gallery_previews(text[:m.start()] if m else text)
     calls = len(TRANSLATE.findall(prod))
 
-    cands = []
+    cands, bare = [], []
     for m in STR.finditer(prod):
         s = m.group(1)
-        if not looks_like_text(s) or s in DICT:
+        is_text = looks_like_text(s, allow_single_word=True)
+        if not is_text or s in DICT:
             continue
-        if not PREFIX.search(prod[max(0, m.start() - 120):m.start()]):
+        if not PREFIX.search(prod[max(0, m.start() - 140):m.start()]):
             continue
-        cands.append((prod.count('\n', 0, m.start()) + 1, s))
-    return calls, cands
+        line = prod.count('\n', 0, m.start()) + 1
+        (bare if SINGLE_WORD.match(s) else cands).append((line, s))
+    return calls, cands, bare
 
 
 def main() -> None:
@@ -178,31 +250,41 @@ def main() -> None:
             continue
         if targets and crate not in targets:
             continue
-        calls, cands = scan(path)
-        c = crates.setdefault(crate, {'calls': 0, 'cands': 0, 'files': []})
+        calls, cands, bare = scan(path)
+        c = crates.setdefault(crate, {'calls': 0, 'cands': 0, 'bare': 0, 'files': []})
         c['calls'] += calls
-        if cands:
+        c['bare'] += len(bare)
+        if cands or bare:
             c['cands'] += len(cands)
-            c['files'].append((rel, cands))
+            c['files'].append((rel, cands, bare))
 
     if verbose:
         for crate in sorted(crates):
             c = crates[crate]
-            print(f'=== {crate}: {c["calls"]} translate calls, {c["cands"]} unwrapped candidates')
-            for rel, cands in sorted(c['files'], key=lambda x: -len(x[1])):
-                print(f'  -- {rel}  ({len(cands)})')
-                for line, s in cands:
-                    print(f'     {line:6d}  {s[:100]}')
+            print(
+                f'=== {crate}: {c["calls"]} translate calls, '
+                f'{c["cands"]} unwrapped candidates, {c["bare"]} single-word'
+            )
+            for rel, cands, bare in sorted(c['files'], key=lambda x: -len(x[1])):
+                if cands:
+                    print(f'  -- {rel}  ({len(cands)})')
+                    for line, s in cands:
+                        print(f'     {line:6d}  {s[:100]}')
+                if bare:
+                    print(f'  -- {rel}  ({len(bare)} single-word, judge each)')
+                    for line, s in bare:
+                        print(f'     {line:6d}  {s[:100]}')
         return
 
     rows = sorted(crates.items(), key=lambda kv: -kv[1]['cands'])
-    print(f'{"crate":28} {"t()":>6} {"unwrapped":>10}')
+    print(f'{"crate":28} {"t()":>6} {"unwrapped":>10} {"bare":>6}')
     for crate, c in rows:
-        if c['cands'] or c['calls']:
-            print(f'{crate:28} {c["calls"]:6d} {c["cands"]:10d}')
+        if c['cands'] or c['calls'] or c['bare']:
+            print(f'{crate:28} {c["calls"]:6d} {c["cands"]:10d} {c["bare"]:6d}')
     total_calls = sum(c['calls'] for c in crates.values())
     total_cands = sum(c['cands'] for c in crates.values())
-    print(f'{"TOTAL":28} {total_calls:6d} {total_cands:10d}')
+    total_bare = sum(c['bare'] for c in crates.values())
+    print(f'{"TOTAL":28} {total_calls:6d} {total_cands:10d} {total_bare:6d}')
     print(f'crates scanned: {len(crates)}')
 
 
