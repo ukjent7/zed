@@ -58,6 +58,7 @@ itertools.workspace = true
 language.workspace = true
 language_detection.workspace = true
 linkify.workspace = true
+locale.workspace = true
 log.workspace = true
 lsp.workspace = true
 markdown.workspace = true

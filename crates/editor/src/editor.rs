@@ -4345,7 +4345,7 @@ impl Editor {
                 Tooltip::with_meta_in(
                     "Remove Bookmark",
                     Some(&ToggleBookmark),
-                    SharedString::from("Right-click for more options"),
+                    locale::t("Right-click for more options"),
                     &focus_handle,
                     cx,
                 )
@@ -4715,13 +4715,14 @@ impl Editor {
         let has_context_menu = self.has_mouse_context_menu();
 
         let meta = if is_rejected {
-            SharedString::from("No executable code is associated with this line.")
+            locale::t("No executable code is associated with this line.")
         } else if !breakpoint.is_disabled() {
-            SharedString::from(format!(
-                "{alt_as_text}-click to disable\nright-click for more options"
-            ))
+            locale::t_format(
+                "{alt_as_text}-click to disable\nright-click for more options",
+                &[("{alt_as_text}", &alt_as_text.to_string())],
+            )
         } else {
-            SharedString::from("Right-click for more options")
+            locale::t("Right-click for more options")
         };
         IconButton::new(("breakpoint_indicator", row.0 as usize), icon)
             .icon_size(IconSize::XSmall)
@@ -4754,7 +4755,7 @@ impl Editor {
             .when(!has_context_menu, |button| {
                 button.tooltip(move |_window, cx| {
                     Tooltip::with_meta_in(
-                        primary_action_text,
+                        locale::t(primary_action_text),
                         Some(&ToggleBreakpoint),
                         meta.clone(),
                         &focus_handle,
