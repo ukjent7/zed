@@ -6,7 +6,10 @@ Reports, per crate:
   * how many user-visible-looking literals sit at a display call site but are
     not wrapped in a translate call (`unwrapped`);
   * how many single-word literals sit at those same call sites (`bare`), which
-    `unwrapped` deliberately leaves out.
+    `unwrapped` deliberately leaves out;
+  * how many display-site literals already have a dictionary entry but are not
+    wrapped (`ready`) - these render in English despite being translated, and
+    are the only class that needs no dictionary work at all.
 
 Descriptions and titles reach the screen through many call shapes, so the
 display-site heuristic is deliberately broad; the point is triage, not a gate.
@@ -213,7 +216,7 @@ TEST_MODULE = re.compile(
 
 
 def scan(path: pathlib.Path):
-    """Return (translate_calls, candidates, bare_candidates) for one file."""
+    """Return (translate_calls, candidates, bare, ready_but_unwrapped)."""
     raw = path.read_text(encoding='utf-8', errors='ignore')
     text = strip_comments(raw)
     # Everything from the first inline test module on is test code.
@@ -221,17 +224,23 @@ def scan(path: pathlib.Path):
     prod = blank_gallery_previews(text[:m.start()] if m else text)
     calls = len(TRANSLATE.findall(prod))
 
-    cands, bare = [], []
+    cands, bare, ready = [], [], []
     for m in STR.finditer(prod):
         s = m.group(1)
-        is_text = looks_like_text(s, allow_single_word=True)
-        if not is_text or s in DICT:
+        if not looks_like_text(s, allow_single_word=True):
             continue
+        # Anchored at the end of the window, so a literal already inside
+        # t("...") is not a candidate: `t(` is not a display shape.
         if not PREFIX.search(prod[max(0, m.start() - 140):m.start()]):
             continue
         line = prod.count('\n', 0, m.start()) + 1
-        (bare if SINGLE_WORD.match(s) else cands).append((line, s))
-    return calls, cands, bare
+        if s in DICT:
+            ready.append((line, s))
+        elif SINGLE_WORD.match(s):
+            bare.append((line, s))
+        else:
+            cands.append((line, s))
+    return calls, cands, bare, ready
 
 
 def main() -> None:
@@ -250,25 +259,33 @@ def main() -> None:
             continue
         if targets and crate not in targets:
             continue
-        calls, cands, bare = scan(path)
-        c = crates.setdefault(crate, {'calls': 0, 'cands': 0, 'bare': 0, 'files': []})
+        calls, cands, bare, ready = scan(path)
+        c = crates.setdefault(
+            crate, {'calls': 0, 'cands': 0, 'bare': 0, 'ready': 0, 'files': []}
+        )
         c['calls'] += calls
         c['bare'] += len(bare)
-        if cands or bare:
+        c['ready'] += len(ready)
+        if cands or bare or ready:
             c['cands'] += len(cands)
-            c['files'].append((rel, cands, bare))
+            c['files'].append((rel, cands, bare, ready))
 
     if verbose:
         for crate in sorted(crates):
             c = crates[crate]
             print(
                 f'=== {crate}: {c["calls"]} translate calls, '
-                f'{c["cands"]} unwrapped candidates, {c["bare"]} single-word'
+                f'{c["cands"]} unwrapped candidates, {c["bare"]} single-word, '
+                f'{c["ready"]} already in dictionary'
             )
-            for rel, cands, bare in sorted(c['files'], key=lambda x: -len(x[1])):
+            for rel, cands, bare, ready in sorted(c['files'], key=lambda x: -len(x[1])):
                 if cands:
                     print(f'  -- {rel}  ({len(cands)})')
                     for line, s in cands:
+                        print(f'     {line:6d}  {s[:100]}')
+                if ready:
+                    print(f'  -- {rel}  ({len(ready)} in dictionary, just needs wrapping)')
+                    for line, s in ready:
                         print(f'     {line:6d}  {s[:100]}')
                 if bare:
                     print(f'  -- {rel}  ({len(bare)} single-word, judge each)')
@@ -277,14 +294,17 @@ def main() -> None:
         return
 
     rows = sorted(crates.items(), key=lambda kv: -kv[1]['cands'])
-    print(f'{"crate":28} {"t()":>6} {"unwrapped":>10} {"bare":>6}')
+    print(f'{"crate":28} {"t()":>6} {"unwrapped":>10} {"bare":>6} {"ready":>6}')
     for crate, c in rows:
-        if c['cands'] or c['calls'] or c['bare']:
-            print(f'{crate:28} {c["calls"]:6d} {c["cands"]:10d} {c["bare"]:6d}')
+        if c['cands'] or c['calls'] or c['bare'] or c['ready']:
+            print(
+                f'{crate:28} {c["calls"]:6d} {c["cands"]:10d} {c["bare"]:6d} {c["ready"]:6d}'
+            )
     total_calls = sum(c['calls'] for c in crates.values())
     total_cands = sum(c['cands'] for c in crates.values())
     total_bare = sum(c['bare'] for c in crates.values())
-    print(f'{"TOTAL":28} {total_calls:6d} {total_cands:10d} {total_bare:6d}')
+    total_ready = sum(c['ready'] for c in crates.values())
+    print(f'{"TOTAL":28} {total_calls:6d} {total_cands:10d} {total_bare:6d} {total_ready:6d}')
     print(f'crates scanned: {len(crates)}')
 
 
