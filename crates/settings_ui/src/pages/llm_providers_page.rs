@@ -85,7 +85,7 @@ pub(crate) fn render_add_llm_provider_popover(
 
     PopoverMenu::new("add-llm-provider-popover")
         .trigger(
-            Button::new("add-llm-provider", "Add Provider")
+            Button::new("add-llm-provider", locale::t_static("Add Provider"))
                 .style(ButtonStyle::Outlined)
                 .track_focus(&focus_handle)
                 .label_size(LabelSize::Small)
@@ -103,7 +103,7 @@ pub(crate) fn render_add_llm_provider_popover(
         .menu(move |window, cx| {
             let settings_window = settings_window.clone();
             Some(ContextMenu::build(window, cx, move |menu, _window, _cx| {
-                menu.header("Compatible APIs")
+                menu.header(locale::t_static("Compatible APIs"))
                     .entry("OpenAI", None, {
                         let settings_window = settings_window.clone();
                         move |window, cx| {
@@ -223,20 +223,24 @@ fn render_api_key_providers_item(
 
     if has_key {
         let configured_label = if is_from_env_var {
-            "API Key Set in Environment Variable"
+            locale::t_static("API Key Set in Environment Variable")
         } else {
-            "API Key Configured"
+            locale::t_static("API Key Configured")
         };
         let button_id = format!("reset-api-key-{}", provider_id.0);
 
         let card = ConfiguredApiCard::new(button_id, configured_label)
-            .button_label("Reset Key")
+            .button_label(locale::t_static("Reset Key"))
             .button_tab_index(0)
             .disabled(is_from_env_var)
             .when(is_from_env_var, |this| {
-                this.tooltip_label(format!(
-                    "To reset your API key, unset the {env_var_name} environment variable."
-                ))
+                this.tooltip_label(
+                    locale::t_format(
+                        "To reset your API key, unset the {env_var_name} environment variable.",
+                        &[("{env_var_name}", &env_var_name)],
+                    )
+                    .to_string(),
+                )
             })
             .on_click({
                 let provider = provider.clone();
@@ -295,8 +299,9 @@ fn render_api_key_providers_item(
                                 ),
                         )
                         .child(
-                            Label::new(format!(
-                                "Or set the {env_var_name} env var and restart Zed for it to take effect."
+                            Label::new(locale::t_format(
+                                "Or set the {env_var_name} env var and restart Zed for it to take effect.",
+                                &[("{env_var_name}", &env_var_name)],
                             ))
                             .size(LabelSize::XSmall)
                             .color(Color::Muted),
@@ -391,18 +396,21 @@ fn render_subpage_item(
                 }),
         )
         .child(
-            Button::new(format!("configure-{}", provider_id.0), "Configure")
-                .style(ButtonStyle::OutlinedGhost)
-                .size(ButtonSize::Medium)
-                .end_icon(
-                    Icon::new(IconName::ChevronRight)
-                        .size(IconSize::Small)
-                        .color(Color::Muted),
-                )
-                .tab_index(0isize)
-                .on_click(cx.listener(move |this, _, window, cx| {
-                    open_provider_configuration(this, provider_id.clone(), window, cx);
-                })),
+            Button::new(
+                format!("configure-{}", provider_id.0),
+                locale::t_static("Configure"),
+            )
+            .style(ButtonStyle::OutlinedGhost)
+            .size(ButtonSize::Medium)
+            .end_icon(
+                Icon::new(IconName::ChevronRight)
+                    .size(IconSize::Small)
+                    .color(Color::Muted),
+            )
+            .tab_index(0isize)
+            .on_click(cx.listener(move |this, _, window, cx| {
+                open_provider_configuration(this, provider_id.clone(), window, cx);
+            })),
         )
         .into_any_element()
 }
@@ -633,7 +641,10 @@ fn open_llm_provider_form(
 ) {
     settings_window.llm_provider_form = Some(LlmProviderForm::new(kind, window, cx));
     settings_window.push_dynamic_sub_page(
-        format!("Add {}-Compatible Provider", kind.label()),
+        locale::t_format(
+            "Add {provider}-Compatible Provider",
+            &[("{provider}", kind.label())],
+        ),
         "Agent Configuration",
         Some("llm_providers"),
         true,
@@ -664,14 +675,14 @@ fn render_llm_provider_form_page(
                 .pb_16()
                 .gap_4()
                 .overflow_y_scroll()
-                .child(Label::new(match form.kind {
+                .child(Label::new(locale::t(match form.kind {
                     CompatibleProviderKind::OpenAi => {
                         "This provider will use an OpenAI-compatible API."
                     }
                     CompatibleProviderKind::Anthropic => {
                         "This provider will use an Anthropic Messages-compatible API."
                     }
-                }))
+                })))
                 .child(Divider::horizontal().flex_shrink_0())
                 .child(render_form_field(
                     "Provider Name",
@@ -766,7 +777,7 @@ fn render_models_section(
                 .justify_between()
                 .child(Label::new(locale::t("Models")))
                 .child(
-                    Button::new("add-model", "Add Model")
+                    Button::new("add-model", locale::t_static("Add Model"))
                         .start_icon(
                             Icon::new(IconName::Plus)
                                 .size(IconSize::XSmall)
@@ -832,7 +843,7 @@ fn render_model(
         .child(render_model_capabilities(kind, model, index, window, cx))
         .when(model_count > 1, |this| {
             this.child(
-                Button::new(("remove-model", index), "Remove Model")
+                Button::new(("remove-model", index), locale::t_static("Remove Model"))
                     .start_icon(
                         Icon::new(IconName::Trash)
                             .size(IconSize::XSmall)
@@ -952,7 +963,7 @@ fn render_capability_checkbox(
     cx: &mut Context<SettingsWindow>,
 ) -> impl IntoElement {
     Checkbox::new((id, index), state)
-        .label(label)
+        .label(locale::t(label))
         .on_click(cx.listener(move |this, checked, _window, cx| {
             if let Some(form) = this.llm_provider_form.as_mut()
                 && let Some(model) = form.models.get_mut(index)
@@ -975,7 +986,7 @@ fn render_reasoning_effort_selector(
             let is_selected = effort == selected;
             let settings_window = settings_window.clone();
             menu.push_item(
-                ui::ContextMenuEntry::new(effort.label())
+                ui::ContextMenuEntry::new(locale::t(effort.label()))
                     .toggleable(IconPosition::End, is_selected)
                     .handler(move |_window, cx| {
                         settings_window
@@ -1000,7 +1011,7 @@ fn render_reasoning_effort_selector(
         .child(
             DropdownMenu::new(
                 ElementId::Name(format!("reasoning-effort-selector-{index}").into()),
-                selected.label(),
+                locale::t(selected.label()),
                 menu,
             )
             .style(DropdownStyle::Outlined)
@@ -1036,7 +1047,7 @@ fn render_form_actions(cx: &mut Context<SettingsWindow>) -> impl IntoElement {
             )),
         )
         .child(
-            Button::new("llm-provider-form-save", "Save Provider")
+            Button::new("llm-provider-form-save", locale::t_static("Save Provider"))
                 .style(ButtonStyle::Filled)
                 .on_click(cx.listener(|this, _, window, cx| {
                     save_llm_provider_form(this, window, cx);
@@ -1202,7 +1213,7 @@ fn validate_llm_provider_form(
 ) -> Result<(String, String, String, ParsedModels), SharedString> {
     let provider_name = values.provider_name.clone();
     if provider_name.is_empty() {
-        return Err("Provider Name cannot be empty".into());
+        return Err(locale::t_static("Provider Name cannot be empty").into());
     }
 
     if LanguageModelRegistry::read_global(cx)
@@ -1213,17 +1224,17 @@ fn validate_llm_provider_form(
                 || provider.name().0.as_ref() == provider_name.as_str()
         })
     {
-        return Err("Provider Name is already taken by another provider".into());
+        return Err(locale::t_static("Provider Name is already taken by another provider").into());
     }
 
     let api_url = values.api_url.clone();
     if api_url.is_empty() {
-        return Err("API URL cannot be empty".into());
+        return Err(locale::t_static("API URL cannot be empty").into());
     }
 
     let api_key = values.api_key.clone();
     if api_key.is_empty() {
-        return Err("API Key cannot be empty".into());
+        return Err(locale::t_static("API Key cannot be empty").into());
     }
 
     let models = match values.kind {
@@ -1253,7 +1264,7 @@ fn validate_llm_provider_form(
             .all(|model| model_names.insert(model.name.clone())),
     };
     if !model_names_are_unique {
-        return Err("Model Names must be unique".into());
+        return Err(locale::t_static("Model Names must be unique").into());
     }
 
     Ok((provider_name, api_url, api_key, models))
@@ -1261,7 +1272,7 @@ fn validate_llm_provider_form(
 
 fn parse_model_name(model: &ModelValues) -> Result<String, SharedString> {
     if model.name.is_empty() {
-        return Err("Model Name cannot be empty".into());
+        return Err(locale::t_static("Model Name cannot be empty").into());
     }
     Ok(model.name.clone())
 }
@@ -1320,9 +1331,12 @@ fn parse_anthropic_model(
 }
 
 fn parse_u64_field(value: &str, name: &str) -> Result<u64, SharedString> {
-    value
-        .parse::<u64>()
-        .map_err(|_| format!("{name} must be a number").into())
+    value.parse::<u64>().map_err(|_| {
+        locale::t_format(
+            "{name} must be a number",
+            &[("{name}", locale::t(name).as_str())],
+        )
+    })
 }
 
 #[cfg(test)]

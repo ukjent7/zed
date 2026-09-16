@@ -205,9 +205,9 @@ fn render_context_server(
 
     let tool_label = if is_running && tool_count > 0 {
         Some(if tool_count == 1 {
-            SharedString::from("1 tool")
+            locale::t_static("1 tool")
         } else {
-            SharedString::from(format!("{} tools", tool_count))
+            locale::t_format("{count} tools", &[("{count}", &tool_count.to_string())])
         })
     } else {
         None
@@ -416,7 +416,7 @@ fn render_status_details(
                     )
                     .when(should_show_logout, |this| {
                         this.child(
-                            Button::new("error-logout", "Log Out")
+                            Button::new("error-logout", locale::t_static("Log Out"))
                                 .style(ButtonStyle::Outlined)
                                 .label_size(LabelSize::Small)
                                 .on_click({
@@ -455,7 +455,7 @@ fn render_status_details(
                             ),
                     )
                     .child(
-                        Button::new("authenticate-server", "Authenticate")
+                        Button::new("authenticate-server", locale::t_static("Authenticate"))
                             .style(ButtonStyle::Outlined)
                             .label_size(LabelSize::Small)
                             .on_click({
@@ -514,7 +514,7 @@ fn render_status_details(
                     .w_full()
                     .justify_end()
                     .child(
-                        Button::new("running-logout", "Log Out")
+                        Button::new("running-logout", locale::t_static("Log Out"))
                             .style(ButtonStyle::Outlined)
                             .label_size(LabelSize::Small)
                             .on_click(move |_event, _window, cx| {
@@ -554,7 +554,7 @@ pub(crate) fn render_add_server_popover(
 
     let popover = PopoverMenu::new("add-mcp-server-popover")
         .trigger(
-            Button::new("add-mcp-server", "Add Server")
+            Button::new("add-mcp-server", locale::t_static("Add Server"))
                 .style(ButtonStyle::Outlined)
                 .track_focus(&focus_handle)
                 .start_icon(
@@ -569,7 +569,7 @@ pub(crate) fn render_add_server_popover(
             move |window, cx| {
                 let settings_window = settings_window.clone();
                 Some(ContextMenu::build(window, cx, move |menu, _window, _cx| {
-                    menu.entry("Add Local Server", None, {
+                    menu.entry(locale::t_static("Add Local Server"), None, {
                         let settings_window = settings_window.clone();
                         move |window, cx| {
                             settings_window
@@ -585,7 +585,7 @@ pub(crate) fn render_add_server_popover(
                                 .log_err();
                         }
                     })
-                    .entry("Add Remote Server", None, {
+                    .entry(locale::t_static("Add Remote Server"), None, {
                         let settings_window = settings_window.clone();
                         move |window, cx| {
                             settings_window
@@ -602,28 +602,32 @@ pub(crate) fn render_add_server_popover(
                         }
                     })
                     .separator()
-                    .entry("Install from Extensions", None, {
-                        move |_window, cx| {
-                            if let Some(original_window) = original_window.as_ref() {
-                                cx.activate(true);
-                                original_window
-                                    .update(cx, |_, window, cx| {
-                                        window.activate_window();
-                                        window.dispatch_action(
-                                            zed_actions::Extensions {
-                                                category_filter: Some(
-                                                    ExtensionCategoryFilter::ContextServers,
-                                                ),
-                                                id: None,
-                                            }
-                                            .boxed_clone(),
-                                            cx,
-                                        );
-                                    })
-                                    .log_err();
+                    .entry(
+                        locale::t_static("Install from Extensions"),
+                        None,
+                        {
+                            move |_window, cx| {
+                                if let Some(original_window) = original_window.as_ref() {
+                                    cx.activate(true);
+                                    original_window
+                                        .update(cx, |_, window, cx| {
+                                            window.activate_window();
+                                            window.dispatch_action(
+                                                zed_actions::Extensions {
+                                                    category_filter: Some(
+                                                        ExtensionCategoryFilter::ContextServers,
+                                                    ),
+                                                    id: None,
+                                                }
+                                                .boxed_clone(),
+                                                cx,
+                                            );
+                                        })
+                                        .log_err();
+                                }
                             }
-                        }
-                    })
+                        },
+                    )
                 }))
             }
         });
@@ -880,8 +884,8 @@ pub(crate) fn open_mcp_server_form(
         "Configure MCP Server"
     } else {
         match transport {
-            McpTransport::Stdio => "Add Local MCP Server",
-            McpTransport::Http => "Add Remote MCP Server",
+            McpTransport::Stdio => locale::t_static("Add Local MCP Server"),
+            McpTransport::Http => locale::t_static("Add Remote MCP Server"),
         }
     };
 
@@ -1175,7 +1179,13 @@ fn save_mcp_server_form(
         });
     if collides_with_other_server {
         if let Some(form) = settings_window.mcp_server_form.as_mut() {
-            form.error = Some(format!("A server named \"{}\" already exists.", id.0).into());
+            form.error = Some(
+                locale::t_format(
+                    "A server named \"{name}\" already exists.",
+                    &[("{name}", &id.0)],
+                )
+                .into(),
+            );
         }
         cx.notify();
         return;
@@ -1257,7 +1267,7 @@ fn build_settings_from_values(
 > {
     let name = values.name.trim().to_string();
     if name.is_empty() {
-        return Err("Server name is required.".into());
+        return Err(locale::t_static("Server name is required.").into());
     }
 
     let timeout = parse_timeout(&values.timeout)?;
@@ -1288,13 +1298,16 @@ fn build_settings_from_values(
         McpTransport::Http => {
             let url = values.url.trim().to_string();
             if url.is_empty() {
-                return Err("URL is required.".into());
+                return Err(locale::t_static("URL is required.").into());
             }
             // Validate the URL on save (a deliberate action) rather than on every
             // render, so a clearly invalid URL is reported to the user instead of
             // being silently written and failing later when the server starts.
             if let Err(error) = url::Url::parse(&url) {
-                return Err(format!("Invalid URL: {error}").into());
+                return Err(locale::t_format(
+                    "Invalid URL: {error}",
+                    &[("{error}", &error.to_string())],
+                ));
             }
             let headers = collect_kv(&values.headers, "header")?;
             let oauth_client_id = values.oauth_client_id.trim().to_string();
@@ -1325,7 +1338,7 @@ fn build_settings_from_values(
 fn settings_validation_error(settings: Option<&ContextServerSettings>) -> Option<SharedString> {
     match settings? {
         ContextServerSettings::Http { url, .. } if url::Url::parse(url).is_err() => {
-            Some("Invalid URL in settings.".into())
+            Some(locale::t_static("Invalid URL in settings."))
         }
         _ => None,
     }
@@ -1349,7 +1362,7 @@ fn parse_timeout(text: &str) -> Result<Option<u64>, SharedString> {
     }
     text.parse::<u64>()
         .map(Some)
-        .map_err(|_| "Timeout must be a positive whole number of seconds.".into())
+        .map_err(|_| locale::t_static("Timeout must be a positive whole number of seconds."))
 }
 
 fn collect_kv(
@@ -1363,7 +1376,10 @@ fn collect_kv(
             continue;
         }
         if map.contains_key(&key) {
-            return Err(format!("Duplicate {label} \"{key}\".").into());
+            return Err(locale::t_format(
+                "Duplicate {label} \"{key}\".",
+                &[("{label}", locale::t(label).as_str()), ("{key}", &key)],
+            ));
         }
         map.insert(key, value.clone());
     }

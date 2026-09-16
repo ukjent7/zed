@@ -200,8 +200,8 @@ fn render_agent(
     });
 
     let remove_tooltip = match source {
-        ExternalAgentSource::Registry => "Remove Registry Agent",
-        ExternalAgentSource::Custom => "Remove Custom Agent",
+        ExternalAgentSource::Registry => locale::t_static("Remove Registry Agent"),
+        ExternalAgentSource::Custom => locale::t_static("Remove Custom Agent"),
     };
 
     let remove_button = IconButton::new(format!("uninstall-{}", id_string), IconName::Trash)
@@ -273,7 +273,7 @@ pub(crate) fn render_add_agent_popover(
 
     let popover = PopoverMenu::new("add-agent-server-popover")
         .trigger(
-            Button::new("add-agent", "Add Agent")
+            Button::new("add-agent", locale::t_static("Add Agent"))
                 .style(ButtonStyle::Outlined)
                 .track_focus(&focus_handle)
                 .start_icon(
@@ -287,28 +287,36 @@ pub(crate) fn render_add_agent_popover(
         .menu(move |window, cx| {
             let settings_window = settings_window.clone();
             Some(ContextMenu::build(window, cx, move |menu, _window, _cx| {
-                menu.entry("Install from Registry", None, move |_window, cx| {
-                    if let Some(original_window) = original_window {
-                        cx.activate(true);
-                        original_window
-                            .update(cx, |_, window, cx| {
-                                window.activate_window();
-                                window.dispatch_action(Box::new(zed_actions::AcpRegistry), cx);
+                menu.entry(
+                    locale::t_static("Install from Registry"),
+                    None,
+                    move |_window, cx| {
+                        if let Some(original_window) = original_window {
+                            cx.activate(true);
+                            original_window
+                                .update(cx, |_, window, cx| {
+                                    window.activate_window();
+                                    window.dispatch_action(Box::new(zed_actions::AcpRegistry), cx);
+                                })
+                                .log_err();
+                        }
+                    },
+                )
+                .entry(
+                    locale::t_static("Add Custom Agent"),
+                    None,
+                    move |window, cx| {
+                        settings_window
+                            .update(cx, |this, cx| {
+                                open_custom_agent_form(this, None, window, cx);
                             })
                             .log_err();
-                    }
-                })
-                .entry("Add Custom Agent", None, move |window, cx| {
-                    settings_window
-                        .update(cx, |this, cx| {
-                            open_custom_agent_form(this, None, window, cx);
-                        })
-                        .log_err();
-                })
+                    },
+                )
                 .separator()
-                .header("Learn More")
+                .header(locale::t_static("Learn More"))
                 .item(
-                    ContextMenuEntry::new("ACP Docs")
+                    ContextMenuEntry::new(locale::t_static("ACP Docs"))
                         .icon(IconName::ArrowUpRight)
                         .icon_color(Color::Muted)
                         .icon_position(IconPosition::End)
@@ -473,9 +481,9 @@ pub(crate) fn open_custom_agent_form(
     settings_window.custom_agent_form = Some(CustomAgentForm::new(existing, window, cx));
 
     let title = if is_edit {
-        "Configure External Agent"
+        locale::t_static("Configure External Agent")
     } else {
-        "Add Custom Agent"
+        locale::t_static("Add Custom Agent")
     };
 
     settings_window.push_dynamic_sub_page(
@@ -603,7 +611,7 @@ fn render_env_section(
                             .icon_size(IconSize::Small)
                             .icon_color(Color::Muted)
                             .tab_index(0isize)
-                            .tooltip(Tooltip::text("Remove"))
+                            .tooltip(Tooltip::text(locale::t_static("Remove")))
                             .on_click(cx.listener(move |this, _, _window, cx| {
                                 if let Some(form) = this.custom_agent_form.as_mut()
                                     && ix < form.env.len()
@@ -616,7 +624,7 @@ fn render_env_section(
             )
         }))
         .child(
-            Button::new("custom-agent-env-add", "Add")
+            Button::new("custom-agent-env-add", locale::t_static("Add"))
                 .style(ButtonStyle::Outlined)
                 .label_size(LabelSize::Small)
                 .tab_index(0isize)
@@ -758,7 +766,13 @@ fn save_custom_agent_form(
         });
     if collides_with_other_agent {
         if let Some(form) = settings_window.custom_agent_form.as_mut() {
-            form.error = Some(format!("An agent named \"{}\" already exists.", id.0).into());
+            form.error = Some(
+                locale::t_format(
+                    "An agent named \"{name}\" already exists.",
+                    &[("{name}", &id.0)],
+                )
+                .into(),
+            );
         }
         cx.notify();
         return;
@@ -820,12 +834,12 @@ fn build_settings_from_values(
 ) -> Result<(AgentId, Option<AgentId>, CustomAgentServerSettings), SharedString> {
     let name = values.name.trim().to_string();
     if name.is_empty() {
-        return Err("Agent name is required.".into());
+        return Err(locale::t_static("Agent name is required.").into());
     }
 
     let command = values.command.trim().to_string();
     if command.is_empty() {
-        return Err("Command is required.".into());
+        return Err(locale::t_static("Command is required.").into());
     }
 
     let args = values
@@ -869,7 +883,10 @@ fn collect_kv(
             continue;
         }
         if map.contains_key(&key) {
-            return Err(format!("Duplicate {label} \"{key}\".").into());
+            return Err(locale::t_format(
+                "Duplicate {label} \"{key}\".",
+                &[("{label}", locale::t(label).as_str()), ("{key}", &key)],
+            ));
         }
         map.insert(key, value.clone());
     }

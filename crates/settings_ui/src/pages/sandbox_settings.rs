@@ -61,11 +61,10 @@ pub(crate) fn render_sandbox_settings_page(
         .child(
             SwitchField::new(
                 "sandbox-enabled",
-                Some("Enable Sandbox"),
-                Some(
-                    "Wrap agent-run terminal commands in an OS-level sandbox. When off, commands run with Zed's own permissions."
-                        .into(),
-                ),
+                Some(locale::t_static("Enable Sandbox")),
+                Some(locale::t_static(
+                    "Wrap agent-run terminal commands in an OS-level sandbox. When off, commands run with Zed's own permissions.",
+                )),
                 sandbox_enabled,
                 move |state, _window, cx| {
                     set_sandbox_enabled(*state == ToggleState::Selected, cx);
@@ -76,11 +75,12 @@ pub(crate) fn render_sandbox_settings_page(
         .child({
             let docs_url =
                 client::zed_urls::sandboxing_docs(Some("persistent-sandbox-permissions"), cx);
-            let tooltip = format!("Opens {docs_url}");
+            let tooltip = locale::t_format("Opens {docs_url}", &[("{docs_url}", &docs_url.to_string())])
+                .to_string();
             // Wrap in a row so the button shrinks to its content width instead
             // of stretching across the settings page.
             h_flex().child(
-                Button::new("sandbox-docs-link", "Learn more about sandboxing")
+                Button::new("sandbox-docs-link", locale::t_static("Learn more about sandboxing"))
                     .label_size(LabelSize::Small)
                     .color(Color::Muted)
                     .end_icon(
@@ -115,11 +115,10 @@ pub(crate) fn render_sandbox_settings_page(
                 .child(
                     SwitchField::new(
                         "sandbox-allow-all-hosts",
-                        Some("Allow All Domains"),
-                        Some(
-                            "Let sandboxed commands reach any domain over the network without prompting."
-                                .into(),
-                        ),
+                        Some(locale::t_static("Allow All Domains")),
+                        Some(locale::t_static(
+                            "Let sandboxed commands reach any domain over the network without prompting.",
+                        )),
                         permissions.allow_all_hosts,
                         move |state, _window, cx| {
                             set_allow_all_hosts(*state == ToggleState::Selected, cx);
@@ -144,11 +143,10 @@ pub(crate) fn render_sandbox_settings_page(
                 .child(
                     SwitchField::new(
                         "sandbox-allow-fs-write-all",
-                        Some("Allow All File System Writes"),
-                        Some(
-                            "Let sandboxed commands write anywhere except protected Git metadata without prompting."
-                                .into(),
-                        ),
+                        Some(locale::t_static("Allow All File System Writes")),
+                        Some(locale::t_static(
+                            "Let sandboxed commands write anywhere except protected Git metadata without prompting.",
+                        )),
                         permissions.allow_fs_write_all,
                         move |state, _window, cx| {
                             set_allow_fs_write_all(*state == ToggleState::Selected, cx);
@@ -172,11 +170,10 @@ pub(crate) fn render_sandbox_settings_page(
                 .child(
                     SwitchField::new(
                         "sandbox-warn-confusable-unicode",
-                        Some("Warn About Confusable Unicode"),
-                        Some(
-                            "Warn when an approval prompt requests a domain or write path that contains potentially confusable Unicode characters, such as homoglyphs (i.e. two symbols that look similar, such as a Cyrillic `а`)"
-                                .into(),
-                        ),
+                        Some(locale::t_static("Warn About Confusable Unicode")),
+                        Some(locale::t_static(
+                            "Warn when an approval prompt requests a domain or write path that contains potentially confusable Unicode characters, such as homoglyphs (i.e. two symbols that look similar, such as a Cyrillic `а`)",
+                        )),
                         permissions.warn_confusable_unicode,
                         move |state, _window, cx| {
                             set_warn_confusable_unicode(*state == ToggleState::Selected, cx);
@@ -187,11 +184,10 @@ pub(crate) fn render_sandbox_settings_page(
                 .child(
                     SwitchField::new(
                         "sandbox-warn-ntfs-grants",
-                        Some("Warn About Windows-Drive Grants"),
-                        Some(
-                            "Windows only: warn when a sandbox grant targets a file on a Windows drive (accessed inside WSL via DrvFs). Such grants are enforced through a translated path and their sandbox-integrity guarantees are weaker than files on the Linux distro's own filesystem."
-                                .into(),
-                        ),
+                        Some(locale::t_static("Warn About Windows-Drive Grants")),
+                        Some(locale::t_static(
+                            "Windows only: warn when a sandbox grant targets a file on a Windows drive (accessed inside WSL via DrvFs). Such grants are enforced through a translated path and their sandbox-integrity guarantees are weaker than files on the Linux distro's own filesystem.",
+                        )),
                         permissions.warn_ntfs_grants,
                         move |state, _window, cx| {
                             set_warn_ntfs_grants(*state == ToggleState::Selected, cx);
@@ -215,9 +211,9 @@ fn render_list_section(
 
     v_flex()
         .gap_0p5()
-        .child(Label::new(title))
+        .child(Label::new(locale::t(title)))
         .child(
-            Label::new(description)
+            Label::new(locale::t(description))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
         )
@@ -433,16 +429,18 @@ fn canonicalize_host(host: &str) -> Result<String, String> {
     HostPattern::parse(host)
         .map(|pattern| pattern.to_string())
         .map_err(|error| match error {
-            HostPatternError::Empty => "Domain cannot be empty.".to_string(),
-            HostPatternError::IpLiteral(_) => {
-                "IP addresses and local domains aren't allowed; enter a domain like github.com."
-                    .to_string()
-            }
-            HostPatternError::InvalidWildcard(_) => {
-                "Wildcards are only allowed as a leading label, e.g. *.github.com.".to_string()
-            }
+            HostPatternError::Empty => locale::t_static("Domain cannot be empty.").to_string(),
+            HostPatternError::IpLiteral(_) => locale::t_static(
+                "IP addresses and local domains aren't allowed; enter a domain like github.com.",
+            )
+            .to_string(),
+            HostPatternError::InvalidWildcard(_) => locale::t_static(
+                "Wildcards are only allowed as a leading label, e.g. *.github.com.",
+            )
+            .to_string(),
             HostPatternError::Invalid { .. } => {
-                "Not a valid domain. Use a domain like github.com or *.npmjs.org.".to_string()
+                locale::t_static("Not a valid domain. Use a domain like github.com or *.npmjs.org.")
+                    .to_string()
             }
         })
 }
