@@ -78,6 +78,7 @@ jobs:
             os: ubuntu-latest
             bundle: ./script/bundle-linux
             rustflags: -C link-arg=-fuse-ld=lld
+            codegen_units: 4
             assets: |
               target/release/zed-linux-x86_64.tar.gz
               target/zed-remote-server-linux-x86_64.gz
@@ -88,6 +89,7 @@ jobs:
             os: windows-2022
             bundle: script/bundle-windows.ps1 -Architecture x86_64
             rustflags: ''
+            codegen_units: 4
             assets: |
               target/Zed-x86_64.exe
               target/zed-remote-server-windows-x86_64.zip
@@ -95,6 +97,9 @@ jobs:
             os: macos-latest
             bundle: ./script/bundle-mac aarch64-apple-darwin
             rustflags: ''
+            # GitHub-hosted macOS runners have only 7 GB RAM (3 vCPUs). Setting codegen_units to 1
+            # prevents memory thrashing/swap lockup during LLVM codegen on large crates like git_ui.
+            codegen_units: 1
             assets: |
               target/aarch64-apple-darwin/release/Zed-aarch64.dmg
               target/zed-remote-server-macos-aarch64.gz
@@ -103,8 +108,8 @@ jobs:
     timeout-minutes: 350
     env:
       CARGO_INCREMENTAL: 0
-      # Maximize parallel code generation on 4-vCPU runners (overriding Cargo.toml's 1)
-      CARGO_PROFILE_RELEASE_CODEGEN_UNITS: 4
+      # Maximize parallel code generation on 16GB runners (4), but 1 on 7GB macOS runner to avoid swap thrashing
+      CARGO_PROFILE_RELEASE_CODEGEN_UNITS: ${{ matrix.codegen_units }}
       # Baked into the binary by `option_env!` in crates/auto_update: it is what
       # makes "Check for Updates" look at this repository's releases instead of
       # Zed Cloud. Unset for upstream builds, which keeps them unchanged.
@@ -189,6 +194,10 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+      - name: flatten assets
+        run: |
+          find dist -mindepth 2 -type f -exec mv -t dist {} +
+          find dist -mindepth 1 -type d -delete
       - name: list assets
         run: ls -lh dist
       - name: check tag matches the crate version
