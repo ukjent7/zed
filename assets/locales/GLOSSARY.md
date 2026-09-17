@@ -105,3 +105,17 @@
 | Skill | 技能 | Agent Skills |
 | Front-matter | Front-matter | SKILL.md 头部的 YAML 块，保留英文 |
 | Artifact / Card | 卡片 | Agent 面板中的卡片 |
+| Hunk | 差异块 | Git diff 中一段连续改动 |
+| Cell（notebook） | 单元格 | REPL/notebook 的运行单元 |
+| Kernel | 内核 | Jupyter 内核；不译作“核心” |
+| Trash | 移入废纸篓 | 删除到系统回收站，与 Delete（删除）区分 |
+| Panel Layout: Classic / Agentic | 经典 / 智能体式 | 标题栏面板布局切换 |
+| Waiting for Confirmation | 等待确认 | Agent 工具权限待批 |
+| Click / Right-click | 单击 / 右键单击 | `{modifier}-click` 译作「{modifier} 单击」，去掉连接号 |
+
+## 两条实测陷阱
+
+1. **省略号有两种**：`Search commits…`（U+2026）与 `Enter git ref...`（三个句点）是
+   **不同的键**，照抄源码时别统一替换，否则 `script/extract-l10n` 报 MISSING。
+2. **片段键**（`-click`、`event`/`events`）只是拼装显示的一段，译文须按拼装后的
+   整句读通；能改成整句 `t_format` 就不要留片段键。
