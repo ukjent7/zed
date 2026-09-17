@@ -520,13 +520,13 @@ impl Render for DivInspector {
             .when_some(self.inspector_state.as_ref(), |this, inspector_state| {
                 this.child(
                     v_flex()
-                        .child(Label::new("Layout").size(LabelSize::Large))
+                        .child(Label::new(locale::t_static("Layout")).size(LabelSize::Large))
                         .child(render_layout_state(inspector_state, cx)),
                 )
             })
             .map(|this| match &self.state {
                 State::Loading | State::BuffersLoaded { .. } => {
-                    this.child(Label::new("Loading..."))
+                    this.child(Label::new(locale::t_static("Loading...")))
                 }
                 State::LoadError { message } => this.child(
                     div()
@@ -546,10 +546,13 @@ impl Render for DivInspector {
                             .child(
                                 h_flex()
                                     .justify_between()
-                                    .child(Label::new("Rust Style").size(LabelSize::Large))
+                                    .child(
+                                        Label::new(locale::t_static("Rust Style"))
+                                            .size(LabelSize::Large),
+                                    )
                                     .child(
                                         IconButton::new("reset-style", IconName::Eraser)
-                                            .tooltip(Tooltip::text("Reset style"))
+                                            .tooltip(Tooltip::text(locale::t_static("Reset style")))
                                             .on_click(cx.listener(|this, _, _window, cx| {
                                                 this.reset_style(cx);
                                             })),
@@ -560,7 +563,9 @@ impl Render for DivInspector {
                     .child(
                         v_flex()
                             .gap_2()
-                            .child(Label::new("JSON Style").size(LabelSize::Large))
+                            .child(
+                                Label::new(locale::t_static("JSON Style")).size(LabelSize::Large),
+                            )
                             .child(div().h_128().child(json_style_editor.clone()))
                             .when_some(self.json_style_error.as_ref(), |this, last_error| {
                                 this.child(
@@ -593,7 +598,9 @@ fn render_layout_state(inspector_state: &DivInspectorState, cx: &App) -> Div {
             div()
                 .id("content-size")
                 .text_ui(cx)
-                .tooltip(Tooltip::text("Size of the element's children"))
+                .tooltip(Tooltip::text(locale::t_static(
+                    "Size of the element's children",
+                )))
                 .child(
                     if inspector_state.content_size != inspector_state.bounds.size {
                         format!("Content size: {}", inspector_state.content_size)

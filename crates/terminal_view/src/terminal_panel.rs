@@ -1886,7 +1886,12 @@ impl RenderOnce for InlineAssistTabBarButton {
                 }
             })
             .tooltip(move |_window, cx| {
-                Tooltip::for_action_in("Inline Assist", &InlineAssist::default(), &focus_handle, cx)
+                Tooltip::for_action_in(
+                    locale::t_static("Inline Assist"),
+                    &InlineAssist::default(),
+                    &focus_handle,
+                    cx,
+                )
             })
     }
 }

@@ -16,6 +16,7 @@ doctest = false
 editor.workspace = true
 gpui.workspace = true
 language.workspace = true
+locale.workspace = true
 picker.workspace = true
 project.workspace = true
 ui.workspace = true

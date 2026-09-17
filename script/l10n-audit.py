@@ -31,6 +31,10 @@ call site before wrapping anything:
   arguments. `PROTOCOL_CALL` skips the shapes writable as a plain string
   literal; a field name inside a `&[&str]` table still shows up
   (git_ui/git_graph.rs looks its label up dynamically instead).
+- anything in `NEVER_TRANSLATE`, `NEVER_TRANSLATE_SITES` or
+  `NEVER_TRANSLATE_FILES`. Those are spelled out below with the reason each
+  one is excluded; the list is the accumulated answer to "why is this not
+  wrapped yet?", so a new entry should say what breaks if it is wrapped.
 
 Paths listed in `script/l10n-blocklist.txt` are skipped entirely.
 
@@ -193,6 +197,103 @@ PROTOCOL_CALL = re.compile(
     r'|serde\(\s*rename\s*=\s*$'
 )
 
+# Literals that are never display text, wherever they appear. Wrapping one
+# does not localize anything: it corrupts a protocol field, a font lookup, a
+# file match or an adapter/language pairing.
+#
+# `Go` is the case worth spelling out because it is a homograph: the dictionary
+# translates the verb (转到), and `crates/dap_adapters/src/go.rs` returns the
+# same spelling from `adapter_language_name()` as the Go *language*, which is
+# what pairs a debug adapter with a buffer. This used to be listed under
+# `ready`, inviting exactly that edit.
+NEVER_TRANSLATE = frozenset({
+    # Sentry crash-report field names.
+    'sentry[release]',
+    # Font family and icon names.
+    'Apple Color Emoji', '.AppleColorEmojiUI', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Lilex', 'IBM Plex Sans', '.ZedMono',
+    # File names matched against the filesystem.
+    'CMakeLists.txt', 'Cargo.lock', 'Cargo.toml', 'Dockerfile', 'Makefile',
+    'Containerfile', 'Podfile', 'Procfile',
+    # Environment variable names.
+    'NO_PROXY',
+    # DAP launch/config keys and LSP settings keys.
+    'sourceMaps', 'pauseForSourceMap', 'sourceMapRenames',
+    'browserLaunchLocation', 'pythonExtension', 'typeCheckingMode',
+    'disableOrganizeImports',
+    # Language, vendor and theme proper nouns.
+    'Go', 'Python', 'Node', 'OpenAI', 'Anthropic', 'One', 'Ayu', 'Gruvbox',
+    # Git refs.
+    'HEAD', 'Origin',
+    # Keymap context names.
+    '<global>', '<null>',
+    # Shell commands shown verbatim.
+    'git init', 'git commit --no-verify', 'ssh user@example -p 2222',
+    # Byte/placeholder markers, not words.
+    '??', '\\u{2022}',
+})
+
+# Literals that are identity values at one site but perfectly good labels at
+# another, so they can only be excluded per site. `Terminal` is a menu item in
+# one crate and a serialized pane id in `debugger_ui/persistence.rs`.
+NEVER_TRANSLATE_SITES = {
+    # `to_shared_string()` feeds `tab_content_text`, which is serialized and
+    # read back to rebuild the pane layout, and is reused as an element id.
+    'crates/debugger_ui/src/persistence.rs': frozenset({
+        'Console', 'Variables', 'Breakpoints', 'Frames', 'Modules', 'Sources',
+        'Terminal', 'Memory View',
+    }),
+    # Column keys, kept in English and indexed by position; the menu label is
+    # already translated at the display site (`locale::t(*label)`).
+    'crates/git_ui/src/git_graph.rs': frozenset({
+        'Graph', 'Description', 'Date', 'Author', 'Commit',
+    }),
+    # Dev scaffold behind `#[cfg(debug_assertions)]`: fake errors registered
+    # so the error UI can be exercised, never shown to a user.
+    'crates/zed/src/zed.rs': frozenset({
+        'Error: Prepare rename via rust-analyzer failed: No references found '
+        'at position',
+        'This is some error to ignore.',
+    }),
+    # Filler copy for the typography preview, not UI text.
+    'crates/workspace/src/theme_preview.rs': frozenset({
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do '
+        'eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do '
+        'eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim '
+        'ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut '
+        'aliquip ex ea commodo consequat.',
+        'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris '
+        'nisi ut aliquip ex ea commodo consequat.',
+        'Duis aute irure dolor in reprehenderit in voluptate velit esse '
+        'cillum dolore eu fugiat nulla pariatur.',
+        'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui '
+        'officia deserunt mollit anim id est laborum.',
+    }),
+}
+
+# Files whose literals are never GUI text. Excluding a file hides any real gap
+# that appears in it later, so each entry is a file whose contents are entirely
+# protocol, identity or demo data.
+NEVER_TRANSLATE_FILES = (
+    'crates/zed/src/reliability.rs',        # sentry[..] protocol field names
+    'crates/gpui/src/svg_renderer.rs',      # font family names
+    'crates/gpui/src/text_system.rs',
+    'crates/theme/src/icon_theme.rs',       # file names
+    'crates/languages/src/python.rs',       # LSP settings keys
+    'crates/dap_adapters/',                 # language names + DAP config keys
+    'crates/component_preview/',            # storybook demo copy
+    'crates/collab/src/rpc.rs',             # server-side error string
+    'crates/project/src/git_store/conflict_set.rs',  # git refs
+    'crates/project/src/debugger/locators/',         # language/tool names
+    'crates/onboarding/src/basics_page.rs',          # theme names
+)
+
+# Test data and `static` initializers are reported by neither the blocklist nor
+# the display-site heuristic, so they are filtered here. A `static` cannot call
+# `locale::t_static` at all: it is not a const fn.
+TEST_FILE = re.compile(r'(?:_tests?\.rs|(?:^|/)tests?\.rs|(?:^|/)tests?/.*\.rs)$')
+
 
 def looks_like_text(s: str, allow_single_word: bool = False) -> bool:
     if len(s) < 2 or len(s) > 400 or '\n' in s:
@@ -307,10 +408,18 @@ def scan(path: pathlib.Path):
     prod = blank_gallery_previews(text[:m.start()] if m else text)
     calls = len(TRANSLATE.findall(prod))
 
+    try:
+        rel = path.relative_to(ROOT).as_posix()
+    except ValueError:
+        rel = path.as_posix()
+    blocked = NEVER_TRANSLATE_SITES.get(rel, frozenset())
+
     cands, bare, ready = [], [], []
     for m in STR.finditer(prod):
         s = m.group(1)
         if not looks_like_text(s, allow_single_word=True):
+            continue
+        if s in NEVER_TRANSLATE or s in blocked:
             continue
         # Anchored at the end of the window, so a literal already inside
         # t("...") is not a candidate: `t(` is not a display shape.
@@ -335,6 +444,8 @@ def scan(path: pathlib.Path):
         for lit in STR.finditer(m.group(0)):
             s = lit.group(1)
             if not looks_like_text(s, allow_single_word=True):
+                continue
+            if s in NEVER_TRANSLATE or s in blocked:
                 continue
             hit = (line, s)
             if hit in seen:
@@ -364,6 +475,9 @@ def main() -> None:
         if crate == 'locale':
             continue
         if (rel + '/').startswith(BLOCKLIST):
+            continue
+        # Protocol/identity/demo files, and test data.
+        if rel.startswith(NEVER_TRANSLATE_FILES) or TEST_FILE.search(rel):
             continue
         if targets and crate not in targets:
             continue

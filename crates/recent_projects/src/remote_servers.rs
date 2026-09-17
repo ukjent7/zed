@@ -1030,7 +1030,7 @@ impl RemoteServerPickerDelegate {
                         .text_ellipsis()
                         .when(is_wsl, |this| {
                             this.child(
-                                Label::new("WSL:")
+                                Label::new(locale::t_static("WSL:"))
                                     .size(LabelSize::Small)
                                     .color(Color::Muted),
                             )
@@ -2369,7 +2369,7 @@ impl RemoteServerProjects {
                         .child(
                             div().track_focus(&self.focus_handle(cx)).size_full().child(
                                 v_flex().py_1().child(
-                                    ListItem::new("Error")
+                                    ListItem::new(locale::t_static("Error"))
                                         .inset(true)
                                         .selectable(false)
                                         .spacing(ui::ListItemSpacing::Sparse)

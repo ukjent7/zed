@@ -707,16 +707,24 @@ impl VariableList {
             cx.update(|window, cx| {
                 let context_menu = ContextMenu::build(window, cx, |menu, _, _| {
                     menu.when_some(entry.as_variable(), |menu, _| {
-                        menu.action("Copy Name", CopyVariableName.boxed_clone())
-                            .action("Copy Value", CopyVariableValue.boxed_clone())
-                            .when(supports_set_variable, |menu| {
-                                menu.action("Edit Value", EditVariable.boxed_clone())
-                            })
-                            .when(supports_go_to_memory, |menu| {
-                                menu.action("Go To Memory", GoToMemory.boxed_clone())
-                            })
-                            .action("Watch Variable", AddWatch.boxed_clone())
-                            .when_some(can_toggle_data_breakpoint, |mut menu, data_info| {
+                        menu.action(
+                            locale::t_static("Copy Name"),
+                            CopyVariableName.boxed_clone(),
+                        )
+                        .action(
+                            locale::t_static("Copy Value"),
+                            CopyVariableValue.boxed_clone(),
+                        )
+                        .when(supports_set_variable, |menu| {
+                            menu.action(locale::t_static("Edit Value"), EditVariable.boxed_clone())
+                        })
+                        .when(supports_go_to_memory, |menu| {
+                            menu.action(locale::t_static("Go To Memory"), GoToMemory.boxed_clone())
+                        })
+                        .action(locale::t_static("Watch Variable"), AddWatch.boxed_clone())
+                        .when_some(
+                            can_toggle_data_breakpoint,
+                            |mut menu, data_info| {
                                 menu = menu.separator();
                                 if let Some(access_types) = data_info.access_types {
                                     for access in access_types {
@@ -740,20 +748,27 @@ impl VariableList {
                                     menu
                                 } else {
                                     menu.action(
-                                        "Toggle Data Breakpoint",
+                                        locale::t_static("Toggle Data Breakpoint"),
                                         crate::ToggleDataBreakpoint { access_type: None }
                                             .boxed_clone(),
                                     )
                                 }
-                            })
+                            },
+                        )
                     })
                     .when(entry.as_watcher().is_some(), |menu| {
-                        menu.action("Copy Name", CopyVariableName.boxed_clone())
-                            .action("Copy Value", CopyVariableValue.boxed_clone())
-                            .when(supports_set_variable, |menu| {
-                                menu.action("Edit Value", EditVariable.boxed_clone())
-                            })
-                            .action("Remove Watch", RemoveWatch.boxed_clone())
+                        menu.action(
+                            locale::t_static("Copy Name"),
+                            CopyVariableName.boxed_clone(),
+                        )
+                        .action(
+                            locale::t_static("Copy Value"),
+                            CopyVariableValue.boxed_clone(),
+                        )
+                        .when(supports_set_variable, |menu| {
+                            menu.action(locale::t_static("Edit Value"), EditVariable.boxed_clone())
+                        })
+                        .action(locale::t_static("Remove Watch"), RemoveWatch.boxed_clone())
                     })
                     .context(focus_handle.clone())
                 });
@@ -1363,7 +1378,12 @@ impl VariableList {
                         }
                     })
                     .tooltip(move |_window, cx| {
-                        Tooltip::for_action_in("Remove Watch", &RemoveWatch, &focus_handle, cx)
+                        Tooltip::for_action_in(
+                            locale::t_static("Remove Watch"),
+                            &RemoveWatch,
+                            &focus_handle,
+                            cx,
+                        )
                     })
                     .icon_size(ui::IconSize::Indicator),
                 ),

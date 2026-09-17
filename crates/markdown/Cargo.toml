@@ -26,6 +26,7 @@ gpui.workspace = true
 html5ever.workspace = true
 language.workspace = true
 linkify.workspace = true
+locale.workspace = true
 log.workspace = true
 markup5ever_rcdom.workspace = true
 mermaid_render = { path = "../mermaid_render" }

@@ -400,7 +400,7 @@ impl TelemetryLogView {
                     .when(signed_in, |this| {
                         this.child(
                             div()
-                                .child(ui::Chip::new("signed in"))
+                                .child(ui::Chip::new(locale::t_static("signed in")))
                                 .visible_on_hover("telemetry-entry"),
                         )
                     }),
@@ -539,7 +539,7 @@ impl TelemetryLogToolbarItemView {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let search_editor = cx.new(|cx| {
             let mut editor = editor::Editor::single_line(window, cx);
-            editor.set_placeholder_text("Filter events...", window, cx);
+            editor.set_placeholder_text(locale::t_static("Filter events..."), window, cx);
             editor
         });
 
@@ -580,7 +580,7 @@ impl Render for TelemetryLogToolbarItemView {
             .child(
                 IconButton::new("clear_events", IconName::Trash)
                     .icon_size(IconSize::Small)
-                    .tooltip(Tooltip::text("Clear Events"))
+                    .tooltip(Tooltip::text(locale::t_static("Clear Events")))
                     .disabled(!has_events)
                     .on_click(cx.listener(move |_this, _, _window, cx| {
                         telemetry_log_clone.update(cx, |log, cx| {
@@ -591,7 +591,7 @@ impl Render for TelemetryLogToolbarItemView {
             .child(
                 IconButton::new("open_log_file", IconName::File)
                     .icon_size(IconSize::Small)
-                    .tooltip(Tooltip::text("Open Raw Log File"))
+                    .tooltip(Tooltip::text(locale::t_static("Open Raw Log File")))
                     .on_click(|_, _window, cx| {
                         let path = Telemetry::log_file_path();
                         cx.open_url(&format!("file://{}", path.display()));

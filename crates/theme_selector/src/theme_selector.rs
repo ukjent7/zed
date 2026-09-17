@@ -541,7 +541,7 @@ impl PickerDelegate for ThemeSelectorDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("docs", "View Theme Docs")
+                    Button::new("docs", locale::t_static("View Theme Docs"))
                         .end_icon(
                             Icon::new(IconName::ArrowUpRight)
                                 .size(IconSize::Small)
@@ -552,17 +552,19 @@ impl PickerDelegate for ThemeSelectorDelegate {
                         })),
                 )
                 .child(
-                    Button::new("more-themes", "Install Themes").on_click(cx.listener({
-                        move |_, _, window, cx| {
-                            window.dispatch_action(
-                                Box::new(Extensions {
-                                    category_filter: Some(ExtensionCategoryFilter::Themes),
-                                    id: None,
-                                }),
-                                cx,
-                            );
-                        }
-                    })),
+                    Button::new("more-themes", locale::t_static("Install Themes")).on_click(
+                        cx.listener({
+                            move |_, _, window, cx| {
+                                window.dispatch_action(
+                                    Box::new(Extensions {
+                                        category_filter: Some(ExtensionCategoryFilter::Themes),
+                                        id: None,
+                                    }),
+                                    cx,
+                                );
+                            }
+                        }),
+                    ),
                 )
                 .into_any_element(),
         )

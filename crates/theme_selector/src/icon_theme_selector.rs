@@ -332,7 +332,7 @@ impl PickerDelegate for IconThemeSelectorDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("docs", "View Icon Theme Docs")
+                    Button::new("docs", locale::t_static("View Icon Theme Docs"))
                         .end_icon(
                             Icon::new(IconName::ArrowUpRight)
                                 .size(IconSize::Small)
@@ -343,8 +343,8 @@ impl PickerDelegate for IconThemeSelectorDelegate {
                         }),
                 )
                 .child(
-                    Button::new("more-icon-themes", "Install Icon Themes").on_click(
-                        move |_event, window, cx| {
+                    Button::new("more-icon-themes", locale::t_static("Install Icon Themes"))
+                        .on_click(move |_event, window, cx| {
                             window.dispatch_action(
                                 Box::new(Extensions {
                                     category_filter: Some(ExtensionCategoryFilter::IconThemes),
@@ -352,8 +352,7 @@ impl PickerDelegate for IconThemeSelectorDelegate {
                                 }),
                                 cx,
                             );
-                        },
-                    ),
+                        }),
                 )
                 .into_any_element(),
         )

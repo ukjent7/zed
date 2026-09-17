@@ -636,7 +636,7 @@ impl BreakpointList {
                             let focus_handle = focus_handle.clone();
                             move |_window, cx| {
                                 Tooltip::with_meta_in(
-                                    "Remove Breakpoint",
+                                    locale::t_static("Remove Breakpoint"),
                                     Some(&UnsetBreakpoint),
                                     tooltip,
                                     &focus_handle,

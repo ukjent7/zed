@@ -721,7 +721,7 @@ impl PickerDelegate for OpenPathDelegate {
                             Some(
                                 "A file or folder with the same name already exists. Replacing it will overwrite its current contents.",
                             ),
-                            &["Replace", "Cancel"],
+                            &[gpui::PromptButton::new(locale::t_static("Replace")), gpui::PromptButton::cancel(locale::t_static("Cancel"))],
                             cx
                         );
                         self.replace_prompt = cx.spawn_in(window, async move |picker, cx| {
@@ -922,12 +922,12 @@ impl PickerDelegate for OpenPathDelegate {
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
         Some(match &self.directory_state {
-            DirectoryState::Create { .. } => SharedString::from("Type a path…"),
+            DirectoryState::Create { .. } => locale::t_static("Type a path…"),
             DirectoryState::List {
                 error: Some(error), ..
             } => error.clone(),
             DirectoryState::List { .. } | DirectoryState::None { .. } => {
-                SharedString::from("No such file or directory")
+                locale::t_static("No such file or directory")
             }
         })
     }

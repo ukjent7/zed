@@ -454,7 +454,12 @@ impl NewProcessModal {
                 cx.emit(DismissEvent);
             })
         })
-        .detach_and_prompt_err("Failed to edit debug.json", window, cx, |_, _, _| None);
+        .detach_and_prompt_err(
+            locale::t_static("Failed to edit debug.json"),
+            window,
+            cx,
+            |_, _, _| None,
+        );
     }
 
     fn adapter_drop_down_menu(
@@ -642,7 +647,7 @@ impl Render for NewProcessModal {
                             )
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Run predefined task",
+                                    locale::t_static("Run predefined task"),
                                     &ActivateTaskTab,
                                     &task_focus_handle,
                                     cx,
@@ -658,7 +663,7 @@ impl Render for NewProcessModal {
                             )
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Start a predefined debug scenario",
+                                    locale::t_static("Start a predefined debug scenario"),
                                     &ActivateDebugTab,
                                     &debug_focus_handle,
                                     cx,
@@ -683,7 +688,7 @@ impl Render for NewProcessModal {
                             )
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Attach the debugger to a running process",
+                                    locale::t_static("Attach the debugger to a running process"),
                                     &ActivateAttachTab,
                                     &attach_focus_handle,
                                     cx,
@@ -699,7 +704,7 @@ impl Render for NewProcessModal {
                             )
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Launch a new process with a debugger",
+                                    locale::t_static("Launch a new process with a debugger"),
                                     &ActivateLaunchTab,
                                     &launch_focus_handle,
                                     cx,
@@ -733,24 +738,27 @@ impl Render for NewProcessModal {
                         container
                             .child(
                                 h_flex().child(
-                                    Button::new("edit-custom-debug", "Edit in debug.json")
-                                        .on_click(cx.listener(|this, _, window, cx| {
-                                            this.save_debug_scenario(window, cx);
-                                        }))
-                                        .key_binding(KeyBinding::for_action(&*secondary_action, cx))
-                                        .disabled(
-                                            self.debugger.is_none()
-                                                || self
-                                                    .configure_mode
-                                                    .read(cx)
-                                                    .program
-                                                    .read(cx)
-                                                    .is_empty(cx),
-                                        ),
+                                    Button::new(
+                                        "edit-custom-debug",
+                                        locale::t_static("Edit in debug.json"),
+                                    )
+                                    .on_click(cx.listener(|this, _, window, cx| {
+                                        this.save_debug_scenario(window, cx);
+                                    }))
+                                    .key_binding(KeyBinding::for_action(&*secondary_action, cx))
+                                    .disabled(
+                                        self.debugger.is_none()
+                                            || self
+                                                .configure_mode
+                                                .read(cx)
+                                                .program
+                                                .read(cx)
+                                                .is_empty(cx),
+                                    ),
                                 ),
                             )
                             .child(
-                                Button::new("debugger-spawn", "Start")
+                                Button::new("debugger-spawn", locale::t_static("Start"))
                                     .on_click(cx.listener(|this, _, window, cx| {
                                         this.start_new_session(window, cx)
                                     }))
@@ -780,12 +788,15 @@ impl Render for NewProcessModal {
                         let secondary_action = menu::SecondaryConfirm.boxed_clone();
                         container
                             .child(div().child({
-                                Button::new("edit-attach-task", "Edit in debug.json")
-                                    .key_binding(KeyBinding::for_action(&*secondary_action, cx))
-                                    .on_click(move |_, window, cx| {
-                                        window.dispatch_action(secondary_action.boxed_clone(), cx)
-                                    })
-                                    .disabled(disabled)
+                                Button::new(
+                                    "edit-attach-task",
+                                    locale::t_static("Edit in debug.json"),
+                                )
+                                .key_binding(KeyBinding::for_action(&*secondary_action, cx))
+                                .on_click(move |_, window, cx| {
+                                    window.dispatch_action(secondary_action.boxed_clone(), cx)
+                                })
+                                .disabled(disabled)
                             }))
                             .child(
                                 h_flex()
@@ -933,7 +944,7 @@ impl ConfigureMode {
             .child(
                 h_flex()
                     .gap_1()
-                    .child(Label::new("Debugger:").color(Color::Muted))
+                    .child(Label::new(locale::t_static("Debugger:")).color(Color::Muted))
                     .child(adapter_menu),
             )
             .child(self.program.clone())
@@ -941,7 +952,7 @@ impl ConfigureMode {
             .child(
                 Switch::new("debugger-stop-on-entry", self.stop_on_entry)
                     .tab_index(3_isize)
-                    .label("Stop on Entry")
+                    .label(locale::t_static("Stop on Entry"))
                     .label_position(SwitchLabelPosition::Start)
                     .label_size(LabelSize::Default)
                     .on_click({
@@ -1500,7 +1511,7 @@ impl PickerDelegate for DebugDelegate {
                         }),
                     )
                 } else {
-                    Button::new("edit-debug-task", "Edit in debug.json")
+                    Button::new("edit-debug-task", locale::t_static("Edit in debug.json"))
                         .key_binding(KeyBinding::for_action(&*action, cx))
                         .on_click(move |_, window, cx| {
                             window.dispatch_action(action.boxed_clone(), cx)
@@ -1511,7 +1522,7 @@ impl PickerDelegate for DebugDelegate {
                 if (current_modifiers.alt || self.matches.is_empty()) && !self.prompt.is_empty() {
                     let action = picker::ConfirmInput { secondary: false }.boxed_clone();
                     this.child({
-                        Button::new("launch-custom", "Launch Custom")
+                        Button::new("launch-custom", locale::t_static("Launch Custom"))
                             .key_binding(KeyBinding::for_action(&*action, cx))
                             .on_click(move |_, window, cx| {
                                 window.dispatch_action(action.boxed_clone(), cx)

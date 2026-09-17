@@ -7335,7 +7335,7 @@ impl Sidebar {
 
     fn render_empty_state(&self, cx: &mut Context<Self>) -> impl IntoElement {
         ProjectEmptyState::new(
-            "Threads Sidebar",
+            locale::t_static("Threads Sidebar"),
             self.focus_handle(cx),
             KeyBinding::for_action(&workspace::Open::default(), cx),
         )
@@ -8229,7 +8229,8 @@ pub fn dump_workspace_info(
         });
 
         let buffer = cx.new(|cx| {
-            editor::MultiBuffer::singleton(buffer, cx).with_title("Workspace Info".into())
+            editor::MultiBuffer::singleton(buffer, cx)
+                .with_title(locale::t_static("Workspace Info").into())
         });
 
         _this.update_in(cx, |workspace, window, cx| {

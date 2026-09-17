@@ -1385,12 +1385,13 @@ impl DebugPanel {
                                 .read(cx)
                                 .historic_snapshots();
 
-                            context_menu = context_menu.entry("Current State", None, {
-                                let running_state = running_state.clone();
-                                move |_window, cx| {
-                                    handler(None, running_state.clone(), cx);
-                                }
-                            });
+                            context_menu =
+                                context_menu.entry(locale::t_static("Current State"), None, {
+                                    let running_state = running_state.clone();
+                                    move |_window, cx| {
+                                        handler(None, running_state.clone(), cx);
+                                    }
+                                });
 
                             if !history.is_empty() {
                                 context_menu = context_menu.separator();

@@ -686,7 +686,7 @@ impl PickerDelegate for StashListDelegate {
                     // wants the verb. One source key cannot carry both senses,
                     // so this one stays English instead of showing the wrong
                     // word.
-                    Button::new("view-stash", "View")
+                    Button::new("view-stash", locale::t_static("View"))
                         .key_binding(
                             KeyBinding::for_action_in(
                                 &stash_picker::ShowStashItem,

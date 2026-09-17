@@ -86,9 +86,9 @@ pub fn install_cli_binary(window: &mut Window, cx: &mut Context<Workspace>) {
         if cfg!(any(target_os = "linux", target_os = "freebsd")) {
             let prompt = cx.prompt(
                 PromptLevel::Warning,
-                "CLI should already be installed",
+                locale::t_static("CLI should already be installed"),
                 Some(LINUX_PROMPT_DETAIL),
-                &["OK"],
+                &[gpui::PromptButton::ok(locale::t_static("OK"))],
             );
             cx.background_spawn(prompt).detach();
             return Ok(());
@@ -111,8 +111,8 @@ pub fn install_cli_binary(window: &mut Window, cx: &mut Context<Workspace>) {
                                     "You can add `zed` to your PATH manually.",
                                     cx,
                                 )
-                                .with_title("Couldn't install the Zed CLI")
-                                .more_info_message("Show me how")
+                                .with_title(locale::t_static("Couldn't install the Zed CLI"))
+                                .more_info_message(locale::t_static("Show me how"))
                                 .more_info_url(CANT_INSTALL_DOCS_URL)
                             })
                         },
@@ -140,5 +140,10 @@ pub fn install_cli_binary(window: &mut Window, cx: &mut Context<Workspace>) {
         register_zed_scheme(cx).await.log_err();
         Ok(())
     })
-    .detach_and_prompt_err("Cannot install the Zed CLI", window, cx, |_, _, _| None);
+    .detach_and_prompt_err(
+        locale::t_static("Cannot install the Zed CLI"),
+        window,
+        cx,
+        |_, _, _| None,
+    );
 }

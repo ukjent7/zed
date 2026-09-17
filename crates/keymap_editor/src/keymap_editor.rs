@@ -3175,7 +3175,7 @@ impl Render for KeybindingEditorModal {
                                                     // dictionary's "View" is the noun
                                                     // used by the git_panel menu header,
                                                     // not this verb.
-                                                    Button::new("show_matching", "View")
+                                                    Button::new("show_matching", locale::t_static("View"))
                                                         .label_size(LabelSize::Small)
                                                         .end_icon(
                                                             Icon::new(IconName::ArrowUpRight)

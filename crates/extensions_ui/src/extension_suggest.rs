@@ -298,10 +298,10 @@ fn suggest_for_buffer(
                         .into_any_element()
                 })
                 .with_title(suggestion.title)
-                .more_info_message("Learn more")
+                .more_info_message(locale::t_static("Learn more"))
                 .more_info_url(suggestion.docs_url)
                 .primary_message(suggestion.install_message)
-                .secondary_message("Don't show again")
+                .secondary_message(locale::t_static("Don't show again"))
             });
         }
         None => {
@@ -328,8 +328,8 @@ fn suggest_for_buffer(
                     ),
                     cx,
                 )
-                .primary_message("Yes, install extension")
-                .secondary_message("No, don't install it")
+                .primary_message(locale::t_static("Yes, install extension"))
+                .secondary_message(locale::t_static("No, don't install it"))
             });
         }
     }

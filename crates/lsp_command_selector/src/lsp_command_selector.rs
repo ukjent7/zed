@@ -64,7 +64,9 @@ impl LspCommandSelector {
         let arguments_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
             editor.set_placeholder_text(
-                "JSON arguments (42, {\"key\": \"value\"}, …) or plain text for one string",
+                locale::t_static(
+                    "JSON arguments (42, {\"key\": \"value\"}, …) or plain text for one string",
+                ),
                 window,
                 cx,
             );
@@ -370,7 +372,7 @@ impl PickerDelegate for LspCommandSelectorDelegate {
                         .gap_2()
                         .justify_between()
                         .child(
-                            Label::new("Arguments")
+                            Label::new(locale::t_static("Arguments"))
                                 .size(LabelSize::Small)
                                 .color(Color::Muted),
                         )
@@ -383,7 +385,7 @@ impl PickerDelegate for LspCommandSelectorDelegate {
                                     cx,
                                 ))
                                 .child(
-                                    Label::new("to switch focus")
+                                    Label::new(locale::t_static("to switch focus"))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 ),
@@ -393,7 +395,7 @@ impl PickerDelegate for LspCommandSelectorDelegate {
                 .map(|footer| match &self.execution {
                     Execution::Idle => footer,
                     Execution::Running { .. } => footer.child(
-                        Label::new("Executing command…")
+                        Label::new(locale::t_static("Executing command…"))
                             .size(LabelSize::Small)
                             .color(Color::Muted),
                     ),

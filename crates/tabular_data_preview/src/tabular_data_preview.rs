@@ -299,7 +299,7 @@ impl Item for TabularDataPreviewPane {
                     .file_name()
                     .map(|name| format!("Preview {}", name.to_string_lossy()).into())
             })
-            .unwrap_or_else(|| SharedString::from("Tabular Data Preview"))
+            .unwrap_or_else(|| locale::t_static("Tabular Data Preview"))
     }
 }
 

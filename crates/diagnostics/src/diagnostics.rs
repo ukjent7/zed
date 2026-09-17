@@ -104,9 +104,9 @@ impl Render for ProjectDiagnosticsEditor {
         let child =
             if warning_count + self.summary.error_count == 0 && self.editor.read(cx).is_empty(cx) {
                 let label = if self.summary.warning_count == 0 {
-                    SharedString::new_static("No problems in workspace")
+                    locale::t_static("No problems in workspace")
                 } else {
-                    SharedString::new_static("No errors in workspace")
+                    locale::t_static("No errors in workspace")
                 };
                 v_flex()
                     .key_context("EmptyPane")
@@ -769,7 +769,10 @@ impl Item for ProjectDiagnosticsEditor {
                         h_flex()
                             .gap_1()
                             .child(Icon::new(IconName::Check).color(Color::Success))
-                            .child(Label::new("No problems").color(params.text_color())),
+                            .child(
+                                Label::new(locale::t_static("No problems"))
+                                    .color(params.text_color()),
+                            ),
                     )
                 },
             )

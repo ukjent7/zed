@@ -305,8 +305,10 @@ impl Render for PendingKeystrokesIndicator {
                                                     .color(Color::Accent),
                                                 )
                                                 .child(
-                                                    Label::new("is waiting for more keys")
-                                                        .color(Color::Muted),
+                                                    Label::new(locale::t_static(
+                                                        "is waiting for more keys",
+                                                    ))
+                                                    .color(Color::Muted),
                                                 ),
                                         )
                                         .children(

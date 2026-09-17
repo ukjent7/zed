@@ -62,9 +62,9 @@ pub fn init(cx: &mut App) {
 
                     cx.prompt(
                         PromptLevel::Info,
-                        "Copied into clipboard",
+                        locale::t_static("Copied into clipboard"),
                         Some(&specs),
-                        &["OK"],
+                        &[gpui::PromptButton::ok(locale::t_static("OK"))],
                     )
                     .await
                 })
@@ -75,9 +75,9 @@ pub fn init(cx: &mut App) {
                 cx.write_to_clipboard(ClipboardItem::new_string(clipboard_text.clone()));
                 drop(window.prompt(
                     PromptLevel::Info,
-                    "Copied into clipboard",
+                    locale::t_static("Copied into clipboard"),
                     Some(&clipboard_text),
-                    &["OK"],
+                    &[gpui::PromptButton::ok(locale::t_static("OK"))],
                     cx,
                 ));
             })
