@@ -100,18 +100,24 @@ jobs:
               echo 'already parked'
               continue
             fi
-            if gh api --silent -X PUT \
-                 "/repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/disable" 2>/dev/null; then
+            if err=$(gh api --silent -X PUT \
+                 "/repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/disable" 2>&1); then
               echo 'disabled'
             else
-              echo 'FAILED'
+              # Surface what the API actually said. Swallowing it and blaming a
+              # read-only token for every failure sent the diagnosis down the
+              # wrong path once already: the real cause was a repeat call on an
+              # already-disabled workflow, which the check above now avoids.
+              echo "FAILED (${err})"
               failed+=("${workflow}")
             fi
           done
 
           if ((${#failed[@]})); then
             echo "::error::could not disable ${#failed[@]} workflow(s): ${failed[*]}"
-            echo "A 403 here means the repository's Actions token is read-only."
+            echo "A 403 means the repository's Actions token lacks write access"
+            echo "(Settings -> Actions -> General -> Workflow permissions). The"
+            echo "API error printed next to each FAILED entry says which it was."
             exit 1
           fi
 
