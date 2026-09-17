@@ -3,8 +3,8 @@
 zh-CN translation.
 
 Read-only by default: prints missing/unused keys and always exits 0.
-With `--strict` it exits 1 when a violation is found, which is how CI runs it.
-Run from anywhere inside the repo.
+With `--strict` it exits 1 when a wrapped key has no translation or when a
+violation is found, which is how CI runs it. Run from anywhere inside the repo.
 
 `unused` is split in two, because "not a t("...") argument" has three
 different causes:
@@ -89,6 +89,7 @@ DYNAMIC_PATTERN = re.compile(r"(?<!\w)(?<!fn )(?<!\$)t(?:_format|_static)?\(\s*(
 # string literal, or pairing silently derails for the rest of the file.
 LITERAL_PATTERN = re.compile(r'"((?:[^"\\]|\\.)*)"', re.DOTALL)
 MAX_LISTED = 50
+MISSING_LISTED = 400
 
 # Rust string escapes that may appear inside t("...") keys.
 _SOURCE_ESCAPES = {
@@ -277,8 +278,12 @@ def main() -> int:
     unused_dead = [key for key in unused if key not in literal_files and key not in KNOWN_FORMAT_KEYS]
     print(f"used: {len(used)}, translated: {len(translated)}")
     print(f"missing: {len(missing)}")
-    for key in missing[:MAX_LISTED]:
+    # `missing` is the actionable list, so it is not truncated the way the
+    # (mostly deprecated) unused lists are.
+    for key in sorted(missing)[:MISSING_LISTED]:
         print(f"  MISSING  {key!r}")
+    if len(missing) > MISSING_LISTED:
+        print(f"  ... and {len(missing) - MISSING_LISTED} more")
     print(f"unused: {len(unused)} ({len(unused_dynamic)} reachable via a dynamic t() call)")
     for key in unused_dead[:MAX_LISTED]:
         print(f"  UNUSED   {key!r}")
@@ -292,9 +297,15 @@ def main() -> int:
     print(f"dynamic: {len(dynamic_sorted)}")
     for site in dynamic_sorted[:MAX_LISTED]:
         print(f"  DYNAMIC  {site}")
-    if "--strict" in sys.argv and violations:
-        return 1
-    return 0
+    if "--strict" not in sys.argv:
+        return 0
+    if violations:
+        print(f"{len(violations)} key(s) exist only in a model-facing path")
+    if missing:
+        # A `t("…")` call with no entry renders in English forever and is
+        # otherwise invisible here: only the first MAX_LISTED are printed.
+        print(f"{len(missing)} wrapped key(s) have no translation")
+    return 1 if (violations or missing) else 0
 
 
 if __name__ == "__main__":
