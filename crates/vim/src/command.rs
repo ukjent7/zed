@@ -438,12 +438,18 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                         };
 
                         let rx = (worktree.entry_for_path(&path).is_some() && Some(SaveIntent::Overwrite) != action.save_intent).then(|| {
+                            let detail = locale::t_static(
+                                "A file or folder with the same name already exists. Replacing it will overwrite its current contents.",
+                            );
+                            let existing_path = format!("{path:?}");
                             window.prompt(
                                 gpui::PromptLevel::Warning,
-                                &format!("{path:?} already exists. Do you want to replace it?"),
-                                Some(
-                                    "A file or folder with the same name already exists. Replacing it will overwrite its current contents.",
-                                ),
+                                locale::t_format(
+                                    "{path} already exists. Do you want to replace it?",
+                                    &[("{path}", existing_path.as_str())],
+                                )
+                                .as_str(),
+                                Some(detail.as_str()),
                                 &[
                                     gpui::PromptButton::new(locale::t_static("Replace")),
                                     gpui::PromptButton::cancel(locale::t_static("Cancel")),
@@ -508,9 +514,9 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                 })
             else {
                 // TODO implement save_as with absolute path
-                Task::ready(Err::<(), _>(anyhow!(
+                Task::ready(Err::<(), _>(anyhow!(locale::t_static(
                     "Cannot save buffer with absolute path"
-                )))
+                ))))
                 .detach_and_prompt_err(
                     locale::t("Failed to save").as_str(),
                     window,
@@ -523,16 +529,18 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
             if project.read(cx).entry_for_path(&project_path, cx).is_some()
                 && action.save_intent != Some(SaveIntent::Overwrite)
             {
+                let detail = locale::t_static(
+                    "A file or folder with the same name already exists. Replacing it will overwrite its current contents.",
+                );
+                let existing_path = project_path.path.display(path_style).to_string();
                 let answer = window.prompt(
                     gpui::PromptLevel::Critical,
-                    &format!(
-                        "{} already exists. Do you want to replace it?",
-                        project_path.path.display(path_style)
-                    ),
-                    Some(
-                        "A file or folder with the same name already exists. \
-                        Replacing it will overwrite its current contents.",
-                    ),
+                    locale::t_format(
+                        "{path} already exists. Do you want to replace it?",
+                        &[("{path}", existing_path.as_str())],
+                    )
+                    .as_str(),
+                    Some(detail.as_str()),
                     &[
                         gpui::PromptButton::new(locale::t_static("Replace")),
                         gpui::PromptButton::cancel(locale::t_static("Cancel")),
@@ -604,7 +612,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
         fn err(s: String, window: &mut Window, cx: &mut Context<Editor>) {
             let _ = window.prompt(
                 gpui::PromptLevel::Critical,
-                &format!("Invalid argument: {}", s),
+                locale::t_format("Invalid argument: {mark}", &[("{mark}", &s)]).as_str(),
                 None,
                 &[gpui::PromptButton::cancel(locale::t_static("Cancel"))],
                 cx,

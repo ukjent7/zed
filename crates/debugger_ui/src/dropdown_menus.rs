@@ -121,7 +121,7 @@ impl DebugPanel {
                 active_session.label(cx).unwrap_or("(child)".into())
             })
         } else {
-            locale::t("Unknown Session")
+            locale::t_static("Unknown Session")
         };
         let running_state = running_state.read(cx);
 

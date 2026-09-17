@@ -963,7 +963,7 @@ fn render_capability_checkbox(
     cx: &mut Context<SettingsWindow>,
 ) -> impl IntoElement {
     Checkbox::new((id, index), state)
-        .label(locale::t(label))
+        .label(locale::t_static(label))
         .on_click(cx.listener(move |this, checked, _window, cx| {
             if let Some(form) = this.llm_provider_form.as_mut()
                 && let Some(model) = form.models.get_mut(index)

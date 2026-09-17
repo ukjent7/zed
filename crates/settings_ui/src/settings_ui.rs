@@ -3911,7 +3911,7 @@ impl SettingsWindow {
                             .gap_0p5()
                             // Telemetry above keeps the English `label`; only the
                             // rendered text is localized.
-                            .child(Label::new(locale::t(label)))
+                            .child(Label::new(locale::t_static(label)))
                             .child(Label::new(error).size(LabelSize::Small).color(Color::Muted)),
                     )
                     .action_slot(

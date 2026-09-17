@@ -18,6 +18,19 @@ while IFS= read -r line; do
   fi
 done < script/l10n-blocklist.txt
 
+# A blocklist entry that stops existing silently stops protecting anything.
+# `git grep` only errors when *every* pathspec misses, so a single renamed
+# crate quietly drops out of the check while the remaining entries keep the
+# result green — upstream renames crates regularly, so say so loudly instead.
+for path in "${blocklist[@]}"; do
+  if [[ ! -e "${path}" ]]; then
+    echo "Error: blocklisted path no longer exists: ${path}"
+    echo "Update script/l10n-blocklist.txt (rename) or restore the path; until"
+    echo "then that tree is unprotected."
+    exit 1
+  fi
+done
+
 result=$(git grep --no-color --line-number -e 'locale::' -- "${blocklist[@]}" || true)
 if [[ -n "${result}" ]]; then
   echo "${result}"
@@ -25,7 +38,14 @@ if [[ -n "${result}" ]]; then
   exit 1
 fi
 
-python3 -m json.tool assets/locales/zh-CN.json > /dev/null
-python3 -m json.tool assets/locales/actions-zh-CN.json > /dev/null
+# `python3` does not exist on every developer machine (Windows ships `python`),
+# while CI always has it; probe once so local runs work too.
+python="$(command -v python3 || command -v python || true)"
+if [[ -z "${python}" ]]; then
+  echo "Error: no python interpreter found (need python3 or python)."
+  exit 1
+fi
+"${python}" -m json.tool assets/locales/zh-CN.json > /dev/null
+"${python}" -m json.tool assets/locales/actions-zh-CN.json > /dev/null
 
 echo "l10n boundary check passed."

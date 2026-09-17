@@ -175,7 +175,7 @@ impl RenderOnce for SettingsInputField {
                 }
 
                 if let Some(placeholder) = placeholder {
-                    editor.set_placeholder_text(locale::t(placeholder).as_str(), window, cx);
+                    editor.set_placeholder_text(locale::t_static(placeholder).as_str(), window, cx);
                 }
                 editor.set_text_style_refinement(styles);
                 editor

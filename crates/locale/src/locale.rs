@@ -239,10 +239,17 @@ pub fn t_static(key: &'static str) -> SharedString {
 }
 
 /// Translate a GUI label containing `{placeholder}` slots, substituting each
-/// pair after lookup. Every occurrence of a placeholder is replaced.
-/// Falls back to the English source text like [`t`].
+/// pair. Falls back to the English source text like [`t`].
 /// A translation must keep the source's `{placeholder}` names, which
 /// `dictionary_keeps_placeholders` asserts.
+///
+/// Substitution is a single left-to-right scan: a substituted value is written
+/// to the output and never scanned again. Doing the replacements one after
+/// another would let a value be rewritten by a later rule — with rules
+/// `{name}`/`{path}`, a skill named `{path}` would print the *path* in the
+/// name slot, because `{name}` is replaced first and `{path}` then matches
+/// inside the value just inserted. Values come from user input (skill names,
+/// file paths, branch names), so any `{}` spelling in them is reachable.
 pub fn t_format(key: &str, replacements: &[(&str, &str)]) -> SharedString {
     let translated = if use_chinese() {
         dictionary()
@@ -252,10 +259,40 @@ pub fn t_format(key: &str, replacements: &[(&str, &str)]) -> SharedString {
     } else {
         key
     };
-    let mut result = translated.to_string();
-    for (placeholder, value) in replacements {
-        result = result.replace(placeholder, value);
+    if replacements.is_empty() {
+        return SharedString::from(translated);
     }
+
+    // Scan for `{` and try each rule at that position, so a value can never be
+    // rescanned. `{{` is left alone, matching [`placeholders`].
+    let mut result = String::with_capacity(translated.len());
+    let mut rest = translated;
+    while let Some(start) = rest.find('{') {
+        result.push_str(&rest[..start]);
+        rest = &rest[start..];
+        // `{{` is an escaped brace: emit it verbatim instead of letting a rule
+        // match the inner brace, which is how [`placeholders`] reads it too.
+        if rest.starts_with("{{") {
+            result.push_str("{{");
+            rest = &rest[2..];
+            continue;
+        }
+        match replacements
+            .iter()
+            .find(|(slot, _)| rest.starts_with(*slot))
+        {
+            Some((slot, value)) => {
+                result.push_str(value);
+                rest = &rest[slot.len()..];
+            }
+            // Not a slot we know: keep the brace and resume just past it.
+            None => {
+                result.push('{');
+                rest = &rest[1..];
+            }
+        }
+    }
+    result.push_str(rest);
     SharedString::from(result)
 }
 
@@ -394,6 +431,42 @@ mod tests {
             t_format("Currently In Use: {name}", &[("{name}", "main")]),
             "正在使用：main"
         );
+        clear_language_overrides();
+    }
+
+    #[test]
+    fn format_does_not_rescan_substituted_values() {
+        let _guard = TEST_LOCK.lock().unwrap();
+        set_language(Language::English);
+
+        // The bug this guards: replacing slot after slot let a value be
+        // rewritten by a later rule. Here `{name}` is filled with text that
+        // spells `{path}`, and `{path}` must not reach into it.
+        assert_eq!(
+            t_format(
+                "{name} at {path}",
+                &[("{name}", "{path}"), ("{path}", "/tmp")]
+            ),
+            "{path} at /tmp"
+        );
+        // Values are user input: a path with braces keeps its own braces.
+        assert_eq!(
+            t_format(
+                "failed to write {path}",
+                &[("{path}", "/tmp/{proj}/x.json")]
+            ),
+            "failed to write /tmp/{proj}/x.json"
+        );
+        // `{{` is an escaped brace, matching `placeholders`.
+        assert_eq!(t_format("literal {{x}}", &[("{x}", "X")]), "literal {{x}}");
+        // No rules: the text comes back unchanged, braces included.
+        assert_eq!(t_format("a {b}", &[]), "a {b}");
+        // An unknown slot is left in place instead of being deleted.
+        assert_eq!(
+            t_format("{known} {unknown}", &[("{known}", "yes")]),
+            "yes {unknown}"
+        );
+
         clear_language_overrides();
     }
 

@@ -455,7 +455,7 @@ impl NewProcessModal {
             })
         })
         .detach_and_prompt_err(
-            locale::t_static("Failed to edit debug.json"),
+            locale::t_static("Failed to edit debug.json").as_str(),
             window,
             cx,
             |_, _, _| None,

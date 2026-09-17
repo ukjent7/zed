@@ -1918,7 +1918,7 @@ impl Editor {
         );
 
         let mut element = self
-            .render_edit_prediction_line_popover(locale::t(label), None, window, cx)
+            .render_edit_prediction_line_popover(locale::t_static(label), None, window, cx)
             .into_any();
 
         let size = element.layout_as_root(AvailableSpace::min_size(), window, cx);
@@ -1946,7 +1946,12 @@ impl Editor {
             };
 
             element = self
-                .render_edit_prediction_line_popover(locale::t(label), Some(icon), window, cx)
+                .render_edit_prediction_line_popover(
+                    locale::t_static(label),
+                    Some(icon),
+                    window,
+                    cx,
+                )
                 .into_any();
 
             let size = element.layout_as_root(AvailableSpace::min_size(), window, cx);

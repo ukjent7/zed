@@ -141,7 +141,7 @@ pub fn install_cli_binary(window: &mut Window, cx: &mut Context<Workspace>) {
         Ok(())
     })
     .detach_and_prompt_err(
-        locale::t_static("Cannot install the Zed CLI"),
+        locale::t_static("Cannot install the Zed CLI").as_str(),
         window,
         cx,
         |_, _, _| None,

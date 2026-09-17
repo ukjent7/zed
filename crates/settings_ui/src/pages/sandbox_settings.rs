@@ -211,9 +211,9 @@ fn render_list_section(
 
     v_flex()
         .gap_0p5()
-        .child(Label::new(locale::t(title)))
+        .child(Label::new(locale::t_static(title)))
         .child(
-            Label::new(locale::t(description))
+            Label::new(locale::t_static(description))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
         )

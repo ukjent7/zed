@@ -38,8 +38,31 @@ concurrency:
 env:
   CARGO_INCREMENTAL: 0
 jobs:
+  # `cargo check -p zed` compiles the branch of every dependency that matches
+  # the *host* target only, so `#[cfg(target_os = "macos")]` code is invisible
+  # to the Linux job. The fork localizes `crates/auto_update`, whose platform
+  # branches differ per OS — `check_dependencies()` renders a translated string
+  # under `#[cfg(target_os = "macos")]` alone — so a type error there survives
+  # this workflow entirely and only surfaces when `fork_release` packages a tag.
+  #
+  # macOS is the runner added here because that is where the localized branch
+  # actually lives; the Windows branches hold no `locale::` call today, and a
+  # Windows runner would roughly double the job time for no coverage gained.
+  # Revisit both counts when platform-specific code gains new translations.
+  #
+  # `cargo check` does not link, so the macOS runner needs no bootstrap script:
+  # `./script/linux` exists only because Linux runners lack xkbcommon/wayland.
   check:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            bootstrap: ./script/linux
+          - os: macos-latest
+            bootstrap: ''
+    name: check (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
@@ -47,10 +70,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}
-      # gpui and the zed binary need xkbcommon, wayland, alsa, ... on Linux.
-      # Reusing upstream's own bootstrap keeps the list from drifting.
       - name: system dependencies
-        run: ./script/linux
+        if: matrix.bootstrap != ''
+        run: ${{ matrix.bootstrap }}
       # Checking `zed` transitively compiles and checks all UI crates
       # (auto_update, git_ui, workspace, settings_ui, locale, etc.) as direct
       # non-optional dependencies. Omitting `--all-targets` avoids compiling

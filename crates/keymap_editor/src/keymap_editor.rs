@@ -2218,7 +2218,7 @@ impl Render for KeymapEditor {
                                         Some(arguments) => arguments.into_any_element(),
                                         None => {
                                             if binding.action().has_schema {
-                                                muted_styled_text(locale::t("<no arguments>"), cx)
+                                                muted_styled_text(locale::t_static("<no arguments>"), cx)
                                                     .into_any_element()
                                             } else {
                                                 gpui::Empty.into_any_element()

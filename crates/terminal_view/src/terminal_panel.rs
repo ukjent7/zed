@@ -1458,7 +1458,7 @@ impl Render for FailedToSpawnTerminal {
                     .items_center()
                     .justify_center()
                     .text_center()
-                    .child(Label::new(locale::t("Failed to spawn terminal")))
+                    .child(Label::new(locale::t_static("Failed to spawn terminal")))
                     .child(
                         Label::new(self.error.to_string())
                             .size(LabelSize::Small)
@@ -1483,7 +1483,7 @@ impl workspace::Item for FailedToSpawnTerminal {
     type Event = ();
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        locale::t("Failed to spawn terminal")
+        locale::t_static("Failed to spawn terminal")
     }
 }
 
