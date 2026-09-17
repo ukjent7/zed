@@ -77,7 +77,6 @@ jobs:
           - name: linux-x86_64
             os: ubuntu-latest
             bundle: ./script/bundle-linux
-            rustflags: -C link-arg=-fuse-ld=lld
             codegen_units: 4
             assets: |
               target/release/zed-linux-x86_64.tar.gz
@@ -88,7 +87,6 @@ jobs:
             # the 2022 image ships and the 2025 image does not.
             os: windows-2022
             bundle: script/bundle-windows.ps1 -Architecture x86_64
-            rustflags: ''
             codegen_units: 4
             assets: |
               target/Zed-x86_64.exe
@@ -96,7 +94,6 @@ jobs:
           - name: macos-aarch64
             os: macos-latest
             bundle: ./script/bundle-mac aarch64-apple-darwin
-            rustflags: ''
             # GitHub-hosted macOS runners have only 7 GB RAM (3 vCPUs). Setting codegen_units to 1
             # prevents memory thrashing/swap lockup during LLVM codegen on large crates like git_ui.
             codegen_units: 1
@@ -163,8 +160,13 @@ jobs:
         run: ./script/generate-licenses
       - name: bundle
         if: runner.os != 'Windows'
-        env:
-          RUSTFLAGS: ${{ matrix.rustflags }}
+        # No RUSTFLAGS here on purpose. bundle-linux refuses to run when it is
+        # set, and for good reason: the variable would override the rustflags
+        # that `.cargo/bundle-config.toml` injects via `--config`, including the
+        # Linux `-rpath,$ORIGIN/../lib` the bundle needs to locate its shared
+        # libraries. Upstream's x86_64 Linux build does not use lld either - the
+        # only target that needs it is aarch64, which `.cargo/config.toml`
+        # already covers.
         run: ${{ matrix.bundle }}
       # Split from the step above instead of `shell: ${{ matrix.shell }}`:
       # `shell` does not accept the `matrix` context. Upstream pins
