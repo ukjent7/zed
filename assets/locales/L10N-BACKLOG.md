@@ -10,6 +10,15 @@
 `.placeholder("…")`、`Button::new_secondary`、`ListBulletItem::new`、
 `Tooltip::simple`、`.primary_message`、`.confirm_label` 等约 55 种调用形状）。
 
+本轮把清单扩到约 75 种，补进此前完全看不见的形状：`ui::ContextMenu` builder
+家族（`.action`/`.entry`/`.submenu`/`.toggleable_entry` —— 该 builder 不做任何
+自动翻译）、`Tooltip::for_action*`/`with_meta_in`、`Toast::new`、`.with_title`/
+`.with_detail`、`prompt`/`prompt_err` 的消息实参，以及 `&["Save", "Cancel"]`
+这类按钮数组（数组字面量没有前缀可锚定，只能单独识别）。扩口径使
+unwrapped 467 → 685、ready 145 → 285，做完本批再回落到 546 / 172。
+**因此早先各批次标注的「已完整覆盖」只在旧的 55 种形状内成立**，新口径下
+这些 crate 又露出缺口（本批已补，见「现状」）。
+
 `script/l10n-audit.py` 输出四列：
 
 | 列 | 含义 |
@@ -39,15 +48,22 @@
 
 | 指标 | 值 |
 | --- | --- |
-| 界面词典 `zh-CN.json` | 2,269 条 |
+| 界面词典 `zh-CN.json` | 2,509 条（本批 +240） |
 | 命令词典 `actions-zh-CN.json` | 1,189 / 1,207（98%，剩余 18 条为测试夹具） |
-| 代码内翻译调用 | 1,252 处 |
-| 待译前端文案 | 467 多词 + 100 单词 |
-| 已译未接（`ready`） | 145 处（其中 `agent_ui` 28、`language_models` 11 属结构性不可译，见下） |
+| 代码内翻译调用 | 1,684 处（本批 +431） |
+| 待译前端文案（新口径） | 546 多词 + 123 单词 |
+| 已译未接（`ready`） | 172 处（多数在 `agent_ui`/`language_models` 等模型侧，属结构性不可译，见下） |
 
-CI 门禁：`./script/extract-l10n --strict`（包裹的键必须有译文）、
-`./script/check-l10n-boundary`（模型侧路径禁止出现 `locale::`）、`cargo test -p locale`
-（占位符一致性）。审计脚本只是分诊工具，不做门禁。
+CI 门禁：`./script/extract-l10n --strict`（**包裹的键必须有译文**——本批起
+`missing` 也会让 CI 失败，过去它只对 violation 返回非零、缺词仅打印且被 50 行
+上限截断）、`./script/check-l10n-boundary`（模型侧路径禁止出现 `locale::`）、
+`cargo test -p locale`（占位符一致性）。审计脚本只是分诊工具，不做门禁。
+
+blocklist 本批新增两条**位于已汉化 crate 内**的模型侧文本：
+`crates/git_ui/src/commit_message_prompt.txt`（`git_panel.rs:build_commit_message_prompt`
+拼好后直接进 `LanguageModelRequest`）与 `crates/agent_skills/builtin/`（内嵌
+SKILL.md 以 `<skill_content>` 回灌模型）。两者都在别的 crate 已有大量译文，
+是最容易一步越界的位置。
 
 ## 已完整覆盖（`-v` 三列均为 0，或剩余项已判定不改）
 
@@ -98,13 +114,27 @@ CI 门禁：`./script/extract-l10n --strict`（包裹的键必须有译文）、
    `window/cx.prompt`）要 `.as_str()`；`Toast::new` 是 `Into<Cow<'static, str>>`，
    要 `.to_string()`。
 4. **`window.prompt` 的按钮角色**。`impl From<&str> for PromptButton` 用
-   `to_lowercase()` 匹配 `"ok"`/`"cancel"` 决定按钮角色，且 `Cancel` 分支会**硬编码**
-   英文 `"Cancel"` 标签；译文会变成 `Other` 角色。返回值是下标，逻辑不受影响。
+   `to_lowercase()` 匹配 `"ok"`/`"cancel"` 决定角色，`crates/ui_prompt` 的内置
+   弹窗更是直接 `position(|a| a == "Cancel")` 找 Escape 的目标 —— 标签一旦译了，
+   角色全部退化成 `Other`。本批之前的判断「返回值是下标，逻辑不受影响」只在
+   Linux + 纯鼠标下成立：Linux（以及 `use_system_prompts: false`）里 Escape 从此
+   **不再关闭确认框**；macOS 原生弹窗不再拿到 ESC 快捷键
+   （`gpui_macos/src/window.rs`）；Windows 任务对话框的 `button_id_map` 里没有
+   `IDCANCEL`，用 Esc/✕ 关闭时返回不到下标，`await` 直接报错而不是返回 Cancel。
+   正确写法：`&[gpui::PromptButton::new(确认标签), gpui::PromptButton::cancel(..)]`
+   —— 构造器只认角色、不检查标签文本，中文照旧显示。
 5. **静态量无法运行时翻译**。`static EMPTY_LENS_FALLBACK_TITLE`（`0 references`）、
    `static SELECT_DEBUGGER_LABEL`（`Select Debugger`）需要在调用点改造，
    且编辑器 code lens 回退标题与 LSP 给的 `2 references` 同屏，译文无法统一 → 暂未做。
 6. **`{}` 位置占位符不能作词典键**。`format!("{:}", x)`、`format!("{}…{}", a, b)`
    必须先改成命名槽（`{count}`、`{path}`…）再走 `t_format`。
+7. **补全项的 label 就是插入文本**。`CodeLabel::plain(text, ..)` 在
+   `editor/src/code_context_menus.rs` 里按 `completion.label.text` 落盘，所以
+   `keymap_editor/src/action_completion_provider.rs` 的动作名**必须保持英文**，
+   否则中文会被写进 `keymap.json` 变成无效动作。已在该处留注释钉住。
+8. **命令词典有多个消费点**。`actions-zh-CN.json` 原先只在命令面板生效；
+   键位编辑器另有 `HumanizedActionNameCache`（渲染 + 模糊检索 + 补全三处）。
+   新增显示面时先 `git grep humanized_action_name`，别再漏一个点。
 
 ## 收口点（改一处覆盖一片）
 
