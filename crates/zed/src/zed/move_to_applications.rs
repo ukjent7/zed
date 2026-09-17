@@ -70,17 +70,20 @@ impl MoveToApplicationsRequest {
         workspace: WeakEntity<MultiWorkspace>,
         cx: &mut AsyncWindowContext,
     ) -> Result<()> {
+        let title = locale::t("Move Zed to Applications?");
+        let detail = locale::t_static(concat!(
+            "Zed is running from a temporary location. ",
+            "Move it to Applications to finish installing it."
+        ));
         let response = cx
             .prompt(
                 PromptLevel::Info,
-                "Move Zed to Applications?",
-                Some(
-                    "Zed is running from a temporary location. Move it to Applications to finish installing it.",
-                ),
+                &title,
+                Some(detail.as_str()),
                 &[
-                    PromptButton::ok("Yes"),
-                    PromptButton::cancel("No"),
-                    PromptButton::new("Don't ask me again"),
+                    PromptButton::ok(locale::t("Yes")),
+                    PromptButton::cancel(locale::t("No")),
+                    PromptButton::new(locale::t("Don't ask me again")),
                 ],
             )
             .await?;
@@ -103,9 +106,9 @@ impl MoveToApplicationsRequest {
                         .ok();
                     cx.prompt(
                         PromptLevel::Critical,
-                        "Failed to move Zed to Applications",
+                        &locale::t("Failed to move Zed to Applications"),
                         Some(&error.to_string()),
-                        &["OK"],
+                        &[PromptButton::ok(locale::t("OK"))],
                     )
                     .await
                     .log_err();

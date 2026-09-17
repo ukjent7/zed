@@ -1996,11 +1996,19 @@ impl Pane {
             if save_intent == SaveIntent::Close && dirty_items.len() > 1 {
                 let answer = pane.update_in(cx, |_, window, cx| {
                     let detail = Self::file_names_for_prompt(&mut dirty_items.iter(), cx);
+                    let message = locale::t("Do you want to save changes to the following files?");
+                    let save_all = locale::t("Save all");
+                    let discard_all = locale::t("Discard all");
+                    let cancel = locale::t("Cancel");
                     window.prompt(
                         PromptLevel::Warning,
-                        "Do you want to save changes to the following files?",
+                        &message,
                         Some(&detail),
-                        &["Save all", "Discard all", "Cancel"],
+                        &[
+                            gpui::PromptButton::new(save_all.clone()),
+                            gpui::PromptButton::new(discard_all.clone()),
+                            gpui::PromptButton::cancel(cancel.clone()),
+                        ],
                         cx,
                     )
                 })?;
@@ -2047,11 +2055,20 @@ impl Pane {
                                     &mut [&item_to_close].into_iter(),
                                     cx,
                                 );
+                                let message = locale::t_format(
+                                    "Unable to save file: {error}",
+                                    &[("{error}", &err.to_string())],
+                                );
+                                let close_without_saving = locale::t("Close Without Saving");
+                                let cancel = locale::t("Cancel");
                                 window.prompt(
                                     PromptLevel::Warning,
-                                    &format!("Unable to save file: {err}"),
+                                    &message,
                                     Some(&detail),
-                                    &["Close Without Saving", "Cancel"],
+                                    &[
+                                        gpui::PromptButton::new(close_without_saving.clone()),
+                                        gpui::PromptButton::cancel(cancel.clone()),
+                                    ],
                                     cx,
                                 )
                             })?;
@@ -2321,11 +2338,19 @@ impl Pane {
             if has_deleted_file && is_singleton {
                 let answer = pane.update_in(cx, |pane, window, cx| {
                     pane.activate_item(item_ix, true, true, window, cx);
+                    let message = locale::t_static(DELETED_MESSAGE);
+                    let save = locale::t("Save");
+                    let close = locale::t("Close");
+                    let cancel = locale::t("Cancel");
                     window.prompt(
                         PromptLevel::Warning,
-                        DELETED_MESSAGE,
+                        &message,
                         None,
-                        &["Save", "Close", "Cancel"],
+                        &[
+                            gpui::PromptButton::new(save.clone()),
+                            gpui::PromptButton::new(close.clone()),
+                            gpui::PromptButton::cancel(cancel.clone()),
+                        ],
                         cx,
                     )
                 })?;
@@ -2356,11 +2381,19 @@ impl Pane {
             } else {
                 let answer = pane.update_in(cx, |pane, window, cx| {
                     pane.activate_item(item_ix, true, true, window, cx);
+                    let message = locale::t_static(CONFLICT_MESSAGE);
+                    let overwrite = locale::t("Overwrite");
+                    let discard_edits = locale::t("Discard Edits");
+                    let cancel = locale::t("Cancel");
                     window.prompt(
                         PromptLevel::Warning,
-                        CONFLICT_MESSAGE,
+                        &message,
                         None,
-                        &["Overwrite", "Discard Edits", "Cancel"],
+                        &[
+                            gpui::PromptButton::new(overwrite.clone()),
+                            gpui::PromptButton::new(discard_edits.clone()),
+                            gpui::PromptButton::cancel(cancel.clone()),
+                        ],
                         cx,
                     )
                 })?;
@@ -2399,11 +2432,18 @@ impl Pane {
                         if pane.save_modals_spawned.insert(item_id) {
                             pane.activate_item(item_ix, true, true, window, cx);
                             let prompt = dirty_message_for(item.project_path(cx), path_style);
+                            let save = locale::t("Save");
+                            let dont_save = locale::t("Don't Save");
+                            let cancel = locale::t("Cancel");
                             Some(window.prompt(
                                 PromptLevel::Warning,
                                 &prompt,
                                 None,
-                                &["Save", "Don't Save", "Cancel"],
+                                &[
+                                    gpui::PromptButton::new(save.clone()),
+                                    gpui::PromptButton::new(dont_save.clone()),
+                                    gpui::PromptButton::cancel(cancel.clone()),
+                                ],
                                 cx,
                             ))
                         } else {
@@ -4330,21 +4370,33 @@ fn default_render_tab_bar_buttons(
             PopoverMenu::new("pane-tab-bar-popover-menu")
                 .trigger_with_tooltip(
                     IconButton::new("plus", IconName::Plus).icon_size(IconSize::Small),
-                    Tooltip::text("New…"),
+                    Tooltip::text(locale::t("New…")),
                 )
                 .anchor(Anchor::TopRight)
                 .with_handle(pane.new_item_context_menu_handle.clone())
                 .menu(move |window, cx| {
                     Some(ContextMenu::build(window, cx, |menu, _, _| {
-                        menu.action("New File", NewFile.boxed_clone())
-                            .action("Open File", ToggleFileFinder::default().boxed_clone())
-                            .separator()
-                            .action("Search Project", DeploySearch::default().boxed_clone())
-                            .action("Search Symbols", ToggleProjectSymbols.boxed_clone())
-                            .separator()
-                            .action("New Terminal", NewTerminal::default().boxed_clone())
+                        menu.action(locale::t("New File"), NewFile.boxed_clone())
                             .action(
-                                "New Center Terminal",
+                                locale::t("Open File"),
+                                ToggleFileFinder::default().boxed_clone(),
+                            )
+                            .separator()
+                            .action(
+                                locale::t("Search Project"),
+                                DeploySearch::default().boxed_clone(),
+                            )
+                            .action(
+                                locale::t("Search Symbols"),
+                                ToggleProjectSymbols.boxed_clone(),
+                            )
+                            .separator()
+                            .action(
+                                locale::t("New Terminal"),
+                                NewTerminal::default().boxed_clone(),
+                            )
+                            .action(
+                                locale::t("New Center Terminal"),
                                 NewCenterTerminal::default().boxed_clone(),
                             )
                     }))
@@ -4356,7 +4408,7 @@ fn default_render_tab_bar_buttons(
                     IconButton::new("split", IconName::Split)
                         .icon_size(IconSize::Small)
                         .disabled(!can_clone && !can_split_move),
-                    Tooltip::text("Split Pane"),
+                    Tooltip::text(locale::t("Split Pane")),
                 )
                 .anchor(Anchor::TopRight)
                 .with_handle(pane.split_item_context_menu_handle.clone())
@@ -4364,15 +4416,18 @@ fn default_render_tab_bar_buttons(
                     ContextMenu::build(window, cx, |menu, _, _| {
                         let mode = SplitMode::MovePane;
                         if can_split_move {
-                            menu.action("Split Right", SplitRight { mode }.boxed_clone())
-                                .action("Split Left", SplitLeft { mode }.boxed_clone())
-                                .action("Split Up", SplitUp { mode }.boxed_clone())
-                                .action("Split Down", SplitDown { mode }.boxed_clone())
+                            menu.action(locale::t("Split Right"), SplitRight { mode }.boxed_clone())
+                                .action(locale::t("Split Left"), SplitLeft { mode }.boxed_clone())
+                                .action(locale::t("Split Up"), SplitUp { mode }.boxed_clone())
+                                .action(locale::t("Split Down"), SplitDown { mode }.boxed_clone())
                         } else {
-                            menu.action("Split Right", SplitRight::default().boxed_clone())
-                                .action("Split Left", SplitLeft::default().boxed_clone())
-                                .action("Split Up", SplitUp::default().boxed_clone())
-                                .action("Split Down", SplitDown::default().boxed_clone())
+                            menu.action(
+                                locale::t("Split Right"),
+                                SplitRight::default().boxed_clone(),
+                            )
+                            .action(locale::t("Split Left"), SplitLeft::default().boxed_clone())
+                            .action(locale::t("Split Up"), SplitUp::default().boxed_clone())
+                            .action(locale::t("Split Down"), SplitDown::default().boxed_clone())
                         }
                     })
                     .into()
@@ -5025,12 +5080,15 @@ fn dirty_message_for(buffer_path: Option<ProjectPath>, path_style: PathStyle) ->
     match path {
         Some(path) => {
             let path = truncate_and_remove_front(&path, 80);
-            format!(
-                "{} contains unsaved edits. Do you want to save it?",
-                MarkdownInlineCode(path.as_str())
+            locale::t_format(
+                "{file} contains unsaved edits. Do you want to save it?",
+                &[("{file}", &MarkdownInlineCode(path.as_str()).to_string())],
             )
+            .to_string()
         }
-        None => "This buffer contains unsaved edits. Do you want to save it?".to_string(),
+        None => {
+            locale::t("This buffer contains unsaved edits. Do you want to save it?").to_string()
+        }
     }
 }
 

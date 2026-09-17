@@ -131,9 +131,9 @@ fn files_not_created_on_launch(errors: HashMap<io::ErrorKind, Vec<&Path>>) {
                     .update(cx, |_, window, cx| {
                         let response = window.prompt(
                             gpui::PromptLevel::Critical,
-                            message,
+                            &locale::t(message),
                             Some(&error_details),
-                            &["Exit"],
+                            &[gpui::PromptButton::new(locale::t("Exit"))],
                             cx,
                         );
 

@@ -3675,11 +3675,17 @@ impl Workspace {
                 if close_intent == CloseIntent::CloseWindow {
                     this.update(cx, |_, cx| cx.emit(Event::Activate))?;
                     let answer = cx.update(|window, cx| {
+                        let message = locale::t("Do you want to leave the current call?");
+                        let hang_up = locale::t("Close window and hang up");
+                        let cancel = locale::t("Cancel");
                         window.prompt(
                             PromptLevel::Warning,
-                            "Do you want to leave the current call?",
+                            &message,
                             None,
-                            &["Close window and hang up", "Cancel"],
+                            &[
+                                gpui::PromptButton::new(hang_up.clone()),
+                                gpui::PromptButton::cancel(cancel.clone()),
+                            ],
                             cx,
                         )
                     })?;
@@ -3923,11 +3929,20 @@ impl Workspace {
                             &mut remaining_dirty_items.iter().map(|(_, handle)| handle),
                             cx,
                         );
+                        let message =
+                            locale::t("Do you want to save all changes in the following files?");
+                        let save_all = locale::t("Save all");
+                        let discard_all = locale::t("Discard all");
+                        let cancel = locale::t("Cancel");
                         window.prompt(
                             PromptLevel::Warning,
-                            "Do you want to save all changes in the following files?",
+                            &message,
                             Some(&detail),
-                            &["Save all", "Discard all", "Cancel"],
+                            &[
+                                gpui::PromptButton::new(save_all.clone()),
+                                gpui::PromptButton::new(discard_all.clone()),
+                                gpui::PromptButton::cancel(cancel.clone()),
+                            ],
                             cx,
                         )
                     })?;
@@ -6553,7 +6568,7 @@ impl Workspace {
                     cx,
                 )
                 .detach_and_prompt_err(
-                    "Failed to join project",
+                    locale::t("Failed to join project").as_str(),
                     window,
                     cx,
                     |error, _, _| Some(format!("{error:#}")),
@@ -8082,25 +8097,45 @@ impl Workspace {
                             window,
                             cx,
                         )
-                        .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                        .detach_and_prompt_err(
+                            locale::t("Failed to save").as_str(),
+                            window,
+                            cx,
+                            |_, _, _| None,
+                        );
                 }))
                 .on_action(cx.listener(|workspace, _: &FormatAndSave, window, cx| {
                     workspace
                         .save_active_item(SaveIntent::FormatAndSave, window, cx)
-                        .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                        .detach_and_prompt_err(
+                            locale::t("Failed to save").as_str(),
+                            window,
+                            cx,
+                            |_, _, _| None,
+                        );
                 }))
                 .on_action(cx.listener(
                     |workspace, _: &SaveWithoutFormat, window, cx| {
                         workspace
                             .save_active_item(SaveIntent::SaveWithoutFormat, window, cx)
-                            .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                            .detach_and_prompt_err(
+                                locale::t("Failed to save").as_str(),
+                                window,
+                                cx,
+                                |_, _, _| None,
+                            );
                     },
                 ))
             })
             .on_action(cx.listener(|workspace, _: &SaveAs, window, cx| {
                 workspace
                     .save_active_item(SaveIntent::SaveAs, window, cx)
-                    .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                    .detach_and_prompt_err(
+                        locale::t("Failed to save").as_str(),
+                        window,
+                        cx,
+                        |_, _, _| None,
+                    );
             }))
             .on_action(
                 cx.listener(|workspace, _: &ActivatePreviousPane, window, cx| {
@@ -8871,7 +8906,7 @@ impl Workspace {
         div()
             .id("editor-region")
             .role(gpui::Role::Main)
-            .aria_label("Editor")
+            .aria_label(locale::t("Editor"))
             .when(window.is_a11y_active(), |this| {
                 this.track_focus(&self.region_focus_handles.editor)
             })
@@ -10469,11 +10504,18 @@ async fn join_channel_internal(
         if let Some(multi_workspace) = requesting_window {
             let answer = multi_workspace
                 .update(cx, |_, window, cx| {
+                    let message = locale::t("Do you want to switch channels?");
+                    let detail = locale::t("Leaving this call will unshare your current project.");
+                    let join = locale::t("Yes, Join Channel");
+                    let cancel = locale::t("Cancel");
                     window.prompt(
                         PromptLevel::Warning,
-                        "Do you want to switch channels?",
-                        Some("Leaving this call will unshare your current project."),
-                        &["Yes, Join Channel", "Cancel"],
+                        &message,
+                        Some(&detail),
+                        &[
+                            gpui::PromptButton::new(join.clone()),
+                            gpui::PromptButton::cancel(cancel.clone()),
+                        ],
                         cx,
                     )
                 })?
@@ -10678,32 +10720,32 @@ pub fn join_channel(
                 active_window
                     .update(cx, |_, window, cx| {
                         let detail: SharedString = match err.error_code() {
-                            ErrorCode::SignedOut => "Please sign in to continue.".into(),
-                            ErrorCode::UpgradeRequired => concat!(
+                            ErrorCode::SignedOut => locale::t("Please sign in to continue."),
+                            ErrorCode::UpgradeRequired => locale::t_static(concat!(
                                 "Your are running an unsupported version of Zed. ",
                                 "Please update to continue."
-                            )
-                            .into(),
-                            ErrorCode::NoSuchChannel => concat!(
+                            )),
+                            ErrorCode::NoSuchChannel => locale::t_static(concat!(
                                 "No matching channel was found. ",
                                 "Please check the link and try again."
-                            )
-                            .into(),
-                            ErrorCode::Forbidden => concat!(
+                            )),
+                            ErrorCode::Forbidden => locale::t_static(concat!(
                                 "This channel is private, and you do not have access. ",
                                 "Please ask someone to add you and try again."
-                            )
-                            .into(),
+                            )),
                             ErrorCode::Disconnected => {
-                                "Please check your internet connection and try again.".into()
+                                locale::t("Please check your internet connection and try again.")
                             }
-                            _ => format!("{}\n\nPlease try again.", err).into(),
+                            _ => locale::t_format(
+                                "{error}\n\nPlease try again.",
+                                &[("{error}", &err.to_string())],
+                            ),
                         };
                         window.prompt(
                             PromptLevel::Critical,
-                            "Failed to join channel",
+                            &locale::t("Failed to join channel"),
                             Some(&detail),
-                            &["OK"],
+                            &[gpui::PromptButton::ok(locale::t("OK"))],
                             cx,
                         )
                     })?
@@ -11700,11 +11742,17 @@ pub fn reload(cx: &mut App) {
     if let (true, Some(window)) = (should_confirm, workspace_windows.first()) {
         prompt = window
             .update(cx, |_, window, cx| {
+                let message = locale::t("Are you sure you want to restart?");
+                let restart = locale::t("Restart");
+                let cancel = locale::t("Cancel");
                 window.prompt(
                     PromptLevel::Info,
-                    "Are you sure you want to restart?",
+                    &message,
                     None,
-                    &["Restart", "Cancel"],
+                    &[
+                        gpui::PromptButton::new(restart.clone()),
+                        gpui::PromptButton::cancel(cancel.clone()),
+                    ],
                     cx,
                 )
             })

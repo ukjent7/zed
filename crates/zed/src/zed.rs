@@ -713,9 +713,9 @@ fn initialize_file_watcher(fs: &dyn Fs, window: &mut Window, cx: &mut Context<Wo
         );
         let prompt = window.prompt(
             PromptLevel::Critical,
-            "Could not start inotify",
+            &locale::t("Could not start inotify"),
             Some(&message),
-            &["Troubleshoot and Quit"],
+            &[gpui::PromptButton::new(locale::t("Troubleshoot and Quit"))],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -744,9 +744,9 @@ fn initialize_file_watcher(fs: &dyn Fs, window: &mut Window, cx: &mut Context<Wo
         );
         let prompt = window.prompt(
             PromptLevel::Critical,
-            "Could not start ReadDirectoryChangesW",
+            &locale::t("Could not start ReadDirectoryChangesW"),
             Some(&message),
-            &["Troubleshoot and Quit"],
+            &[gpui::PromptButton::new(locale::t("Troubleshoot and Quit"))],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -794,9 +794,12 @@ fn show_software_emulation_warning_if_needed(
         );
         let prompt = window.prompt(
             PromptLevel::Critical,
-            "Unsupported GPU",
+            &locale::t("Unsupported GPU"),
             Some(&message),
-            &["Skip", "Troubleshoot and Quit"],
+            &[
+                gpui::PromptButton::new(locale::t("Skip")),
+                gpui::PromptButton::new(locale::t("Troubleshoot and Quit")),
+            ],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -1315,10 +1318,11 @@ fn register_actions(
                     workspace.show_toast(
                         Toast::new(
                             NotificationId::unique::<RegisterZedScheme>(),
-                            format!(
-                                "zed:// links will now open in {}.",
-                                ReleaseChannel::global(cx).display_name()
-                            ),
+                            locale::t_format(
+                                "zed:// links will now open in {channel}.",
+                                &[("{channel}", ReleaseChannel::global(cx).display_name())],
+                            )
+                            .to_string(),
                         ),
                         cx,
                     )
@@ -1326,7 +1330,7 @@ fn register_actions(
                 Ok(())
             })
             .detach_and_prompt_err(
-                "Error registering zed:// scheme",
+                locale::t("Error registering zed:// scheme").as_str(),
                 window,
                 cx,
                 |_, _, _| None,
@@ -1810,9 +1814,12 @@ fn quit(_: &Quit, cx: &mut App) {
                 .update(cx, |_, window, cx| {
                     window.prompt(
                         PromptLevel::Info,
-                        "Are you sure you want to quit?",
+                        &locale::t("Are you sure you want to quit?"),
                         None,
-                        &["Quit", "Cancel"],
+                        &[
+                            gpui::PromptButton::new(locale::t("Quit")),
+                            gpui::PromptButton::cancel(locale::t("Cancel")),
+                        ],
                         cx,
                     )
                 })
@@ -1918,17 +1925,24 @@ fn open_log_file(workspace: &mut Workspace, window: &mut Window, cx: &mut Contex
                 buffer.set_text(log, cx);
             });
 
-            let buffer = cx.new(|cx| MultiBuffer::singleton(buffer, cx).with_title("Log".into()));
+            let buffer = cx.new(|cx| {
+                MultiBuffer::singleton(buffer, cx).with_title(locale::t("Log").to_string())
+            });
 
             let editor = cx
                 .new_window_entity(|window, cx| {
                     let mut editor = Editor::for_multibuffer(buffer, Some(project), window, cx);
                     editor.set_read_only(true);
-                    editor.set_breadcrumb_header(format!(
-                        "Last {} lines in {}",
-                        MAX_LINES,
-                        paths::log_file().display()
-                    ));
+                    editor.set_breadcrumb_header(
+                        locale::t_format(
+                            "Last {count} lines in {path}",
+                            &[
+                                ("{count}", &MAX_LINES.to_string()),
+                                ("{path}", &paths::log_file().display().to_string()),
+                            ],
+                        )
+                        .to_string(),
+                    );
                     let last_multi_buffer_offset = editor.buffer().read(cx).len(cx);
                     editor.change_selections(Default::default(), window, cx, |s| {
                         s.select_ranges(Some(last_multi_buffer_offset..last_multi_buffer_offset));
