@@ -20,19 +20,27 @@
 #     extension_bump, extension_tests, ...): they never fire on their own, so
 #     disabling them would change nothing.
 #
-# Re-run this after merging upstream: a new or modified workflow file can come
-# back enabled, and a new upstream workflow will not be in the list yet. If the
-# API call returns 403, the repository's Actions token is read-only - either
-# allow write access (Settings -> Actions -> General -> Workflow permissions)
-# or disable the workflows by hand (Actions -> workflow -> "Disable workflow").
+# A merge from upstream can invalidate the parked state: a listed workflow that
+# upstream modified can come back enabled, and a new upstream workflow is not
+# in the list yet. The `paths` filter below re-runs this whenever any workflow
+# file changes, so that is self-correcting rather than something to remember.
+# If the API call returns 403, the repository's Actions token is read-only -
+# either allow write access (Settings -> Actions -> General -> Workflow
+# permissions) or disable the workflows by hand (Actions -> workflow ->
+# "Disable workflow").
 name: fork_disable_upstream
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+    # Any workflow file can invalidate the parked state, not just this one: a
+    # merge from upstream may modify a listed workflow (GitHub can bring it
+    # back enabled) or add a new one that is not in the list yet. Watching the
+    # whole directory makes that self-correcting instead of relying on someone
+    # remembering to re-run this by hand after every merge.
     paths:
-      - '.github/workflows/fork_disable_upstream.yml'
+      - '.github/workflows/**'
 permissions:
   actions: write
 concurrency:

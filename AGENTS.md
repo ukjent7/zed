@@ -10,7 +10,7 @@ Rust/GPUI 代码规范见 `.rules`（上游的 AGENTS.md 是指向它的符号�
 - `fork_ci.yml`：秒级冒烟——fmt、l10n 边界、locale 单测、词典审计
 - `fork_check.yml`：对改动过的 crate 跑 `cargo check`，**唯一能发现编译错误的防线**
 - `fork_release.yml`：推 `v*` tag 即三平台打包并发布 Release（不签名、dev 渠道、不自动更新）
-- `fork_disable_upstream.yml`：禁用上游跑不了的工作流；合并上游后需重跑一次
+- `fork_disable_upstream.yml`：禁用上游跑不了的工作流；监听整个 `.github/workflows/`，任何 workflow 变动（含合并上游带来的）都会自动重跑
 
 # 发布与更新
 发版：递增 `crates/zed/Cargo.toml` 的版本号 → 提交 → 打 `v<版本>` tag（如 `v0.201.0`）。`fork_release` 会在发布前校验 tag 与 crate 版本一致，不一致直接失败。
