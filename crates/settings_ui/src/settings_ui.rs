@@ -5028,6 +5028,12 @@ fn render_toggle_button<B: Into<bool> + From<bool> + Copy>(
         .map(|current_value| (*current_value.value, current_value.disabled))
         .unwrap_or((false.into(), false));
 
+    // This fork pins `auto_update` off: it ships unsigned dev builds and never
+    // installs them in the background, so the switch has nothing to turn on.
+    // Rendering it disabled keeps the setting honest rather than offering a
+    // control that silently does nothing.
+    let disabled = disabled || field.json_path == Some("auto_update");
+
     let toggle_state = if value.into() {
         ToggleState::Selected
     } else {

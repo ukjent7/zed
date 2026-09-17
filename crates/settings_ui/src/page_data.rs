@@ -502,7 +502,7 @@ fn general_page(cx: &App) -> SettingsPage {
             SettingsPageItem::SectionHeader("Auto Update"),
             SettingsPageItem::SettingItem(SettingItem {
                 title: "Auto Update",
-                description: "Whether or not to automatically check for updates.",
+                description: "Whether or not to automatically check for updates. This fork keeps it off: its builds are unsigned and never update themselves.",
                 field: Box::new(SettingField {
                     organization_override: None,
                     json_path: Some("auto_update"),

@@ -1687,9 +1687,10 @@
   //
   // Default: false
   "disable_ai": false,
-  // Automatically update Zed. This setting may be ignored on Linux if
-  // installed through a package manager.
-  "auto_update": true,
+  // Whether to automatically update Zed. Always off in this fork, which
+  // ships unsigned builds and never updates in the background. The setting is
+  // kept so existing settings.json files stay valid.
+  "auto_update": false,
   // How to render LSP `textDocument/documentColor` colors in the editor.
   //
   // Possible values:

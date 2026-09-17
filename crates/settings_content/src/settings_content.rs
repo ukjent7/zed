@@ -214,7 +214,8 @@ pub struct SettingsContent {
 
     /// Whether or not to automatically check for updates.
     ///
-    /// Default: true
+    /// Default: false, and pinned there in this fork: its builds are unsigned
+    /// and never update themselves.
     pub auto_update: Option<bool>,
 
     /// This base keymap settings adjusts the default keybindings in Zed to be similar

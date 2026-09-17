@@ -253,10 +253,17 @@ struct AutoUpdateSetting(bool);
 
 /// Whether or not to automatically check for updates.
 ///
-/// Default: true
+/// Default: false — this fork pins it off, see `from_settings` below.
 impl Settings for AutoUpdateSetting {
-    fn from_settings(content: &settings::SettingsContent) -> Self {
-        Self(content.auto_update.unwrap())
+    fn from_settings(_content: &settings::SettingsContent) -> Self {
+        // Always off. This fork ships unsigned dev builds and never installs
+        // them in the background, so the user-facing toggle could only
+        // mislead. Upstream is no help either: `ReleaseChannel::poll_for_updates`
+        // already returns false for the `dev` channel, which turns the setting
+        // into a no-op at runtime. Pinning it here keeps the setting and the
+        // behaviour consistent, and stops a hand-edited settings.json from
+        // making the switch look armed.
+        Self(false)
     }
 }
 
