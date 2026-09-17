@@ -944,7 +944,9 @@ impl Render for ImageViewToolbarControls {
             .child(
                 IconButton::new("zoom-out", IconName::Dash)
                     .icon_size(IconSize::Small)
-                    .tooltip(|_window, cx| Tooltip::for_action("Zoom Out", &ZoomOut, cx))
+                    .tooltip(|_window, cx| {
+                        Tooltip::for_action(locale::t_static("Zoom Out"), &ZoomOut, cx)
+                    })
                     .on_click({
                         let image_view = image_view.downgrade();
                         move |_, window, cx| {
@@ -1021,7 +1023,7 @@ impl Render for ImageViewToolbarControls {
             .child(
                 IconButton::new("zoom-in", IconName::Plus)
                     .icon_size(IconSize::Small)
-                    .tooltip(|_, cx| Tooltip::for_action("Zoom In", &ZoomIn, cx))
+                    .tooltip(|_, cx| Tooltip::for_action(locale::t_static("Zoom In"), &ZoomIn, cx))
                     .on_click({
                         let image_view = image_view.downgrade();
                         move |_, window, cx| {

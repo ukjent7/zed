@@ -340,9 +340,9 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
     Vim::action(editor, cx, |_, _: &ArgumentRequired, window, cx| {
         let _ = window.prompt(
             gpui::PromptLevel::Critical,
-            "Argument required",
+            locale::t("Argument required").as_str(),
             None,
-            &["Cancel"],
+            &[gpui::PromptButton::cancel(locale::t_static("Cancel"))],
             cx,
         );
     });
@@ -377,9 +377,11 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     else {
                         let _ = window.prompt(
                             gpui::PromptLevel::Warning,
-                            "No file name",
-                            Some("Partial buffer write requires file name."),
-                            &["Cancel"],
+                            locale::t("No file name").as_str(),
+                            Some(
+                                locale::t("Partial buffer write requires file name.").as_str(),
+                            ),
+                            &[gpui::PromptButton::cancel(locale::t_static("Cancel"))],
                             cx,
                         );
                         return;
@@ -399,7 +401,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                                         window,
                                         cx,
                                     )
-                                    .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                                    .detach_and_prompt_err(locale::t("Failed to save").as_str(), window, cx, |_, _, _| None);
                             });
                         }
                         return;
@@ -407,9 +409,14 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     if Some(SaveIntent::Overwrite) != action.save_intent {
                         let _ = window.prompt(
                             gpui::PromptLevel::Warning,
-                            "Use ! to write partial buffer",
-                            Some("Overwriting the current file with selected buffer content requires '!'."),
-                            &["Cancel"],
+                            locale::t("Use ! to write partial buffer").as_str(),
+                            Some(
+                                locale::t(
+                                    "Overwriting the current file with selected buffer content requires '!'.",
+                                )
+                                .as_str(),
+                            ),
+                            &[gpui::PromptButton::cancel(locale::t_static("Cancel"))],
                             cx,
                         );
                         return;
@@ -437,7 +444,10 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                                 Some(
                                     "A file or folder with the same name already exists. Replacing it will overwrite its current contents.",
                                 ),
-                                &["Replace", "Cancel"],
+                                &[
+                                    gpui::PromptButton::new(locale::t_static("Replace")),
+                                    gpui::PromptButton::cancel(locale::t_static("Cancel")),
+                                ],
                                 cx
                             )
                         });
@@ -455,7 +465,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                                 };
                                 worktree
                                     .write_file(path.into_arc(), text.clone(), line_ending, encoding, has_bom, cx)
-                                    .detach_and_prompt_err("Failed to write lines", window, cx, |_, _, _| None);
+                                    .detach_and_prompt_err(locale::t("Failed to write lines").as_str(), window, cx, |_, _, _| None);
                             });
                         })
                         .detach();
@@ -473,7 +483,12 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                             window,
                             cx,
                         )
-                        .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                        .detach_and_prompt_err(
+                            locale::t("Failed to save").as_str(),
+                            window,
+                            cx,
+                            |_, _, _| None,
+                        );
                 });
             }
             return;
@@ -497,7 +512,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     "Cannot save buffer with absolute path"
                 )))
                 .detach_and_prompt_err(
-                    "Failed to save",
+                    locale::t("Failed to save").as_str(),
                     window,
                     cx,
                     |_, _, _| None,
@@ -518,7 +533,10 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                         "A file or folder with the same name already exists. \
                         Replacing it will overwrite its current contents.",
                     ),
-                    &["Replace", "Cancel"],
+                    &[
+                        gpui::PromptButton::new(locale::t_static("Replace")),
+                        gpui::PromptButton::cancel(locale::t_static("Cancel")),
+                    ],
                     cx,
                 );
                 cx.spawn_in(window, async move |editor, cx| {
@@ -529,14 +547,24 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     let _ = editor.update_in(cx, |editor, window, cx| {
                         editor
                             .save_as(project, project_path, window, cx)
-                            .detach_and_prompt_err("Failed to :w", window, cx, |_, _, _| None);
+                            .detach_and_prompt_err(
+                                locale::t("Failed to :w").as_str(),
+                                window,
+                                cx,
+                                |_, _, _| None,
+                            );
                     });
                 })
                 .detach();
             } else {
                 editor
                     .save_as(project, project_path, window, cx)
-                    .detach_and_prompt_err("Failed to :w", window, cx, |_, _, _| None);
+                    .detach_and_prompt_err(
+                        locale::t("Failed to :w").as_str(),
+                        window,
+                        cx,
+                        |_, _, _| None,
+                    );
             }
         });
     });
@@ -578,7 +606,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                 gpui::PromptLevel::Critical,
                 &format!("Invalid argument: {}", s),
                 None,
-                &["Cancel"],
+                &[gpui::PromptButton::cancel(locale::t_static("Cancel"))],
                 cx,
             );
         }

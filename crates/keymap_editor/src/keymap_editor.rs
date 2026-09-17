@@ -3170,6 +3170,11 @@ impl Render for KeybindingEditorModal {
                                                         .color(Color::Muted),
                                                 )
                                                 .child(
+                                                    // Kept English on purpose, like the
+                                                    // stash picker's button: the
+                                                    // dictionary's "View" is the noun
+                                                    // used by the git_panel menu header,
+                                                    // not this verb.
                                                     Button::new("show_matching", "View")
                                                         .label_size(LabelSize::Small)
                                                         .end_icon(

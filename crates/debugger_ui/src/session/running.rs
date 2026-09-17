@@ -487,7 +487,10 @@ fn render_debugger_tab(
                         ix,
                     },
                     |tab, _, _, cx| {
-                        let label = tab.item.tab_content_text(0, cx);
+                        // Translated at the display site. `to_shared_string()` has
+                        // to stay English: it is the identity name, reused as the
+                        // subview element id above.
+                        let label = locale::t(&tab.item.tab_content_text(0, cx));
                         cx.new(|_| DraggedTabPreview { label })
                     },
                 ),

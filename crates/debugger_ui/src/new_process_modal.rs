@@ -829,14 +829,14 @@ impl ConfigureMode {
     pub(super) fn new(window: &mut Window, cx: &mut App) -> Entity<Self> {
         let program = cx.new(|cx| {
             InputField::new(window, cx, "ENV=Zed ~/bin/program --option")
-                .label("Program")
+                .label(locale::t_static("Program"))
                 .tab_stop(true)
                 .tab_index(1)
         });
 
         let cwd = cx.new(|cx| {
             InputField::new(window, cx, "Ex: $ZED_WORKTREE_ROOT")
-                .label("Working Directory")
+                .label(locale::t_static("Working Directory"))
                 .tab_stop(true)
                 .tab_index(2)
         });
@@ -1490,15 +1490,15 @@ impl PickerDelegate for DebugDelegate {
             .child({
                 let action = menu::SecondaryConfirm.boxed_clone();
                 if self.matches.is_empty() {
-                    Button::new("edit-debug-json", "Edit debug.json").on_click(cx.listener(
-                        |_picker, _, window, cx| {
+                    Button::new("edit-debug-json", locale::t_static("Edit debug.json")).on_click(
+                        cx.listener(|_picker, _, window, cx| {
                             window.dispatch_action(
                                 zed_actions::OpenProjectDebugTasks.boxed_clone(),
                                 cx,
                             );
                             cx.emit(DismissEvent);
-                        },
-                    ))
+                        }),
+                    )
                 } else {
                     Button::new("edit-debug-task", "Edit in debug.json")
                         .key_binding(KeyBinding::for_action(&*action, cx))

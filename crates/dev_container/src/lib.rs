@@ -429,7 +429,7 @@ impl PickerDelegate for TemplatePickerDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("run-action", "Continue")
+                    Button::new("run-action", locale::t_static("Continue"))
                         .key_binding(
                             KeyBinding::for_action(&menu::Confirm, cx)
                                 .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -626,7 +626,7 @@ impl PickerDelegate for FeaturePickerDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("run-action", "Select Feature")
+                    Button::new("run-action", locale::t_static("Select Feature"))
                         .key_binding(
                             KeyBinding::for_action(&menu::Confirm, cx)
                                 .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -636,14 +636,17 @@ impl PickerDelegate for FeaturePickerDelegate {
                         }),
                 )
                 .child(
-                    Button::new("run-action-secondary", "Confirm Selections")
-                        .key_binding(
-                            KeyBinding::for_action(&menu::SecondaryConfirm, cx)
-                                .map(|kb| kb.size(rems_from_px(12_f32))),
-                        )
-                        .on_click(|_, window, cx| {
-                            window.dispatch_action(menu::SecondaryConfirm.boxed_clone(), cx)
-                        }),
+                    Button::new(
+                        "run-action-secondary",
+                        locale::t_static("Confirm Selections"),
+                    )
+                    .key_binding(
+                        KeyBinding::for_action(&menu::SecondaryConfirm, cx)
+                            .map(|kb| kb.size(rems_from_px(12_f32))),
+                    )
+                    .on_click(|_, window, cx| {
+                        window.dispatch_action(menu::SecondaryConfirm.boxed_clone(), cx)
+                    }),
                 )
                 .into_any_element(),
         )
@@ -670,7 +673,8 @@ impl DevContainerModal {
                 .child(
                     div().track_focus(&self.focus_handle).child(
                         ModalHeader::new().child(
-                            Headline::new("Create Dev Container").size(HeadlineSize::XSmall),
+                            Headline::new(locale::t_static("Create Dev Container"))
+                                .size(HeadlineSize::XSmall),
                         ),
                     ),
                 )
@@ -699,7 +703,9 @@ impl DevContainerModal {
                                     );
                                     cx.notify();
                                 }))
-                                .child(Label::new("Search for Dev Container Templates")),
+                                .child(Label::new(locale::t_static(
+                                    "Search for Dev Container Templates",
+                                ))),
                         ),
                 )
                 .into_any_element(),
@@ -765,7 +771,8 @@ impl DevContainerModal {
                         .child(
                             ModalHeader::new()
                                 .child(
-                                    Headline::new("Template Option: ").size(HeadlineSize::XSmall),
+                                    Headline::new(locale::t_static("Template Option: "))
+                                        .size(HeadlineSize::XSmall),
                                 )
                                 .child(
                                     Headline::new(&next_option_entries.option_name)
@@ -845,7 +852,7 @@ impl DevContainerModal {
                                     this.accept_message(DevContainerMessage::GoBack, window, cx);
                                     cx.notify();
                                 }))
-                                .child(Label::new("Go Back")),
+                                .child(Label::new(locale::t_static("Go Back"))),
                         ),
                 )
                 .into_any_element(),
@@ -887,8 +894,10 @@ impl DevContainerModal {
                         ModalHeader::new()
                             .icon(Icon::new(IconName::Warning).color(Color::Warning))
                             .child(
-                                Headline::new("Overwrite Existing Configuration?")
-                                    .size(HeadlineSize::XSmall),
+                                Headline::new(locale::t_static(
+                                    "Overwrite Existing Configuration?",
+                                ))
+                                .size(HeadlineSize::XSmall),
                             ),
                     ),
                 )
@@ -923,7 +932,7 @@ impl DevContainerModal {
                                     );
                                     cx.notify();
                                 }))
-                                .child(Label::new("Overwrite")),
+                                .child(Label::new(locale::t_static("Overwrite"))),
                         ),
                 )
                 .child(
@@ -944,7 +953,7 @@ impl DevContainerModal {
                                     this.dismiss(&menu::Cancel, window, cx);
                                     cx.notify();
                                 }))
-                                .child(Label::new("Cancel")),
+                                .child(Label::new(locale::t_static("Cancel"))),
                         ),
                 )
                 .into_any_element(),
@@ -961,7 +970,8 @@ impl DevContainerModal {
                 .child(
                     div().track_focus(&self.focus_handle).child(
                         ModalHeader::new().child(
-                            Headline::new("Create Dev Container").size(HeadlineSize::XSmall),
+                            Headline::new(locale::t_static("Create Dev Container"))
+                                .size(HeadlineSize::XSmall),
                         ),
                     ),
                 )
@@ -976,7 +986,9 @@ impl DevContainerModal {
                                     .color(Color::Muted)
                                     .with_rotate_animation(2),
                             )
-                            .child(Label::new("Querying template registry...")),
+                            .child(Label::new(locale::t_static(
+                                "Querying template registry...",
+                            ))),
                     ),
                 )
                 .child(ListSeparator)
@@ -998,7 +1010,7 @@ impl DevContainerModal {
                                     this.accept_message(DevContainerMessage::GoBack, window, cx);
                                     cx.notify();
                                 }))
-                                .child(Label::new("Go Back")),
+                                .child(Label::new(locale::t_static("Go Back"))),
                         ),
                 )
                 .into_any_element(),
@@ -1013,7 +1025,8 @@ impl DevContainerModal {
                 .child(
                     div().track_focus(&self.focus_handle).child(
                         ModalHeader::new().child(
-                            Headline::new("Create Dev Container").size(HeadlineSize::XSmall),
+                            Headline::new(locale::t_static("Create Dev Container"))
+                                .size(HeadlineSize::XSmall),
                         ),
                     ),
                 )
@@ -1028,7 +1041,7 @@ impl DevContainerModal {
                                     .color(Color::Muted)
                                     .with_rotate_animation(2),
                             )
-                            .child(Label::new("Querying features...")),
+                            .child(Label::new(locale::t_static("Querying features..."))),
                     ),
                 )
                 .child(ListSeparator)
@@ -1050,7 +1063,7 @@ impl DevContainerModal {
                                     this.accept_message(DevContainerMessage::GoBack, window, cx);
                                     cx.notify();
                                 }))
-                                .child(Label::new("Go Back")),
+                                .child(Label::new(locale::t_static("Go Back"))),
                         ),
                 )
                 .into_any_element(),

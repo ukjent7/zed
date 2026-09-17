@@ -96,7 +96,7 @@ impl Render for ApiKeysWithProviders {
                                 div()
                                     .w_full()
                                     .child(
-                                        Label::new("Start now using API keys from your environment for the following providers:")
+                                        Label::new(locale::t_static("Start now using API keys from your environment for the following providers:"))
                                             .color(Color::Muted)
                                     )
                             )
@@ -124,23 +124,26 @@ impl RenderOnce for ApiKeysWithoutProviders {
                 h_flex()
                     .gap_2()
                     .child(
-                        Label::new("API Keys")
+                        Label::new(locale::t_static("API Keys"))
                             .size(LabelSize::Small)
                             .color(Color::Muted)
                             .buffer_font(cx),
                     )
                     .child(Divider::horizontal()),
             )
-            .child(List::new().child(ListBulletItem::new(
+            .child(List::new().child(ListBulletItem::new(locale::t_static(
                 "Add your own keys to use AI without signing in.",
-            )))
+            ))))
             .child(
-                Button::new("configure-providers", "Configure Providers")
-                    .full_width()
-                    .style(ButtonStyle::Outlined)
-                    .on_click(move |_, window, cx| {
-                        window.dispatch_action(zed_actions::agent::OpenSettings.boxed_clone(), cx);
-                    }),
+                Button::new(
+                    "configure-providers",
+                    locale::t_static("Configure Providers"),
+                )
+                .full_width()
+                .style(ButtonStyle::Outlined)
+                .on_click(move |_, window, cx| {
+                    window.dispatch_action(zed_actions::agent::OpenSettings.boxed_clone(), cx);
+                }),
             )
     }
 }
