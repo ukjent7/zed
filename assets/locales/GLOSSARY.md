@@ -119,3 +119,7 @@
    **不同的键**，照抄源码时别统一替换，否则 `script/extract-l10n` 报 MISSING。
 2. **片段键**（`-click`、`event`/`events`）只是拼装显示的一段，译文须按拼装后的
    整句读通；能改成整句 `t_format` 就不要留片段键。
+3. **同形异义无法消歧**：`"View"` 只有一个键，词典里是名词「视图」，而
+   `stash_picker`/`keymap_editor` 的按钮是动词「查看」。source-as-key 下没有第三条
+   路，宁可回退英文（SCHEMA 规则 3），也不要把错的词发出去。
+
