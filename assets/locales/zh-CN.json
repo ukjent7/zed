@@ -1337,6 +1337,7 @@
   "Show a badge on the terminal panel icon with the count of open terminals.": "在终端面板图标上显示已打开终端数量的徽标。",
   "Show a git status indicator next to file names in the project panel.": "在项目面板的文件名旁显示 git 状态指示器。",
   "Show agent review buttons in the editor toolbar.": "在编辑器工具栏中显示 Agent 审查按钮。",
+  "Show an indicator while a multi-stroke key binding is pending. If the input has a timeout, a countdown is shown and hovering pauses it. Its binding preview popover is disabled when the which-key menu is enabled.": "多段按键绑定处于待输入状态时，显示指示器；若该输入设有超时，则会显示倒计时，悬停可暂停它。启用 which-key 菜单时，其绑定预览浮层会被禁用。",
   "Show an indicator with a countdown while a multi-stroke key binding is pending. Its binding preview popover is disabled when the which-key menu is enabled.": "多段按键绑定待输入时，显示带倒计时的指示器。启用 which-key 菜单时，其绑定预览浮层会被禁用。",
   "Show author name as part of the commit information in branch picker.": "在分支选择器的提交信息中显示作者名。",
   "Show banners announcing new features in the titlebar.": "在标题栏显示新功能横幅。",
