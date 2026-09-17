@@ -97,10 +97,12 @@ impl AskPassModal {
                             Icon::new(IconName::Github).size(IconSize::Small)
                         )
                         .child(
-                            Label::new("You may need to configure git for Github.")
+                            Label::new(locale::t_static(
+                                "You may need to configure git for Github.",
+                            ))
                                 .size(LabelSize::Small),
                         )
-                        .child(Button::new("learn-more", "Learn more").color(Color::Accent).label_size(LabelSize::Small).on_click(|_, _, cx| {
+                        .child(Button::new("learn-more", locale::t_static("Learn more")).color(Color::Accent).label_size(LabelSize::Small).on_click(|_, _, cx| {
                             cx.open_url("https://docs.github.com/en/get-started/git-basics/set-up-git#authenticating-with-github-from-git")
                         })),
                 )

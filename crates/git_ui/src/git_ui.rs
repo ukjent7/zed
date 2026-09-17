@@ -489,7 +489,12 @@ impl RenameBranchModal {
                 Err(_) => Err(anyhow!("Operation was canceled")),
             }
         })
-        .detach_and_prompt_err("Failed to rename branch", window, cx, |_, _, _| None);
+        .detach_and_prompt_err(
+            locale::t_static("Failed to rename branch").as_str(),
+            window,
+            cx,
+            |_, _, _| None,
+        );
         cx.emit(DismissEvent);
     }
 }
@@ -587,7 +592,7 @@ impl RefPickerModal {
     ) -> Self {
         let editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Enter git ref...", window, cx);
+            editor.set_placeholder_text(locale::t_static("Enter git ref...").as_str(), window, cx);
             editor
         });
 
@@ -772,7 +777,9 @@ impl Render for RefPickerModal {
                     .w_full()
                     .gap_1p5()
                     .child(Icon::new(IconName::Hash).size(IconSize::XSmall))
-                    .child(Headline::new("View Commit").size(HeadlineSize::XSmall)),
+                    .child(
+                        Headline::new(locale::t_static("View Commit")).size(HeadlineSize::XSmall),
+                    ),
             )
             .child(div().px_3().w_full().child(self.editor.clone()))
             .when_some(commit_preview, |el, preview| {
@@ -1277,7 +1284,11 @@ impl GitCloneModal {
     pub fn show(panel: Entity<GitPanel>, window: &mut Window, cx: &mut Context<Self>) -> Self {
         let repo_input = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Enter repository URL…", window, cx);
+            editor.set_placeholder_text(
+                locale::t_static("Enter repository URL…").as_str(),
+                window,
+                cx,
+            );
             editor
         });
         let focus_handle = repo_input.focus_handle(cx);

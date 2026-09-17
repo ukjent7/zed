@@ -84,7 +84,7 @@ use std::ops::Range;
 use std::path::Path;
 use std::rc::Rc;
 use std::{sync::Arc, time::Duration};
-use strum::{IntoEnumIterator, VariantNames};
+use strum::IntoEnumIterator;
 use theme_settings::ThemeSettings;
 use time::OffsetDateTime;
 use ui::{
@@ -173,16 +173,24 @@ actions!(
     ]
 );
 
+/// Confirms an action whose buttons come from a strum enum.
+///
+/// `buttons` must be listed in the enum's variant order: the clicked index is
+/// mapped back with `T::iter().nth(..)`. Call sites build `gpui::PromptButton`
+/// values instead of passing `T::VARIANTS`, so labels can be translated without
+/// losing the cancel/ok role that `From<&str> for PromptButton` derives from the
+/// English word.
 fn prompt<T>(
     msg: &str,
     detail: Option<&str>,
+    buttons: &[gpui::PromptButton],
     window: &mut Window,
     cx: &mut App,
 ) -> Task<anyhow::Result<T>>
 where
-    T: IntoEnumIterator + VariantNames + 'static,
+    T: IntoEnumIterator + 'static,
 {
-    let rx = window.prompt(PromptLevel::Info, msg, detail, T::VARIANTS, cx);
+    let rx = window.prompt(PromptLevel::Info, msg, detail, buttons, cx);
     cx.spawn(async move |_| Ok(T::iter().nth(rx.await?).unwrap()))
 }
 
@@ -242,7 +250,11 @@ impl StashMessageModal {
     ) -> Self {
         let editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Optionally provide a stash message", window, cx);
+            editor.set_placeholder_text(
+                locale::t_static("Optionally provide a stash message").as_str(),
+                window,
+                cx,
+            );
             editor
         });
         Self {
@@ -291,7 +303,10 @@ impl Render for StashMessageModal {
                     .w_full()
                     .gap_1p5()
                     .child(Icon::new(IconName::GitBranch).size(IconSize::XSmall))
-                    .child(Headline::new(self.kind.title()).size(HeadlineSize::XSmall)),
+                    .child(
+                        Headline::new(locale::t_static(self.kind.title()))
+                            .size(HeadlineSize::XSmall),
+                    ),
             )
             .child(div().px_3().pb_3().w_full().child(self.editor.clone()))
     }
@@ -2717,9 +2732,12 @@ impl GitPanel {
                 }
                 Ok(())
             })
-            .detach_and_prompt_err("Failed to discard changes", window, cx, |e, _, _| {
-                Some(format!("{e}"))
-            });
+            .detach_and_prompt_err(
+                locale::t_static("Failed to discard changes").as_str(),
+                window,
+                cx,
+                |e, _, _| Some(format!("{e}")),
+            );
     }
 
     fn add_to_gitignore(
@@ -2818,7 +2836,17 @@ impl GitPanel {
             if !entry.status.is_created() {
                 self.perform_checkout(vec![entry.clone()], window, cx);
             } else {
-                let prompt = prompt(&format!("Trash {}?", filename), None, window, cx);
+                let message = locale::t_format("Trash {file}?", &[("{file}", &filename)]);
+                let prompt = prompt(
+                    message.as_str(),
+                    None,
+                    &[
+                        gpui::PromptButton::new(locale::t_static("Trash")),
+                        gpui::PromptButton::cancel(locale::t_static("Cancel")),
+                    ],
+                    window,
+                    cx,
+                );
                 cx.spawn_in(window, async move |_, cx| {
                     match prompt.await? {
                         TrashCancel::Trash => {}
@@ -2835,7 +2863,7 @@ impl GitPanel {
                     Ok(())
                 })
                 .detach_and_prompt_err(
-                    "Failed to trash file",
+                    locale::t_static("Failed to trash file").as_str(),
                     window,
                     cx,
                     |e, _, _| Some(format!("{e}")),
@@ -2943,7 +2971,14 @@ impl GitPanel {
             .take(5)
             .join("\n");
         if entries.len() > 5 {
-            details.push_str(&format!("\nand {} more…", entries.len() - 5))
+            details.push_str("\n");
+            details.push_str(
+                &locale::t_format(
+                    "and {more} more…",
+                    &[("{more}", &(entries.len() - 5).to_string())],
+                )
+                .to_string(),
+            );
         }
 
         #[derive(strum::EnumIter, strum::VariantNames)]
@@ -2952,9 +2987,14 @@ impl GitPanel {
             RestoreTrackedFiles,
             Cancel,
         }
+        let message = locale::t_static("Discard changes to these files?");
         let prompt = prompt(
-            "Discard changes to these files?",
+            message.as_str(),
             Some(&details),
+            &[
+                gpui::PromptButton::new(locale::t_static("Restore Tracked Files")),
+                gpui::PromptButton::cancel(locale::t_static("Cancel")),
+            ],
             window,
             cx,
         );
@@ -3000,10 +3040,27 @@ impl GitPanel {
             .join("\n");
 
         if to_delete.len() > 5 {
-            details.push_str(&format!("\nand {} more…", to_delete.len() - 5))
+            details.push_str("\n");
+            details.push_str(
+                &locale::t_format(
+                    "and {more} more…",
+                    &[("{more}", &(to_delete.len() - 5).to_string())],
+                )
+                .to_string(),
+            );
         }
 
-        let prompt = prompt("Trash these files?", Some(&details), window, cx);
+        let message = locale::t_static("Trash these files?");
+        let prompt = prompt(
+            message.as_str(),
+            Some(&details),
+            &[
+                gpui::PromptButton::new(locale::t_static("Trash")),
+                gpui::PromptButton::cancel(locale::t_static("Cancel")),
+            ],
+            window,
+            cx,
+        );
         cx.spawn_in(window, async move |this, cx| {
             match prompt.await? {
                 TrashCancel::Trash => {}
@@ -3039,9 +3096,12 @@ impl GitPanel {
             }
             Ok(())
         })
-        .detach_and_prompt_err("Failed to trash files", window, cx, |e, _, _| {
-            Some(format!("{e}"))
-        });
+        .detach_and_prompt_err(
+            locale::t_static("Failed to trash files").as_str(),
+            window,
+            cx,
+            |e, _, _| Some(format!("{e}")),
+        );
     }
 
     fn change_all_files_stage(&mut self, stage: bool, cx: &mut Context<Self>) {
@@ -3684,8 +3744,14 @@ impl GitPanel {
         let Some(active_repository) = self.active_repository.clone() else {
             return;
         };
-        let error_spawn = |message, window: &mut Window, cx: &mut App| {
-            let prompt = window.prompt(PromptLevel::Warning, message, None, &["OK"], cx);
+        let error_spawn = |message: &str, window: &mut Window, cx: &mut App| {
+            let prompt = window.prompt(
+                PromptLevel::Warning,
+                message,
+                None,
+                &[gpui::PromptButton::ok(locale::t_static("OK"))],
+                cx,
+            );
             cx.spawn(async move |_| {
                 prompt.await.ok();
             })
@@ -3694,7 +3760,10 @@ impl GitPanel {
 
         if self.has_unstaged_conflicts() {
             error_spawn(
-                "There are still conflicts. You must stage these before committing",
+                locale::t_static(
+                    "There are still conflicts. You must stage these before committing",
+                )
+                .as_str(),
                 window,
                 cx,
             );
@@ -3730,7 +3799,11 @@ impl GitPanel {
                 .collect::<Vec<_>>();
 
             if changed_files.is_empty() && !options.amend {
-                error_spawn("No changes to commit", window, cx);
+                error_spawn(
+                    locale::t_static("No changes to commit").as_str(),
+                    window,
+                    cx,
+                );
                 return;
             }
 
@@ -3838,12 +3911,23 @@ impl GitPanel {
                     Uncommit,
                     Cancel,
                 }
-                let detail = format!(
-                    "This commit was already pushed to {}.",
-                    pushed_to.into_iter().join(", ")
+                let detail = locale::t_format(
+                    "This commit was already pushed to {remotes}.",
+                    &[("{remotes}", &pushed_to.into_iter().join(", "))],
                 );
                 let result = cx
-                    .update(|window, cx| prompt("Are you sure?", Some(&detail), window, cx))?
+                    .update(|window, cx| {
+                        prompt(
+                            locale::t_static("Are you sure?").as_str(),
+                            Some(detail.as_str()),
+                            &[
+                                gpui::PromptButton::new(locale::t_static("Uncommit")),
+                                gpui::PromptButton::cancel(locale::t_static("Cancel")),
+                            ],
+                            window,
+                            cx,
+                        )
+                    })?
                     .await?;
 
                 match result {
@@ -4381,9 +4465,9 @@ impl GitPanel {
         } else if worktrees.is_empty() {
             let result = window.prompt(
                 PromptLevel::Warning,
-                "Unable to initialize a git repository",
-                Some("Open a directory first"),
-                &["OK"],
+                locale::t_static("Unable to initialize a git repository").as_str(),
+                Some(locale::t_static("Open a directory first").as_str()),
+                &[gpui::PromptButton::ok(locale::t_static("OK"))],
                 cx,
             );
             cx.background_executor()
@@ -6151,7 +6235,7 @@ impl GitPanel {
         } else {
             button.tooltip(move |_window, cx| {
                 if !can_commit {
-                    Tooltip::simple("No Changes to Commit", cx)
+                    Tooltip::simple(locale::t_static("No Changes to Commit"), cx)
                 } else {
                     Tooltip::for_action_in(
                         locale::t("Generate Commit Message"),
@@ -6239,7 +6323,7 @@ impl GitPanel {
                             })
                             .when(has_previous_commit, |this| {
                                 this.toggleable_entry(
-                                    "Amend",
+                                    locale::t_static("Amend"),
                                     amend,
                                     IconPosition::Start,
                                     Some(Box::new(Amend)),
@@ -6256,7 +6340,7 @@ impl GitPanel {
                                 )
                             })
                             .toggleable_entry(
-                                "Signoff",
+                                locale::t_static("Signoff"),
                                 signoff,
                                 IconPosition::Start,
                                 Some(Box::new(Signoff)),
@@ -7981,7 +8065,7 @@ impl GitPanel {
                         .color(Color::Muted),
                     )
                     .child(
-                        Label::new(header.title())
+                        Label::new(locale::t_static(header.title()))
                             .color(Color::Muted)
                             .size(LabelSize::Small),
                     ),
@@ -8471,10 +8555,13 @@ impl GitPanel {
                             })
                             .tooltip(move |_window, cx| {
                                 if resolved_conflict {
-                                    Tooltip::simple("Conflict marked as resolved", cx)
+                                    Tooltip::simple(
+                                        locale::t_static("Conflict marked as resolved"),
+                                        cx,
+                                    )
                                 } else {
                                     let action = stage_intent.label(|| stage_status);
-                                    Tooltip::for_action(action, &ToggleStaged, cx)
+                                    Tooltip::for_action(locale::t_static(action), &ToggleStaged, cx)
                                 }
                             }),
                     ),
@@ -8671,10 +8758,19 @@ impl GitPanel {
                             })
                             .tooltip(move |_window, cx| {
                                 if resolved_conflict {
-                                    Tooltip::simple("Conflicts marked as resolved", cx)
+                                    Tooltip::simple(
+                                        locale::t_static("Conflicts marked as resolved"),
+                                        cx,
+                                    )
                                 } else {
                                     let action = stage_intent.label(|| stage_status);
-                                    Tooltip::simple(format!("{action} Folder"), cx)
+                                    Tooltip::simple(
+                                        locale::t_format(
+                                            "{action} Folder",
+                                            &[("{action}", locale::t_static(action).as_str())],
+                                        ),
+                                        cx,
+                                    )
                                 }
                             }),
                     ),
@@ -9424,7 +9520,7 @@ impl RenderOnce for PanelRepoFooter {
                     if single_repo {
                         cx.new(|_| Empty).into()
                     } else {
-                        Tooltip::simple("Switch Active Repository", cx)
+                        Tooltip::simple(locale::t_static("Switch Active Repository"), cx)
                     }
                 },
             )

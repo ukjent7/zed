@@ -885,9 +885,12 @@ impl Render for DeleteBranchTooltip {
             .into_any_element()
         } else {
             Tooltip::with_meta_in(
-                "Delete Branch",
+                locale::t_static("Delete Branch"),
                 Some(&branch_picker::DeleteBranch),
-                concat!("Hold ", ui::alt_key_name!(), " to force delete"),
+                locale::t_format(
+                    "Hold {key} to force delete",
+                    &[("{key}", ui::alt_key_name!())],
+                ),
                 &self.focus_handle,
                 cx,
             )
@@ -1070,9 +1073,12 @@ impl BranchListDelegate {
 
             Ok(())
         })
-        .detach_and_prompt_err("Failed to create branch", window, cx, |e, _, _| {
-            Some(e.to_string())
-        });
+        .detach_and_prompt_err(
+            locale::t_static("Failed to create branch").as_str(),
+            window,
+            cx,
+            |e, _, _| Some(e.to_string()),
+        );
         cx.emit(DismissEvent);
     }
 
@@ -1090,9 +1096,12 @@ impl BranchListDelegate {
         let receiver = repo.update(cx, |repo, _| repo.create_remote(remote_name, remote_url));
 
         cx.background_spawn(async move { receiver.await? })
-            .detach_and_prompt_err("Failed to create remote", window, cx, |e, _, _cx| {
-                Some(e.to_string())
-            });
+            .detach_and_prompt_err(
+                locale::t_static("Failed to create remote").as_str(),
+                window,
+                cx,
+                |e, _, _cx| Some(e.to_string()),
+            );
         cx.emit(DismissEvent);
     }
 
@@ -1260,9 +1269,7 @@ impl PickerDelegate for BranchListDelegate {
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
         match self.state {
-            PickerState::CreateRemote(_) => {
-                Some(SharedString::new_static("Remote name can't be empty"))
-            }
+            PickerState::CreateRemote(_) => Some(locale::t_static("Remote name can't be empty")),
             _ => None,
         }
     }
@@ -1582,7 +1589,7 @@ impl PickerDelegate for BranchListDelegate {
                     anyhow::Ok(())
                 })
                 .detach_and_prompt_err(
-                    "Failed to change branch",
+                    locale::t_static("Failed to change branch").as_str(),
                     window,
                     cx,
                     |_, _, _| None,

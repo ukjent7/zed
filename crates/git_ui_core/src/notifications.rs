@@ -56,7 +56,7 @@ pub fn show_error_toast(
                             .size(IconSize::Small)
                             .color(Color::Error),
                     )
-                    .action("View Log", move |window, cx| {
+                    .action(locale::t_static("View Log"), move |window, cx| {
                         let message = message.clone();
                         let action = action.clone();
                         workspace_weak

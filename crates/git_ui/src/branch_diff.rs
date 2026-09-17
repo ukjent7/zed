@@ -883,9 +883,9 @@ impl Render for BranchDiffToolbar {
                         )
                         .tooltip(move |_, cx| {
                             Tooltip::with_meta_in(
-                                "Review Diff",
+                                locale::t_static("Review Diff"),
                                 Some(&ReviewDiff),
-                                "Send this diff for your last agent to review.",
+                                locale::t_static("Send this diff for your last agent to review."),
                                 &focus_handle,
                                 cx,
                             )

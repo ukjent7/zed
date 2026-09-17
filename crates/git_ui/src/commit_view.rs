@@ -1012,11 +1012,20 @@ impl CommitView {
             return;
         };
         let sha = commit_view.read(cx).commit.sha.clone();
+        let action = locale::t(str_action);
+        let stash_ref = format!("stash@{{{stash}}}");
         let answer = window.prompt(
             PromptLevel::Info,
-            &format!("{} stash@{{{}}}?", str_action, stash),
+            locale::t_format(
+                "{action} {stash}?",
+                &[("{action}", action.as_str()), ("{stash}", &stash_ref)],
+            )
+            .as_str(),
             None,
-            &[str_action, "Cancel"],
+            &[
+                gpui::PromptButton::new(action.clone()),
+                gpui::PromptButton::cancel(locale::t_static("Cancel")),
+            ],
             cx,
         );
 

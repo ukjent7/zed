@@ -352,7 +352,11 @@ const WORKTREE_REMOVE_FORCE_DELETE_PROMPTS: &[WorktreeRemoveForceDeletePrompt] =
     }];
 
 fn dirty_worktree_force_delete_prompt(display_name: &str) -> String {
-    format!("Worktree \"{display_name}\" contains modified or untracked files. Force delete it?")
+    locale::t_format(
+        "Worktree \"{name}\" contains modified or untracked files. Force delete it?",
+        &[("{name}", display_name)],
+    )
+    .to_string()
 }
 
 fn force_delete_prompt_for_worktree_remove_error(
@@ -403,7 +407,7 @@ impl Render for DeleteWorktreeTooltip {
 
         if force_delete {
             Tooltip::for_action_in(
-                "Force Delete Worktree",
+                locale::t_static("Force Delete Worktree"),
                 &ForceDeleteWorktree,
                 &self.focus_handle,
                 cx,
@@ -411,9 +415,12 @@ impl Render for DeleteWorktreeTooltip {
             .into_any_element()
         } else {
             Tooltip::with_meta_in(
-                "Delete Worktree",
+                locale::t_static("Delete Worktree"),
                 Some(&DeleteWorktree),
-                concat!("Hold ", ui::alt_key_name!(), " to force delete"),
+                locale::t_format(
+                    "Hold {key} to force delete",
+                    &[("{key}", ui::alt_key_name!())],
+                ),
                 &self.focus_handle,
                 cx,
             )
@@ -566,7 +573,10 @@ impl WorktreePickerDelegate {
                                 PromptLevel::Warning,
                                 &prompt_message,
                                 None,
-                                &["Force Delete", "Cancel"],
+                                &[
+                                    gpui::PromptButton::new(locale::t_static("Force Delete")),
+                                    gpui::PromptButton::cancel(locale::t_static("Cancel")),
+                                ],
                                 cx,
                             )
                         })?;
@@ -1225,7 +1235,7 @@ impl PickerDelegate for WorktreePickerDelegate {
                                             .with_rotate_animation(2),
                                     )
                                     .child(
-                                        Label::new("Deleting…")
+                                        Label::new(locale::t_static("Deleting…"))
                                             .size(LabelSize::Small)
                                             .color(Color::Muted),
                                     ),
@@ -1235,7 +1245,7 @@ impl PickerDelegate for WorktreePickerDelegate {
                             let open_in_new_window_button =
                                 IconButton::new(("open-new-window", ix), IconName::ArrowUpRight)
                                     .icon_size(IconSize::Small)
-                                    .tooltip(Tooltip::text("Open in New Window"))
+                                    .tooltip(Tooltip::text(locale::t_static("Open in New Window")))
                                     .on_click(cx.listener(move |picker, _, window, cx| {
                                         let Some(entry) = picker.delegate.matches.get(ix) else {
                                             return;
@@ -1303,7 +1313,9 @@ impl PickerDelegate for WorktreePickerDelegate {
                                                 IconName::Close,
                                             )
                                             .icon_size(IconSize::Small)
-                                            .tooltip(Tooltip::text("Remove Worktree from Window"))
+                                            .tooltip(Tooltip::text(locale::t_static(
+                                                "Remove Worktree from Window",
+                                            )))
                                             .on_click(
                                                 cx.listener(move |picker, _, window, cx| {
                                                     picker.delegate.remove_worktree_from_window(
@@ -1369,7 +1381,7 @@ impl PickerDelegate for WorktreePickerDelegate {
                 .icon_size(IconSize::Small)
                 .tooltip(move |_window, cx| {
                     Tooltip::for_action_in(
-                        "Automate Worktree Setup",
+                        locale::t_static("Automate Worktree Setup"),
                         &OpenWorktreeSetupTasks,
                         &focus_handle,
                         cx,
@@ -1422,21 +1434,24 @@ impl PickerDelegate for WorktreePickerDelegate {
             .border_t_1()
             .border_color(cx.theme().colors().border_variant)
             .child(
-                Button::new("configure-worktree-tasks", "Automate Setup")
-                    .key_binding(
-                        KeyBinding::for_action_in(&OpenWorktreeSetupTasks, &focus_handle, cx)
-                            .map(|kb| kb.size(rems_from_px(12_f32))),
-                    )
-                    .on_click(|_, window, cx| {
-                        window.dispatch_action(OpenWorktreeSetupTasks.boxed_clone(), cx)
-                    }),
+                Button::new(
+                    "configure-worktree-tasks",
+                    locale::t_static("Automate Setup"),
+                )
+                .key_binding(
+                    KeyBinding::for_action_in(&OpenWorktreeSetupTasks, &focus_handle, cx)
+                        .map(|kb| kb.size(rems_from_px(12_f32))),
+                )
+                .on_click(|_, window, cx| {
+                    window.dispatch_action(OpenWorktreeSetupTasks.boxed_clone(), cx)
+                }),
             );
 
         if is_creating {
             Some(
                 footer
                     .child(
-                        Button::new("create-worktree", "Create")
+                        Button::new("create-worktree", locale::t_static("Create"))
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -1455,7 +1470,7 @@ impl PickerDelegate for WorktreePickerDelegate {
                             .gap_0p5()
                             .when(is_deleting, |this| {
                                 this.child(
-                                    Button::new("delete-worktree", "Deleting…")
+                                    Button::new("delete-worktree", locale::t_static("Deleting…"))
                                         .loading(true)
                                         .disabled(true),
                                 )
@@ -1463,7 +1478,7 @@ impl PickerDelegate for WorktreePickerDelegate {
                             .when(!is_deleting && can_delete, |this| {
                                 let focus_handle = focus_handle.clone();
                                 this.child(
-                                    Button::new("delete-worktree", "Delete")
+                                    Button::new("delete-worktree", locale::t_static("Delete"))
                                         .key_binding(
                                             KeyBinding::for_action_in(
                                                 &DeleteWorktree,
@@ -1480,26 +1495,31 @@ impl PickerDelegate for WorktreePickerDelegate {
                             .when(!is_deleting && !is_current, |this| {
                                 let focus_handle = focus_handle.clone();
                                 this.child(
-                                    Button::new("open-in-new-window", "Open in New Window")
-                                        .key_binding(
-                                            KeyBinding::for_action_in(
-                                                &menu::SecondaryConfirm,
-                                                &focus_handle,
-                                                cx,
-                                            )
-                                            .map(|kb| kb.size(rems_from_px(12_f32))),
+                                    Button::new(
+                                        "open-in-new-window",
+                                        locale::t_static("Open in New Window"),
+                                    )
+                                    .key_binding(
+                                        KeyBinding::for_action_in(
+                                            &menu::SecondaryConfirm,
+                                            &focus_handle,
+                                            cx,
                                         )
-                                        .on_click(|_, window, cx| {
+                                        .map(|kb| kb.size(rems_from_px(12_f32))),
+                                    )
+                                    .on_click(
+                                        |_, window, cx| {
                                             window.dispatch_action(
                                                 menu::SecondaryConfirm.boxed_clone(),
                                                 cx,
                                             )
-                                        }),
+                                        },
+                                    ),
                                 )
                             })
                             .when(!is_deleting, |this| {
                                 this.child(
-                                    Button::new("open-worktree", "Open")
+                                    Button::new("open-worktree", locale::t_static("Open"))
                                         .key_binding(
                                             KeyBinding::for_action_in(
                                                 &menu::Confirm,
@@ -1588,7 +1608,12 @@ pub async fn open_remote_worktree(
             window,
             cx,
         )
-        .prompt_err("Failed to connect", window, cx, |_, _, _| None)
+        .prompt_err(
+            locale::t_static("Failed to connect").as_str(),
+            window,
+            cx,
+            |_, _, _| None,
+        )
     })?;
 
     let session = connect_task.await;

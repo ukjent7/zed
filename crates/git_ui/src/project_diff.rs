@@ -977,7 +977,10 @@ pub(crate) fn render_send_review_to_agent_button(
 ) -> Button {
     Button::new(
         "send-review",
-        format!("Send Review to Agent ({})", review_count),
+        locale::t_format(
+            "Send Review to Agent ({count})",
+            &[("{count}", &review_count.to_string())],
+        ),
     )
     .start_icon(
         Icon::new(IconName::ZedAssistant)

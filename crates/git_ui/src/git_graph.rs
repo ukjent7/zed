@@ -1470,7 +1470,7 @@ impl GitGraph {
 
         let search_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Search commits…", window, cx);
+            editor.set_placeholder_text(locale::t_static("Search commits…").as_str(), window, cx);
             editor
         });
 
@@ -2522,7 +2522,7 @@ impl GitGraph {
                 let can_toggle = !is_visible || visible_count > 1;
                 let git_graph = git_graph.clone();
                 context_menu = context_menu.toggleable_entry_disabled_when(
-                    label.to_string(),
+                    locale::t(*label),
                     is_visible,
                     !can_toggle,
                     IconPosition::End,

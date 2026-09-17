@@ -620,7 +620,7 @@ pub(crate) fn fetch_unshallow(
                 Ok(_) => {
                     workspace.update(cx, |workspace, cx| {
                         let toast = StatusToast::new(
-                            "Fetched the missing commit history",
+                            locale::t_static("Fetched the missing commit history"),
                             cx,
                             |this, _| {
                                 this.icon(

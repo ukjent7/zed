@@ -220,11 +220,14 @@ impl MultiDiffView {
 
     fn title(&self) -> SharedString {
         let suffix = if self.file_count == 1 {
-            "1 file".to_string()
+            locale::t_static("1 file")
         } else {
-            format!("{} files", self.file_count)
+            locale::t_format(
+                "{count} files",
+                &[("{count}", &self.file_count.to_string())],
+            )
         };
-        format!("Diff ({suffix})").into()
+        locale::t_format("Diff ({suffix})", &[("{suffix}", suffix.as_str())])
     }
 }
 
