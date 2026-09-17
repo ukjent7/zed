@@ -85,15 +85,25 @@ jobs:
             slack_notify_label_created.yml
           )
 
+          # One listing decides who needs a PUT at all. Calling `disable` on a
+          # workflow that is already parked is what turned this job red on its
+          # second run: the first run had parked all 23, so every entry was
+          # already `disabled_manually` and GitHub rejects the repeat call.
+          active=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/workflows?per_page=100" \
+                     --jq '.workflows[] | select(.state == "active") | .path' \
+                   | sed 's|^.*/||')
+
           failed=()
           for workflow in "${workflows[@]}"; do
             printf '%-56s ' "${workflow}"
+            if ! grep -qx "${workflow}" <<<"${active}"; then
+              echo 'already parked'
+              continue
+            fi
             if gh api --silent -X PUT \
                  "/repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/disable" 2>/dev/null; then
               echo 'disabled'
             else
-              # Keep going: one bad entry (a renamed workflow, or a read-only
-              # Actions token) should not stop the other 22.
               echo 'FAILED'
               failed+=("${workflow}")
             fi
