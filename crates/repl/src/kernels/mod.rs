@@ -356,9 +356,9 @@ impl KernelSpecification {
                 .as_ref()
                 .map(|kind| SharedString::from(kind.clone())),
             Self::Jupyter(_) => Some("Jupyter".into()),
-            Self::JupyterServer(_) => Some("Jupyter Server".into()),
-            Self::SshRemote(_) => Some("SSH Remote".into()),
-            Self::WslRemote(_) => Some("WSL Remote".into()),
+            Self::JupyterServer(_) => Some(locale::t("Jupyter Server")),
+            Self::SshRemote(_) => Some(locale::t("SSH Remote")),
+            Self::WslRemote(_) => Some(locale::t("WSL Remote")),
         }
     }
 
@@ -694,13 +694,13 @@ impl KernelStatus {
 impl ToString for KernelStatus {
     fn to_string(&self) -> String {
         match self {
-            KernelStatus::Idle => "Idle".to_string(),
-            KernelStatus::Busy => "Busy".to_string(),
-            KernelStatus::Starting => "Starting".to_string(),
-            KernelStatus::Error => "Error".to_string(),
-            KernelStatus::ShuttingDown => "Shutting Down".to_string(),
-            KernelStatus::Shutdown => "Shutdown".to_string(),
-            KernelStatus::Restarting => "Restarting".to_string(),
+            KernelStatus::Idle => locale::t("Idle").to_string(),
+            KernelStatus::Busy => locale::t("Busy").to_string(),
+            KernelStatus::Starting => locale::t("Starting").to_string(),
+            KernelStatus::Error => locale::t("Error").to_string(),
+            KernelStatus::ShuttingDown => locale::t("Shutting Down").to_string(),
+            KernelStatus::Shutdown => locale::t("Shutdown").to_string(),
+            KernelStatus::Restarting => locale::t("Restarting").to_string(),
         }
     }
 }

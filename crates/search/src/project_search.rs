@@ -3200,7 +3200,7 @@ impl Render for ProjectSearchBar {
             .shape(IconButtonShape::Square)
             .tooltip(move |_, cx| {
                 Tooltip::for_action_in(
-                    tooltip_label,
+                    locale::t_static(tooltip_label),
                     &ToggleAllSearchResults,
                     &query_focus.clone(),
                     cx,

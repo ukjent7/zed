@@ -879,7 +879,7 @@ impl KeymapEditor {
 
             let index = processed_bindings.len();
             let string_match_candidate =
-                StringMatchCandidate::new(index, &action_information.humanized_name);
+                StringMatchCandidate::new(index, &action_information.display_name());
             processed_bindings.push(ProcessedBinding::new_mapped(
                 keystroke_text,
                 binding,
@@ -902,7 +902,7 @@ impl KeymapEditor {
                 humanized_action_names,
             );
             let string_match_candidate =
-                StringMatchCandidate::new(index, &action_information.humanized_name);
+                StringMatchCandidate::new(index, &action_information.display_name());
 
             processed_bindings.push(ProcessedBinding::Unmapped(action_information));
             string_match_candidates.push(string_match_candidate);
@@ -1796,6 +1796,14 @@ struct ActionInformation {
 }
 
 impl ActionInformation {
+    /// Name to render and to search: `中文 (english)` where the command
+    /// dictionary has an entry, so a Chinese label still matches an English
+    /// query. Kept out of the cache, which is built once and would go stale on
+    /// a language switch.
+    fn display_name(&self) -> SharedString {
+        locale::localized_action_name(self.name, &self.humanized_name)
+    }
+
     fn new(
         action_name: &'static str,
         action_arguments: Option<SyntaxHighlightedText>,
@@ -2165,11 +2173,7 @@ impl Render for KeymapEditor {
                                         .id(("keymap action", index))
                                         .child({
                                             if action_name != gpui::NoAction.name() {
-                                                binding
-                                                    .action()
-                                                    .humanized_name
-                                                    .clone()
-                                                    .into_any_element()
+                                                binding.action().display_name().into_any_element()
                                             } else {
                                                 const NULL: SharedString =
                                                     SharedString::new_static("<null>");
@@ -2341,7 +2345,7 @@ impl Render for KeymapEditor {
                                                         }
                                                     }.map(|source| locale::t_format(
                                                         "This keybinding is overridden by the '{action}' binding from {source}.",
-                                                        &[("{action}", &binding.action().humanized_name), ("{source}", source.as_str())],
+                                                        &[("{action}", &binding.action().display_name()), ("{source}", source.as_str())],
                                                     ).to_string())
                                                 }).unwrap_or_else(|| locale::t("This binding is overridden.").to_string());
 
@@ -2562,6 +2566,8 @@ impl KeybindingEditorModal {
         let (action_editor, action_name_to_static) = if has_action_editor {
             let actions: Vec<&'static str> = cx.all_action_names().to_vec();
 
+            // Deliberately English: a completion's label is also the text it
+            // inserts, and that text lands in keymap.json as an action name.
             let humanized_names: HashMap<&'static str, SharedString> = actions
                 .iter()
                 .map(|&name| (name, command_palette::humanize_action_name(name).into()))
@@ -2840,12 +2846,15 @@ impl KeybindingEditorModal {
             let warning_message = match conflicting_action_name {
                 Some(name) => {
                      if remaining_conflict_amount > 0 {
-                        format!(
-                            "Your keybind would conflict with the \"{}\" action and {} other bindings",
-                            name, remaining_conflict_amount
+                        locale::t_format(
+                            "Your keybind would conflict with the \"{action}\" action and {count} other bindings",
+                            &[("{action}", name), ("{count}", &remaining_conflict_amount.to_string())],
                         )
                     } else {
-                        format!("Your keybind would conflict with the \"{}\" action", name)
+                        locale::t_format(
+                            "Your keybind would conflict with the \"{action}\" action",
+                            &[("{action}", name)],
+                        )
                     }
                 }
                 None => {
@@ -2853,7 +2862,7 @@ impl KeybindingEditorModal {
                         "Could not find action in keybindings with index {}",
                         first_conflict_index
                     );
-                    "Your keybind would conflict with other actions".to_string()
+                    locale::t("Your keybind would conflict with other actions")
                 }
             };
 
@@ -3107,7 +3116,7 @@ impl Render for KeybindingEditorModal {
                                 .border_color(theme.border_variant)
                                 .when(!self.creating, |this| {
                                     this.child(Label::new(
-                                        self.editing_keybind.action().humanized_name.clone(),
+                                        self.editing_keybind.action().display_name(),
                                     ))
                                     .when_some(
                                         self.editing_keybind.action().documentation,
@@ -3121,7 +3130,7 @@ impl Render for KeybindingEditorModal {
                                     )
                                 })
                                 .when(self.creating, |this| {
-                                    this.child(Label::new("Create Keybinding"))
+                                    this.child(Label::new(locale::t("Create Keybinding")))
                                 }),
                         ),
                     )
@@ -3138,25 +3147,22 @@ impl Render for KeybindingEditorModal {
                                 .child(
                                     v_flex()
                                         .gap_1()
-                                        .child(Label::new("Edit Keystroke"))
+                                        .child(Label::new(locale::t("Edit Keystroke")))
                                         .child(self.keybind_editor.clone())
                                         .child(h_flex().gap_px().when(
                                             matching_bindings_count > 0,
                                             |this| {
-                                                let label = format!(
-                                                    "There {} {} {} with the same keystrokes.",
-                                                    if matching_bindings_count == 1 {
-                                                        "is"
-                                                    } else {
-                                                        "are"
-                                                    },
-                                                    matching_bindings_count,
-                                                    if matching_bindings_count == 1 {
-                                                        "binding"
-                                                    } else {
-                                                        "bindings"
-                                                    }
-                                                );
+                                                let label = if matching_bindings_count == 1 {
+                                                    locale::t_format(
+                                                        "There is {count} binding with the same keystrokes.",
+                                                        &[("{count}", &matching_bindings_count.to_string())],
+                                                    )
+                                                } else {
+                                                    locale::t_format(
+                                                        "There are {count} bindings with the same keystrokes.",
+                                                        &[("{count}", &matching_bindings_count.to_string())],
+                                                    )
+                                                };
 
                                                 this.child(
                                                     Label::new(label)
@@ -3164,7 +3170,7 @@ impl Render for KeybindingEditorModal {
                                                         .color(Color::Muted),
                                                 )
                                                 .child(
-                                                    Button::new("show_matching", "View")
+                                                    Button::new("show_matching", locale::t("View"))
                                                         .label_size(LabelSize::Small)
                                                         .end_icon(
                                                             Icon::new(IconName::ArrowUpRight)
@@ -3186,7 +3192,7 @@ impl Render for KeybindingEditorModal {
                                     this.child(
                                         v_flex()
                                             .gap_1()
-                                            .child(Label::new("Edit Arguments"))
+                                            .child(Label::new(locale::t("Edit Arguments")))
                                             .child(editor),
                                     )
                                 })
@@ -3205,10 +3211,10 @@ impl Render for KeybindingEditorModal {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Button::new("cancel", "Cancel")
+                                    Button::new("cancel", locale::t("Cancel"))
                                         .on_click(cx.listener(|_, _, _, cx| cx.emit(DismissEvent))),
                                 )
-                                .child(Button::new("save-btn", "Save").on_click(cx.listener(
+                                .child(Button::new("save-btn", locale::t("Save")).on_click(cx.listener(
                                     |this, _event, _window, cx| {
                                         this.save_or_display_error(cx);
                                     },
@@ -3413,7 +3419,7 @@ impl ActionArgumentsEditor {
             editor.set_text(arguments, window, cx);
         } else {
             // TODO: default value from schema?
-            editor.set_placeholder_text("Action Arguments", window, cx);
+            editor.set_placeholder_text(locale::t("Action Arguments").as_str(), window, cx);
         }
     }
 

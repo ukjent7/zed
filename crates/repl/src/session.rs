@@ -935,11 +935,14 @@ impl Render for Session {
                         })),
                 ),
             ),
-            Kernel::StartingKernel(_) => (Some("Starting".into()), None),
-            Kernel::ErroredLaunch(err) => (Some(format!("Error: {err}")), None),
-            Kernel::ShuttingDown => (Some("Shutting Down".into()), None),
-            Kernel::Shutdown => (Some("Shutdown".into()), None),
-            Kernel::Restarting => (Some("Restarting".into()), None),
+            Kernel::StartingKernel(_) => (Some(locale::t("Starting").to_string()), None),
+            Kernel::ErroredLaunch(err) => (
+                Some(locale::t_format("Error: {error}", &[("{error}", err.as_str())]).to_string()),
+                None,
+            ),
+            Kernel::ShuttingDown => (Some(locale::t("Shutting Down").to_string()), None),
+            Kernel::Shutdown => (Some(locale::t("Shutdown").to_string()), None),
+            Kernel::Restarting => (Some(locale::t("Restarting").to_string()), None),
         };
 
         KernelListItem::new(self.kernel_specification.clone())

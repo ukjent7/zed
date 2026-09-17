@@ -298,7 +298,7 @@ impl Render for CallStatsModal {
                     .justify_between()
                     .child(Label::new(locale::t("Call Diagnostics")).size(LabelSize::Large))
                     .child(
-                        Label::new(quality_text)
+                        Label::new(locale::t_static(quality_text))
                             .size(LabelSize::Large)
                             .color(quality_color),
                     ),
@@ -326,9 +326,16 @@ impl Render for CallStatsModal {
                         .max_h(rems(32.))
                         .overflow_y_scroll()
                         .child(
-                            Label::new(format!(
-                                "{sample_count} samples · {:.0}s retained · {recent_issue_count} affected intervals in the last 60s",
-                                retained_duration.as_secs_f64()
+                            Label::new(locale::t_format(
+                                "{samples} samples · {retained} retained · {affected} affected intervals in the last 60s",
+                                &[
+                                    ("{samples}", &sample_count.to_string()),
+                                    (
+                                        "{retained}",
+                                        &format!("{:.0}s", retained_duration.as_secs_f64()),
+                                    ),
+                                    ("{affected}", &recent_issue_count.to_string()),
+                                ],
                             ))
                             .size(LabelSize::Small)
                             .color(Color::Muted),
@@ -442,9 +449,9 @@ impl CallStatsModal {
                 .saturating_mul(PLAYBACK_FRAME_DURATION_MILLISECONDS) as f64,
         );
         let repair_event_label = if audio.concealment_events == 1 {
-            "event"
+            locale::t("event")
         } else {
-            "events"
+            locale::t("events")
         };
 
         v_flex()
@@ -471,24 +478,38 @@ impl CallStatsModal {
                     .child(Label::new(locale::t(status)).color(color)),
             )
             .child(
-                Label::new(format!(
-                    "Loss {packet_loss} · jitter {:.1}ms · jitter buffer {jitter_buffer_delay}",
-                    audio.jitter_ms
+                Label::new(locale::t_format(
+                    "Loss {packet_loss} · jitter {jitter} · jitter buffer {jitter_buffer_delay}",
+                    &[
+                        ("{packet_loss}", &packet_loss),
+                        ("{jitter}", &format!("{:.1}ms", audio.jitter_ms)),
+                        ("{jitter_buffer_delay}", &jitter_buffer_delay),
+                    ],
                 ))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
             )
             .child(
-                Label::new(format!(
-                    "WebRTC repaired {repaired_audio_duration} in {} {repair_event_label}",
-                    audio.concealment_events,
+                Label::new(locale::t_format(
+                    "WebRTC repaired {repaired_audio_duration} in {count} {repair_event_label}",
+                    &[
+                        ("{repaired_audio_duration}", &repaired_audio_duration),
+                        ("{count}", &audio.concealment_events.to_string()),
+                        ("{repair_event_label}", repair_event_label.as_str()),
+                    ],
                 ))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
             )
             .child(
-                Label::new(format!(
-                    "Local playback starved for {starved_audio_duration} · dropped {dropped_audio_duration} · buffered {buffered_audio_duration} (peak {peak_buffered_audio_duration})",
+                Label::new(locale::t_format(
+                    "Local playback starved for {starved} · dropped {dropped} · buffered {buffered} (peak {peak})",
+                    &[
+                        ("{starved}", &starved_audio_duration),
+                        ("{dropped}", &dropped_audio_duration),
+                        ("{buffered}", &buffered_audio_duration),
+                        ("{peak}", &peak_buffered_audio_duration),
+                    ],
                 ))
                 .size(LabelSize::Small)
                 .color(Color::Muted),

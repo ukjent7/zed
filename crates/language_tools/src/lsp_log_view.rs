@@ -747,7 +747,7 @@ impl Item for LspLogView {
     }
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "LSP Logs".into()
+        locale::t_static("LSP Logs")
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -976,7 +976,7 @@ impl Render for LspLogToolbarItemView {
                                 row.server_name.0, row.worktree_root_name,
                             ))
                         })
-                        .unwrap_or_else(|| "No server selected".into()),
+                        .unwrap_or_else(|| Cow::Owned(locale::t("No server selected").to_string())),
                 )
                 .end_icon(
                     Icon::new(IconName::ChevronDown)
@@ -1043,12 +1043,12 @@ impl Render for LspLogToolbarItemView {
             let server_key = server.key();
             let rpc_trace_enabled = server.rpc_trace_enabled;
             let log_view = log_view.clone();
-            let label = match server.selected_entry {
+            let label = locale::t_static(match server.selected_entry {
                 LogKind::Rpc => RPC_MESSAGES,
                 LogKind::Trace => SERVER_TRACE,
                 LogKind::Logs => SERVER_LOGS,
                 LogKind::ServerInfo => SERVER_INFO,
-            };
+            });
             PopoverMenu::new("LspViewSelector")
                 .anchor(Anchor::TopLeft)
                 .trigger(
@@ -1064,7 +1064,7 @@ impl Render for LspLogToolbarItemView {
                     let server_key = server_key.clone();
                     Some(ContextMenu::build(window, cx, move |this, window, _| {
                         this.entry(
-                            SERVER_LOGS,
+                            locale::t_static(SERVER_LOGS),
                             None,
                             window.handler_for(&log_view, {
                                 let server_key = server_key.clone();
@@ -1074,7 +1074,7 @@ impl Render for LspLogToolbarItemView {
                             }),
                         )
                         .entry(
-                            SERVER_TRACE,
+                            locale::t_static(SERVER_TRACE),
                             None,
                             window.handler_for(&log_view, {
                                 let server_key = server_key.clone();
@@ -1092,7 +1092,7 @@ impl Render for LspLogToolbarItemView {
                                     h_flex()
                                         .w_full()
                                         .justify_between()
-                                        .child(Label::new(RPC_MESSAGES))
+                                        .child(Label::new(locale::t_static(RPC_MESSAGES)))
                                         .child(
                                             div().child(
                                                 Checkbox::new(
@@ -1132,7 +1132,7 @@ impl Render for LspLogToolbarItemView {
                             }),
                         )
                         .entry(
-                            SERVER_INFO,
+                            locale::t_static(SERVER_INFO),
                             None,
                             window.handler_for(&log_view, {
                                 let server_key = server_key.clone();
@@ -1164,7 +1164,7 @@ impl Render for LspLogToolbarItemView {
                                         .trigger(
                                             Button::new(
                                                 "language_server_trace_level_selector",
-                                                "Trace level",
+                                                locale::t_static("Trace level"),
                                             )
                                             .end_icon(
                                                 Icon::new(IconName::ChevronDown)
@@ -1238,7 +1238,7 @@ impl Render for LspLogToolbarItemView {
                                         .trigger(
                                             Button::new(
                                                 "language_server_log_level_selector",
-                                                "Log level",
+                                                locale::t_static("Log level"),
                                             )
                                             .end_icon(
                                                 Icon::new(IconName::ChevronDown)

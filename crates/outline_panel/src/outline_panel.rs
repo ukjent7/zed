@@ -2679,11 +2679,11 @@ impl OutlinePanel {
                             }
                             .map(Icon::from_path)
                             .map(|icon| icon.color(color).into_any_element());
-                            (icon, name)
+                            (icon, name.into())
                         }
-                        None => (None, "Untitled".to_string()),
+                        None => (None, locale::t("Untitled")),
                     },
-                    None => (None, "Unknown buffer".to_string()),
+                    None => (None, locale::t("Unknown buffer")),
                 };
                 (
                     ElementId::from(("buffer", external_file.buffer_id.to_proto())),

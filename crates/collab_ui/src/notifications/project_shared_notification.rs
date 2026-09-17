@@ -124,10 +124,12 @@ impl Render for ProjectSharedNotification {
         let no_worktree_root_names = self.worktree_root_names.is_empty();
 
         let punctuation = if no_worktree_root_names { "" } else { ":" };
-        let main_label = format!(
-            "{} is sharing a project with you{}",
-            self.owner.username.clone(),
-            punctuation
+        let main_label = locale::t_format(
+            "{username} is sharing a project with you{punctuation}",
+            &[
+                ("{username}", &self.owner.username),
+                ("{punctuation}", punctuation),
+            ],
         );
 
         div().size_full().font(ui_font).child(

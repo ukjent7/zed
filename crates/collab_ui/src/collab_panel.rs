@@ -1466,7 +1466,12 @@ impl CollabPanel {
                             })
                             .detach_and_prompt_err(locale::t("Failed to grant write access").as_str(), window, cx, |e, _, _| {
                                 match e.error_code() {
-                                    ErrorCode::NeedsCla => Some("This user has not yet signed the CLA at https://zed.dev/cla.".into()),
+                                    ErrorCode::NeedsCla => Some(
+                                        locale::t(
+                                            "This user has not yet signed the CLA at https://zed.dev/cla.",
+                                        )
+                                        .to_string(),
+                                    ),
                                     _ => None,
                                 }
                             })

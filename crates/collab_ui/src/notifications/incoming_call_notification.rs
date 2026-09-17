@@ -125,9 +125,9 @@ impl Render for IncomingCallNotification {
                     move |_, _, cx| state.respond(false, cx)
                 }),
             )
-            .child(Label::new(format!(
-                "{} is sharing a project in Zed",
-                self.state.call.calling_user.username
+            .child(Label::new(locale::t_format(
+                "{username} is sharing a project in Zed",
+                &[("{username}", &self.state.call.calling_user.username)],
             ))),
         )
     }

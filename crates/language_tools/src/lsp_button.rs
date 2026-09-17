@@ -421,7 +421,8 @@ impl LanguageServerState {
                             let workspace_for_message = workspace.clone();
                             let message_for_handler = message.clone();
                             let server_name_for_message = submenu_server_name.clone();
-                            submenu = submenu.entry("View Message", None, move |window, cx| {
+                            let view_message_label = locale::t("View Message");
+                            submenu = submenu.entry(view_message_label, None, move |window, cx| {
                                 let Some(create_buffer) = workspace_for_message
                                     .update(cx, |workspace, cx| {
                                         workspace.project().update(cx, |project, cx| {
@@ -481,7 +482,8 @@ impl LanguageServerState {
                             let lsp_logs_for_debug = lsp_logs.clone();
                             let workspace_for_debug = workspace.clone();
                             let server_selector_for_debug = server_selector.clone();
-                            submenu = submenu.entry("View Logs", None, move |window, cx| {
+                            let view_logs_label = locale::t("View Logs");
+                            submenu = submenu.entry(view_logs_label, None, move |window, cx| {
                                 lsp_log_view::open(
                                     &lsp_logs_for_debug,
                                     workspace_for_debug.clone(),
@@ -496,7 +498,8 @@ impl LanguageServerState {
                         let workspace_for_restart = workspace.clone();
                         let lsp_store_for_restart = lsp_store.clone();
                         let server_name_for_restart = submenu_server_name.clone();
-                        submenu = submenu.entry("Restart Server", None, move |_window, cx| {
+                        let restart_server_label = locale::t("Restart Server");
+                        submenu = submenu.entry(restart_server_label, None, move |_window, cx| {
                             let Some(workspace) = workspace_for_restart.upgrade() else {
                                 return;
                             };
@@ -586,7 +589,8 @@ impl LanguageServerState {
                             let lsp_store_for_stop = lsp_store.clone();
                             let server_selector_for_stop = server_selector.clone();
 
-                            submenu = submenu.entry("Stop Server", None, move |_window, cx| {
+                            let stop_server_label = locale::t("Stop Server");
+                            submenu = submenu.entry(stop_server_label, None, move |_window, cx| {
                                 lsp_store_for_stop
                                     .update(cx, |lsp_store, cx| {
                                         lsp_store
@@ -1475,7 +1479,7 @@ impl Render for LspButton {
                         Tooltip::with_meta(
                             locale::t("Language Servers"),
                             Some(&ToggleMenu),
-                            description,
+                            locale::t_static(description),
                             cx,
                         )
                     },

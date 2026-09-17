@@ -99,7 +99,11 @@ pub fn install_ipykernel_and_assign(
             workspace.show_toast(
                 workspace::Toast::new(
                     notification_id.clone(),
-                    format!("Installing ipykernel in {}...", env_name),
+                    locale::t_format(
+                        "Installing ipykernel in {env}...",
+                        &[("{env}", env_name.as_str())],
+                    )
+                    .to_string(),
                 ),
                 cx,
             );
@@ -150,7 +154,11 @@ pub fn install_ipykernel_and_assign(
                             workspace.show_toast(
                                 workspace::Toast::new(
                                     notification_id.clone(),
-                                    format!("ipykernel installed in {}", env_name),
+                                    locale::t_format(
+                                        "ipykernel installed in {env}",
+                                        &[("{env}", env_name.as_str())],
+                                    )
+                                    .to_string(),
                                 )
                                 .autohide(),
                                 cx,
@@ -183,10 +191,14 @@ pub fn install_ipykernel_and_assign(
                             workspace.show_toast(
                                 workspace::Toast::new(
                                     notification_id.clone(),
-                                    format!(
-                                        "Failed to install ipykernel in {}: {}",
-                                        env_name, error
-                                    ),
+                                    locale::t_format(
+                                        "Failed to install ipykernel in {env}: {error}",
+                                        &[
+                                            ("{env}", env_name.as_str()),
+                                            ("{error}", error.to_string().as_str()),
+                                        ],
+                                    )
+                                    .to_string(),
                                 ),
                                 cx,
                             );
