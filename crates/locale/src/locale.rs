@@ -2,8 +2,9 @@
 //!
 //! GUI labels only: never use this crate for model prompts, tool schemas,
 //! protocol fields, telemetry names, or anything else observed by AI models.
-//! See `assets/locales/SCHEMA.md` for the dictionary format and
-//! `assets/locales/GLOSSARY.md` for terminology.
+//! The dictionary is `assets/locales/zh-CN.json`, keyed by the English source
+//! text; `script/l10n-blocklist.txt` lists the model-facing paths this crate
+//! must never be referenced from.
 
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::{OnceLock, RwLock};
@@ -240,7 +241,8 @@ pub fn t_static(key: &'static str) -> SharedString {
 /// Translate a GUI label containing `{placeholder}` slots, substituting each
 /// pair after lookup. Every occurrence of a placeholder is replaced.
 /// Falls back to the English source text like [`t`].
-/// Placeholders must match `assets/locales/SCHEMA.md` (checked by tests).
+/// A translation must keep the source's `{placeholder}` names, which
+/// `dictionary_keeps_placeholders` asserts.
 pub fn t_format(key: &str, replacements: &[(&str, &str)]) -> SharedString {
     let translated = if use_chinese() {
         dictionary()

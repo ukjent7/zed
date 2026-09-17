@@ -21,6 +21,19 @@ It now also covers the shapes that used to hide the largest single gap: the
 Widening the shape list measured 467 -> 685 unwrapped and 145 -> 285 already
 translated but unwrapped.
 
+Two classes in `unwrapped`/`ready` are *not* translation gaps, so check the
+call site before wrapping anything:
+
+- identity names: `SharedString::new_static("Console")` feeding a serializer
+  or an element id (debugger_ui/persistence.rs) - translating it breaks
+  persisted state, so only the display site takes a `t()`;
+- protocol fields: HTTP header names, `serde(rename = ...)`, `env::var`
+  arguments. `PROTOCOL_CALL` skips the shapes writable as a plain string
+  literal; a field name inside a `&[&str]` table still shows up
+  (git_ui/git_graph.rs looks its label up dynamically instead).
+
+Paths listed in `script/l10n-blocklist.txt` are skipped entirely.
+
 Still invisible, so a zero is not coverage: text that reaches a display call
 through a variable or a function return (`fn title() -> &'static str`), copy
 assembled by `format!`, and anything behind `#[cfg(test)]`/`feature =
@@ -45,6 +58,25 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DICT = json.loads((ROOT / 'assets/locales/zh-CN.json').read_text(encoding='utf-8'))
+
+def read_blocklist() -> tuple[str, ...]:
+    """Model-facing paths, from `script/l10n-blocklist.txt`.
+
+    Shared with `script/check-l10n-boundary` and `script/extract-l10n`. Strings
+    under them may reach a model, so they are neither GUI-translation
+    candidates nor evidence that an entry is dead.
+    """
+    entries = []
+    for line in (ROOT / 'script' / 'l10n-blocklist.txt').read_text(
+        encoding='utf-8'
+    ).splitlines():
+        entry = line.split('#', 1)[0].strip()
+        if entry:
+            entries.append(entry)
+    return tuple(entries)
+
+
+BLOCKLIST = read_blocklist()
 
 # A translate call, either fully qualified or imported into scope. `(?<![\w.])`
 # rejects method calls such as `handler.t(...)` in the agent tests.
@@ -151,6 +183,15 @@ NOT_TEXT = (
 # Single-word candidates ("Cancel", "Evaluate", but also "Authorization" and
 # every icon name) are reported apart from `unwrapped`; see the module docstring.
 SINGLE_WORD = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+# A literal handed to a protocol or identifier API is never display text.
+# Without this, `.header("Accept", "application/json")` in a provider client is
+# reported as "already in dictionary, just needs wrapping" - and wrapping it
+# would send `接受` as an HTTP header name.
+PROTOCOL_CALL = re.compile(
+    r'(?:\.header|\.rename|HeaderName::from_static|env::var(?:_os)?)\s*\(\s*$'
+    r'|serde\(\s*rename\s*=\s*$'
+)
 
 
 def looks_like_text(s: str, allow_single_word: bool = False) -> bool:
@@ -275,6 +316,11 @@ def scan(path: pathlib.Path):
         # t("...") is not a candidate: `t(` is not a display shape.
         if not PREFIX.search(prod[max(0, m.start() - 140):m.start()]):
             continue
+        # A protocol argument can sit inside a window that otherwise matches a
+        # display shape, so it is rejected separately, by what immediately
+        # precedes the literal.
+        if PROTOCOL_CALL.search(prod[max(0, m.start() - 60):m.start()]):
+            continue
         line = prod.count('\n', 0, m.start()) + 1
         if s in DICT:
             ready.append((line, s))
@@ -316,6 +362,8 @@ def main() -> None:
         rel = path.relative_to(ROOT).as_posix()
         crate = rel.split('/')[1]
         if crate == 'locale':
+            continue
+        if (rel + '/').startswith(BLOCKLIST):
             continue
         if targets and crate not in targets:
             continue

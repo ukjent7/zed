@@ -13,12 +13,13 @@ different causes:
   so a dynamic `t(<variable>)` call can resolve it at runtime (match arms,
   `t(&format!(...))`, ...). Keep the entry.
 - UNUSED: the key's literal does not exist anywhere; either the string was
-  renamed upstream (deprecated, keep per SCHEMA.md) or the entry was never
-  wired up (review it).
-- VIOLATION: the key's literal exists only inside a model-facing path
-  (see BLOCKLIST). Translating it would change what a model receives, so it
-  must be removed from the dictionary. Only computed for UNUSED keys, since
-  a literal that also occurs in GUI code is ambiguous, not a violation.
+  renamed upstream (deprecated, keep) or the entry was never wired up
+  (review it).
+- VIOLATION: the key's literal exists only inside a model-facing path (see
+  `script/l10n-blocklist.txt`). Translating it would change what a model
+  receives, so it must be removed from the dictionary. Only computed for
+  UNUSED keys, since a literal that also occurs in GUI code is ambiguous,
+  not a violation.
 """
 
 import json
@@ -28,37 +29,22 @@ import sys
 from pathlib import Path
 
 # Must stay in sync with script/check-l10n-boundary.
-BLOCKLIST = (
-    "assets/prompts/",
-    "crates/acp_thread/",
-    "crates/acp_tools/",
-    "crates/agent/",
-    "crates/agent_servers/",
-    "crates/agent_settings/",
-    "crates/agent_skills/builtin/",  # embedded SKILL.md is sent back as <skill_content>
-    "crates/agent_ui/",
-    "crates/context_server/",
-    "crates/copilot/",
-    "crates/copilot_chat/",
-    "crates/copilot_ui/",
-    "crates/edit_prediction/",
-    "crates/edit_prediction_cli/",
-    "crates/edit_prediction_context/",
-    "crates/edit_prediction_metrics/",
-    "crates/edit_prediction_types/",
-    "crates/edit_prediction_ui/",
-    "crates/eval_cli/",
-    "crates/eval_utils/",
-    "crates/git_ui/src/commit_message_prompt.txt",  # git_panel.rs:build_commit_message_prompt
-    "crates/language_model/",
-    "crates/language_model_core/",
-    "crates/language_models/",
-    "crates/language_models_cloud/",
-    "crates/prompt_store/",
-    "crates/proto/",
-    "crates/rpc/",
-    "crates/zeta_prompt/",
-)
+def read_blocklist(root: Path) -> tuple[str, ...]:
+    """Model-facing paths, read from `script/l10n-blocklist.txt`.
+
+    Shared with `script/check-l10n-boundary` and `script/l10n-audit.py` so the
+    three cannot drift apart. See that file for what each entry means and why
+    it is listed: strings there may reach a model, so translating them changes
+    what the model receives.
+    """
+    entries = []
+    for line in (root / "script" / "l10n-blocklist.txt").read_text(
+        encoding="utf-8"
+    ).splitlines():
+        entry = line.split("#", 1)[0].strip()
+        if entry:
+            entries.append(entry)
+    return tuple(entries)
 
 CALL_PATTERN = re.compile(r'(?<!\w)t(?:_format|_static)?\(\s*"((?:[^"\\]|\\.)*)"', re.DOTALL)
 # Dictionary keys built at runtime via `format!`, so their full text never
@@ -213,7 +199,9 @@ def repo_root() -> Path:
     return Path(out.stdout.strip())
 
 
-def blocked_only_keys(root: Path, keys: list[str]) -> list[str]:
+def blocked_only_keys(
+    root: Path, keys: list[str], blocklist: tuple[str, ...]
+) -> list[str]:
     """Keys whose English source occurs inside a model-facing path.
 
     Callers pass only keys that appear in no non-blocklisted file, so a hit
@@ -228,7 +216,7 @@ def blocked_only_keys(root: Path, keys: list[str]) -> list[str]:
         if len(needle) < 15:
             continue
         result = subprocess.run(
-            ["git", "grep", "--no-color", "-F", "-l", "-e", needle, "--", *BLOCKLIST],
+            ["git", "grep", "--no-color", "-F", "-l", "-e", needle, "--", *blocklist],
             cwd=root,
             capture_output=True,
             text=True,
@@ -240,6 +228,7 @@ def blocked_only_keys(root: Path, keys: list[str]) -> list[str]:
 
 def main() -> int:
     root = repo_root()
+    blocklist = read_blocklist(root)
     used: set[str] = set()
     dynamic: set[str] = set()
     # First non-blocklisted file in which each string literal occurs, used to
@@ -247,7 +236,7 @@ def main() -> int:
     literal_files: dict[str, str] = {}
     for path in sorted((root / "crates").rglob("*.rs")):
         rel = path.relative_to(root).as_posix() + "/"
-        if rel.startswith(BLOCKLIST):
+        if rel.startswith(blocklist):
             continue
         # `crates/locale` defines `t()` itself; its tests call `t("Hello {name}")`
         # and `t("No Such Translation Key")` as fixtures. Scanning it would report
@@ -289,7 +278,7 @@ def main() -> int:
         print(f"  UNUSED   {key!r}")
     for key in unused_dynamic[:MAX_LISTED]:
         print(f"  UNUSED-DYNAMIC  {key!r}  ({literal_files.get(key, 'runtime format! key')})")
-    violations = blocked_only_keys(root, unused_dead)
+    violations = blocked_only_keys(root, unused_dead, blocklist)
     print(f"violations: {len(violations)}")
     for key in violations[:MAX_LISTED]:
         print(f"  VIOLATION  {key!r}  (exists only in a model-facing path)")

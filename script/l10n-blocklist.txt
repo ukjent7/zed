@@ -1,0 +1,72 @@
+# Paths whose strings may reach AI models. GUI translation must only touch
+# what is rendered, never what is sent to a model.
+#
+# Single source of truth, read by:
+#   - script/check-l10n-boundary  (refuses `locale::` anywhere in them)
+#   - script/extract-l10n         (a dictionary entry whose English source
+#                                  exists only inside one of them is a
+#                                  violation)
+#   - script/l10n-audit.py        (skipped when listing untranslated GUI
+#                                  candidates, so they cannot be mistaken for
+#                                  translation gaps)
+#
+# Being listed is not a claim that a path is model-facing-only (agent_ui and
+# context_server mix GUI and model-bound strings); it means "do not translate
+# anything here without checking".
+#
+# One path per line; a directory entry ends with `/`. Text after `#` is a
+# comment. Empty lines are ignored.
+
+assets/prompts/
+crates/acp_thread/
+crates/acp_tools/
+crates/agent/
+crates/agent_servers/
+crates/agent_settings/                     # ships src/prompts/*.txt, reads AGENTS.md
+crates/agent_skills/builtin/               # embedded SKILL.md is sent back as <skill_content>
+crates/agent_ui/                           # pushes model-bound MessageContent::Text
+crates/context_server/                     # JSON-RPC protocol, forwards tool schemas
+crates/copilot/
+crates/copilot_chat/
+crates/copilot_ui/
+crates/edit_prediction/
+crates/edit_prediction_cli/                # prompts the teacher model
+crates/edit_prediction_context/
+crates/edit_prediction_metrics/
+crates/edit_prediction_types/
+crates/edit_prediction_ui/
+crates/eval_cli/
+crates/eval_utils/
+crates/git_ui/src/commit_message_prompt.txt  # git_panel.rs:build_commit_message_prompt
+crates/language_model/
+crates/language_model_core/
+crates/language_models/
+crates/language_models_cloud/
+
+# Provider clients, split out of `language_models` upstream. They build the
+# request bodies and headers sent to the providers, so a translated string
+# here reaches the wire. `Accept` is the trap that motivated listing them: it
+# is a translated button label elsewhere and an HTTP header name in these
+# crates, and the audit used to recommend wrapping it.
+crates/anthropic/
+crates/bedrock/
+crates/codestral/
+crates/deepseek/
+crates/google_ai/
+crates/llama_cpp/
+crates/lmstudio/
+crates/mistral/
+crates/ollama/
+crates/open_ai/
+crates/open_router/
+crates/opencode/
+crates/openai_subscribed/
+crates/web_search/
+crates/web_search_providers/
+crates/x_ai/
+crates/x_ai_subscribed/
+
+crates/prompt_store/
+crates/proto/
+crates/rpc/
+crates/zeta_prompt/

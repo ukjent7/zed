@@ -4,51 +4,24 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.." || exit 1
 
-# Paths whose strings may reach AI models. GUI translation must only touch
-# what is rendered, never what is sent to a model.
-#
-# Best-effort list, kept in sync with `script/extract-l10n`. Being listed is
-# not a claim that a path is model-facing-only (agent_ui and context_server
-# mix GUI and model-bound strings); it means "do not translate anything here
-# without checking". `script/extract-l10n --strict` covers the other
-# direction: a dictionary entry whose English source exists only inside one
-# of these paths is reported as a violation.
-blocklist=(
-  'assets/prompts/'
-  'crates/acp_thread/'
-  'crates/acp_tools/'
-  'crates/agent/'
-  'crates/agent_servers/'
-  'crates/agent_settings/'   # ships src/prompts/*.txt, reads AGENTS.md
-  'crates/agent_skills/builtin/'   # embedded SKILL.md is sent back as <skill_content>
-  'crates/agent_ui/'         # pushes model-bound MessageContent::Text
-  'crates/context_server/'   # JSON-RPC protocol, forwards tool schemas
-  'crates/copilot/'
-  'crates/copilot_chat/'
-  'crates/copilot_ui/'
-  'crates/edit_prediction/'
-  'crates/edit_prediction_cli/'   # prompts the teacher model
-  'crates/edit_prediction_context/'
-  'crates/edit_prediction_metrics/'
-  'crates/edit_prediction_types/'
-  'crates/edit_prediction_ui/'
-  'crates/eval_cli/'
-  'crates/eval_utils/'
-  'crates/git_ui/src/commit_message_prompt.txt'   # git_panel.rs:build_commit_message_prompt
-  'crates/language_model/'
-  'crates/language_model_core/'
-  'crates/language_models/'
-  'crates/language_models_cloud/'
-  'crates/prompt_store/'
-  'crates/proto/'
-  'crates/rpc/'
-  'crates/zeta_prompt/'
-)
+# The model-facing path list, and the rationale for each entry, live in
+# script/l10n-blocklist.txt. It is shared with `script/extract-l10n` and
+# `script/l10n-audit.py` so the three cannot drift apart. Listed paths are
+# refused below; `extract-l10n --strict` covers the other direction, reporting
+# a dictionary entry whose English source exists only inside one of them.
+blocklist=()
+while IFS= read -r line; do
+  line="${line%%#*}"                # drop a trailing comment
+  line="${line//[[:space:]]/}"      # drop all whitespace
+  if [[ -n "${line}" ]]; then
+    blocklist+=("${line}")
+  fi
+done < script/l10n-blocklist.txt
 
 result=$(git grep --no-color --line-number -e 'locale::' -- "${blocklist[@]}" || true)
 if [[ -n "${result}" ]]; then
   echo "${result}"
-  echo "Error: locale:: must not be used in model-facing paths (see assets/locales/SCHEMA.md)."
+  echo "Error: locale:: must not be used in model-facing paths (see script/l10n-blocklist.txt)."
   exit 1
 fi
 
