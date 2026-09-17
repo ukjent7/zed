@@ -86,7 +86,7 @@ pub fn install_cli_binary(window: &mut Window, cx: &mut Context<Workspace>) {
         if cfg!(any(target_os = "linux", target_os = "freebsd")) {
             let prompt = cx.prompt(
                 PromptLevel::Warning,
-                locale::t_static("CLI should already be installed"),
+                locale::t_static("CLI should already be installed").as_str(),
                 Some(LINUX_PROMPT_DETAIL),
                 &[gpui::PromptButton::ok(locale::t_static("OK"))],
             );

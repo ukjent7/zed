@@ -403,7 +403,7 @@ impl MemoryView {
             self.query_editor.update(cx, |this, cx| {
                 this.clear(window, cx);
                 this.set_placeholder_text(
-                    locale::t_static("Write to Selected Memory Range"),
+                    locale::t_static("Write to Selected Memory Range").as_str(),
                     window,
                     cx,
                 );
@@ -414,7 +414,7 @@ impl MemoryView {
             self.query_editor.update(cx, |this, cx| {
                 this.clear(window, cx);
                 this.set_placeholder_text(
-                    locale::t_static("Go to Memory Address / Expression"),
+                    locale::t_static("Go to Memory Address / Expression").as_str(),
                     window,
                     cx,
                 );

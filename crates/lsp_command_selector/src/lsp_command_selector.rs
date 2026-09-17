@@ -66,7 +66,8 @@ impl LspCommandSelector {
             editor.set_placeholder_text(
                 locale::t_static(
                     "JSON arguments (42, {\"key\": \"value\"}, …) or plain text for one string",
-                ),
+                )
+                .as_str(),
                 window,
                 cx,
             );
