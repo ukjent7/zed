@@ -2804,7 +2804,7 @@ impl EditorElement {
                         });
                     })
                     .tooltip(Tooltip::for_action_title(
-                        "Expand Excerpt",
+                        locale::t_static("Expand Excerpt"),
                         &crate::actions::ExpandExcerpts::default(),
                     ))
                     .into_any_element();

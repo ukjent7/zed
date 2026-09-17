@@ -504,7 +504,7 @@ impl RenderOnce for DiffStyleControls {
                                         Some(TextSize::Small.rems(cx).into()),
                                         false,
                                     ))
-                                    .child("click to change min width"),
+                                    .child(locale::t_static("click to change min width")),
                             )
                             .into_any_element()
                     }))

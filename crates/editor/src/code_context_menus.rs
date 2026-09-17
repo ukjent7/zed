@@ -1683,7 +1683,7 @@ fn render_completion_kind_letter(
 
     badge
         .id(("completion-kind", item_ix))
-        .tooltip(Tooltip::text(completion_kind_name(kind)))
+        .tooltip(Tooltip::text(locale::t_static(completion_kind_name(kind))))
         .child(letter)
         .when_some(color, |element, color| element.text_color(color))
         .into_any_element()

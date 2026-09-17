@@ -247,83 +247,104 @@ pub fn deploy_context_menu(
             let builder = menu
                 .on_blur_subscription(Subscription::new(|| {}))
                 .when(run_to_cursor, |builder| {
-                    builder.action("Run to Cursor", Box::new(RunToCursor))
+                    builder.action(locale::t_static("Run to Cursor"), Box::new(RunToCursor))
                 })
                 .when(evaluate_selection && has_selections, |builder| {
-                    builder.action("Evaluate Selection", Box::new(EvaluateSelectedText))
+                    builder.action(
+                        locale::t_static("Evaluate Selection"),
+                        Box::new(EvaluateSelectedText),
+                    )
                 })
                 .when(
                     run_to_cursor || (evaluate_selection && has_selections),
                     |builder| builder.separator(),
                 )
-                .action("Go to Definition", Box::new(GoToDefinition::default()))
-                .action("Go to Declaration", Box::new(GoToDeclaration::default()))
                 .action(
-                    "Go to Type Definition",
+                    locale::t_static("Go to Definition"),
+                    Box::new(GoToDefinition::default()),
+                )
+                .action(
+                    locale::t_static("Go to Declaration"),
+                    Box::new(GoToDeclaration::default()),
+                )
+                .action(
+                    locale::t_static("Go to Type Definition"),
                     Box::new(GoToTypeDefinition::default()),
                 )
                 .action(
-                    "Go to Implementation",
+                    locale::t_static("Go to Implementation"),
                     Box::new(GoToImplementation::default()),
                 )
                 .action(
-                    "Find All References",
+                    locale::t_static("Find All References"),
                     Box::new(FindAllReferences::default()),
                 )
                 .action(
-                    "Show Incoming Calls",
+                    locale::t_static("Show Incoming Calls"),
                     Box::new(zed_actions::ShowIncomingCalls),
                 )
                 .action(
-                    "Show Outgoing Calls",
+                    locale::t_static("Show Outgoing Calls"),
                     Box::new(zed_actions::ShowOutgoingCalls),
                 )
                 .separator()
-                .action("Rename Symbol", Box::new(Rename))
-                .action("Format Buffer", Box::new(Format))
+                .action(locale::t_static("Rename Symbol"), Box::new(Rename))
+                .action(locale::t_static("Format Buffer"), Box::new(Format))
                 .when(format_selections, |cx| {
-                    cx.action("Format Selections", Box::new(FormatSelections))
+                    cx.action(
+                        locale::t_static("Format Selections"),
+                        Box::new(FormatSelections),
+                    )
                 })
                 .action(
-                    "Show Code Actions",
+                    locale::t_static("Show Code Actions"),
                     Box::new(ToggleCodeActions {
                         deployed_from: None,
                         quick_launch: false,
                     }),
                 )
                 .when(!disable_ai && has_selections, |this| {
-                    this.action("Add to Agent Thread", Box::new(AddSelectionToThread))
+                    this.action(
+                        locale::t_static("Add to Agent Thread"),
+                        Box::new(AddSelectionToThread),
+                    )
                 })
                 .separator()
-                .action("Cut", Box::new(Cut))
-                .action("Copy", Box::new(Copy))
-                .action("Copy and Trim", Box::new(CopyAndTrim))
-                .action("Paste", Box::new(Paste))
+                .action(locale::t_static("Cut"), Box::new(Cut))
+                .action(locale::t_static("Copy"), Box::new(Copy))
+                .action(locale::t_static("Copy and Trim"), Box::new(CopyAndTrim))
+                .action(locale::t_static("Paste"), Box::new(Paste))
                 .separator()
                 .action_disabled_when(
                     !has_reveal_target,
-                    ui::utils::reveal_in_file_manager_label(false),
+                    locale::t(ui::utils::reveal_in_file_manager_label(false)),
                     Box::new(RevealInFileManager),
                 )
                 .when(is_markdown, |builder| {
-                    builder.action("Open Markdown Preview", Box::new(OpenMarkdownPreview))
+                    builder.action(
+                        locale::t_static("Open Markdown Preview"),
+                        Box::new(OpenMarkdownPreview),
+                    )
                 })
                 .when(is_svg, |builder| {
-                    builder.action("Open SVG Preview", Box::new(OpenSvgPreview))
+                    builder.action(
+                        locale::t_static("Open SVG Preview"),
+                        Box::new(OpenSvgPreview),
+                    )
                 })
                 .action_disabled_when(
                     !has_reveal_target,
-                    "Open in Terminal",
+                    locale::t_static("Open in Terminal"),
                     Box::new(OpenInTerminal),
                 )
                 .action_disabled_when(
                     !has_git_repo,
-                    "Copy Permalink to Line",
+                    locale::t_static("Copy Permalink to Line"),
                     Box::new(CopyPermalinkToLine),
                 )
                 .action_disabled_when(
                     !has_git_repo,
-                    "View File History",
+                    locale::t_static("View File History"),
                     Box::new(git::FileHistory),
                 );
             match focus {

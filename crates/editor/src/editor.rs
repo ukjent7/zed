@@ -1745,17 +1745,24 @@ impl GutterButtonTooltip {
         const RIGHT_CLICK_HINT: &str = "right-click for more options";
 
         if self.primary == self.secondary {
-            return RIGHT_CLICK_HINT.to_string();
+            return locale::t(RIGHT_CLICK_HINT).to_string();
         }
         let modifier_as_text = gpui::Keystroke {
             modifiers: Modifiers::secondary_key(),
             ..Default::default()
         };
-        let secondary = match self.secondary {
-            GutterButtonIntent::SetBookmark => "bookmark",
-            GutterButtonIntent::SetBreakpoint => "breakpoint",
+        let slot = ("{modifier}", modifier_as_text.to_string());
+        let translated = match self.secondary {
+            GutterButtonIntent::SetBookmark => locale::t_format(
+                "{modifier}-click to add a bookmark\nright-click for more options",
+                &[(&slot.0, &slot.1)],
+            ),
+            GutterButtonIntent::SetBreakpoint => locale::t_format(
+                "{modifier}-click to add a breakpoint\nright-click for more options",
+                &[(&slot.0, &slot.1)],
+            ),
         };
-        format!("{modifier_as_text}-click to add a {secondary}\n{RIGHT_CLICK_HINT}")
+        translated.to_string()
     }
 }
 
@@ -1776,7 +1783,7 @@ impl Render for GutterButtonTooltip {
             this.child(
                 h_flex()
                     .justify_between()
-                    .child(intent.as_str())
+                    .child(locale::t_static(intent.as_str()))
                     .child(key_binding),
             )
             .child(
@@ -2964,7 +2971,7 @@ impl Editor {
         cx: &mut Context<Workspace>,
     ) {
         Self::new_in_workspace(workspace, window, cx).detach_and_prompt_err(
-            "Failed to create buffer",
+            locale::t_static("Failed to create buffer").as_str(),
             window,
             cx,
             |e, _, _| match e.error_code() {
@@ -3034,6 +3041,7 @@ impl Editor {
     ) {
         let project = workspace.project().clone();
         let create = project.update(cx, |project, cx| project.create_buffer(None, true, cx));
+        let create_buffer_error = locale::t_static("Failed to create buffer");
 
         cx.spawn_in(window, async move |workspace, cx| {
             let buffer = create.await?;
@@ -3052,7 +3060,7 @@ impl Editor {
             })?;
             anyhow::Ok(())
         })
-        .detach_and_prompt_err("Failed to create buffer", window, cx, |e, _, _| {
+        .detach_and_prompt_err(create_buffer_error.as_str(), window, cx, |e, _, _| {
             match e.error_code() {
                 ErrorCode::RemoteUpgradeRequired => Some(format!(
                 "The remote instance of Zed does not support this yet. It must be upgraded to {}",
@@ -4343,7 +4351,7 @@ impl Editor {
             }))
             .tooltip(move |_window, cx| {
                 Tooltip::with_meta_in(
-                    "Remove Bookmark",
+                    locale::t_static("Remove Bookmark"),
                     Some(&ToggleBookmark),
                     locale::t("Right-click for more options"),
                     &focus_handle,
@@ -4507,7 +4515,7 @@ impl Editor {
                 .when_some(
                     clear_runnable_task_status,
                     |this, (buffer_id, buffer_row)| {
-                        this.entry("Clear Run Status", None, {
+                        this.entry(locale::t_static("Clear Run Status"), None, {
                             let weak_editor = weak_editor.clone();
                             move |_window, cx| {
                                 weak_editor
@@ -4523,7 +4531,7 @@ impl Editor {
                 .when(run_to_cursor, |this| {
                     let weak_editor = weak_editor.clone();
                     this.entry(
-                        "Run to Cursor",
+                        locale::t_static("Run to Cursor"),
                         Some(RunToCursor.boxed_clone()),
                         move |window, cx| {
                             weak_editor
@@ -4547,7 +4555,7 @@ impl Editor {
                     .separator()
                 })
                 .when_some(toggle_state_entry, |this, (msg, action)| {
-                    this.entry(msg, Some(action), {
+                    this.entry(locale::t(msg), Some(action), {
                         let weak_editor = weak_editor.clone();
                         let breakpoint = breakpoint.clone();
                         move |_window, cx| {
@@ -4565,7 +4573,7 @@ impl Editor {
                     })
                 })
                 .entry(
-                    set_breakpoint_msg,
+                    locale::t(set_breakpoint_msg),
                     Some(crate::actions::ToggleBreakpoint.boxed_clone()),
                     {
                         let weak_editor = weak_editor.clone();
@@ -4585,7 +4593,7 @@ impl Editor {
                     },
                 )
                 .entry(
-                    log_breakpoint_msg,
+                    locale::t(log_breakpoint_msg),
                     Some(crate::actions::EditLogBreakpoint.boxed_clone()),
                     {
                         let breakpoint = breakpoint.clone();
@@ -4605,7 +4613,7 @@ impl Editor {
                         }
                     },
                 )
-                .entry(condition_breakpoint_msg, None, {
+                .entry(locale::t(condition_breakpoint_msg), None, {
                     let breakpoint = breakpoint.clone();
                     let weak_editor = weak_editor.clone();
                     move |window, cx| {
@@ -4622,7 +4630,7 @@ impl Editor {
                             .log_err();
                     }
                 })
-                .entry(hit_condition_breakpoint_msg, None, {
+                .entry(locale::t(hit_condition_breakpoint_msg), None, {
                     let breakpoint = breakpoint.clone();
                     let weak_editor = weak_editor.clone();
                     move |window, cx| {
@@ -4640,7 +4648,7 @@ impl Editor {
                     }
                 })
                 .separator()
-                .entry(git_blame_msg, Some(Blame.boxed_clone()), {
+                .entry(locale::t(git_blame_msg), Some(Blame.boxed_clone()), {
                     let weak_editor = weak_editor.clone();
                     move |window, cx| {
                         weak_editor
@@ -4651,19 +4659,23 @@ impl Editor {
                     }
                 })
                 .separator()
-                .entry(set_bookmark_msg, Some(ToggleBookmark.boxed_clone()), {
-                    let weak_editor = weak_editor.clone();
-                    move |_window, cx| {
-                        weak_editor
-                            .update(cx, |this, cx| {
-                                this.toggle_bookmark_at_anchor(anchor, cx);
-                            })
-                            .log_err();
-                    }
-                })
+                .entry(
+                    locale::t(set_bookmark_msg),
+                    Some(ToggleBookmark.boxed_clone()),
+                    {
+                        let weak_editor = weak_editor.clone();
+                        move |_window, cx| {
+                            weak_editor
+                                .update(cx, |this, cx| {
+                                    this.toggle_bookmark_at_anchor(anchor, cx);
+                                })
+                                .log_err();
+                        }
+                    },
+                )
                 .when(has_bookmark, |this| {
                     this.entry(
-                        "Edit Bookmark",
+                        locale::t_static("Edit Bookmark"),
                         Some(EditBookmark.boxed_clone()),
                         move |window, cx| {
                             weak_editor
@@ -12970,7 +12982,7 @@ impl PromptEditor {
             .icon_color(Color::Muted)
             .shape(IconButtonShape::Square)
             .tooltip(move |_window, cx| {
-                Tooltip::for_action_in("Cancel", &menu::Cancel, &focus_handle, cx)
+                Tooltip::for_action_in(locale::t_static("Cancel"), &menu::Cancel, &focus_handle, cx)
             })
             .on_click(cx.listener(|this, _, window, cx| {
                 this.cancel(&menu::Cancel, window, cx);
@@ -12983,7 +12995,12 @@ impl PromptEditor {
             .icon_color(Color::Muted)
             .shape(IconButtonShape::Square)
             .tooltip(move |_window, cx| {
-                Tooltip::for_action_in("Confirm", &menu::Confirm, &focus_handle, cx)
+                Tooltip::for_action_in(
+                    locale::t_static("Confirm"),
+                    &menu::Confirm,
+                    &focus_handle,
+                    cx,
+                )
             })
             .on_click(cx.listener(|this, _, window, cx| {
                 this.confirm(&menu::Confirm, window, cx);

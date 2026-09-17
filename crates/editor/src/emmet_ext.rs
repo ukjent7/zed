@@ -457,7 +457,11 @@ fn expansion_text(expansion: &str) -> String {
 }
 
 fn no_expansion_message(abbreviation: &str) -> String {
-    format!("No Emmet expansion for {abbreviation:?}")
+    locale::t_format(
+        "No Emmet expansion for {abbreviation}",
+        &[("{abbreviation}", &format!("{abbreviation:?}"))],
+    )
+    .to_string()
 }
 
 fn remember_abbreviation(abbreviation: SharedString, cx: &mut App) {

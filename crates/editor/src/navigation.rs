@@ -1518,9 +1518,9 @@ impl Editor {
                     .take(3)
                     .join(", ");
                 let title = if target.is_empty() {
-                    "References".to_owned()
+                    locale::t("References").to_string()
                 } else {
-                    format!("References to {target}")
+                    locale::t_format("References to {target}", &[("{target}", &target)]).to_string()
                 };
                 let allow_preview = PreviewTabsSettings::get_global(cx)
                     .enable_preview_multibuffer_from_code_navigation;

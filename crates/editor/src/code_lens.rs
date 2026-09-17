@@ -571,10 +571,12 @@ fn rendered_text_matches(a: &CodeLensLine, b: &CodeLensLine) -> bool {
 
 /// Text rendered for a code lens item, or `None` if it should not render
 /// (placeholder while resolve is in flight).
-fn displayed_title(item: &CodeLensItem) -> Option<&SharedString> {
-    item.title
-        .as_ref()
-        .or_else(|| item.action.resolved.then_some(&EMPTY_LENS_FALLBACK_TITLE))
+fn displayed_title(item: &CodeLensItem) -> Option<SharedString> {
+    item.title.clone().or_else(|| {
+        item.action
+            .resolved
+            .then(|| locale::t(EMPTY_LENS_FALLBACK_TITLE.as_str()))
+    })
 }
 
 fn group_lenses_by_row(

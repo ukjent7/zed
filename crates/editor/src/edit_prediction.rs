@@ -1758,13 +1758,13 @@ impl Editor {
             .items_end()
             .when(flag_on_right, |el| el.items_start())
             .child(if flag_on_right {
-                self.render_edit_prediction_line_popover("Jump", None, window, cx)
+                self.render_edit_prediction_line_popover(locale::t_static("Jump"), None, window, cx)
                     .rounded_bl(px(0.))
                     .rounded_tl(px(0.))
                     .border_l_2()
                     .border_color(border_color)
             } else {
-                self.render_edit_prediction_line_popover("Jump", None, window, cx)
+                self.render_edit_prediction_line_popover(locale::t_static("Jump"), None, window, cx)
                     .rounded_br(px(0.))
                     .rounded_tr(px(0.))
                     .border_r_2()
@@ -1804,7 +1804,12 @@ impl Editor {
         cx: &mut App,
     ) -> Option<(AnyElement, gpui::Point<Pixels>)> {
         let mut element = self
-            .render_edit_prediction_line_popover("Scroll", Some(scroll_icon), window, cx)
+            .render_edit_prediction_line_popover(
+                locale::t_static("Scroll"),
+                Some(scroll_icon),
+                window,
+                cx,
+            )
             .into_any();
 
         let size = element.layout_as_root(AvailableSpace::min_size(), window, cx);
@@ -1840,7 +1845,7 @@ impl Editor {
         if target_display_point.row().as_f64() < scroll_top {
             let mut element = self
                 .render_edit_prediction_line_popover(
-                    "Jump to Edit",
+                    locale::t_static("Jump to Edit"),
                     Some(IconName::ArrowUp),
                     window,
                     cx,
@@ -1859,7 +1864,7 @@ impl Editor {
         } else if (target_display_point.row().as_f64() + 1.) > scroll_bottom {
             let mut element = self
                 .render_edit_prediction_line_popover(
-                    "Jump to Edit",
+                    locale::t_static("Jump to Edit"),
                     Some(IconName::ArrowDown),
                     window,
                     cx,
@@ -1910,7 +1915,7 @@ impl Editor {
         );
 
         let mut element = self
-            .render_edit_prediction_line_popover(label, None, window, cx)
+            .render_edit_prediction_line_popover(locale::t(label), None, window, cx)
             .into_any();
 
         let size = element.layout_as_root(AvailableSpace::min_size(), window, cx);
@@ -1938,7 +1943,7 @@ impl Editor {
             };
 
             element = self
-                .render_edit_prediction_line_popover(label, Some(icon), window, cx)
+                .render_edit_prediction_line_popover(locale::t(label), Some(icon), window, cx)
                 .into_any();
 
             let size = element.layout_as_root(AvailableSpace::min_size(), window, cx);
@@ -2448,7 +2453,10 @@ impl Editor {
                         .gap_2()
                         .flex_1()
                         .child(Icon::new(icons.base))
-                        .child(Label::new(format!("Jump to {file_name}"))),
+                        .child(Label::new(locale::t_format(
+                            "Jump to {file_name}",
+                            &[("{file_name}", &file_name.to_string())],
+                        ))),
                 )
             }
             EditPrediction::Edit {
@@ -2548,7 +2556,7 @@ impl Render for MissingEditPredictionKeybindingTooltip {
                         .child(Button::new("open-keymap", locale::t("Assign Keybinding")).size(ButtonSize::Compact).on_click(|_ev, window, cx| {
                             window.dispatch_action(zed_actions::OpenKeymapFile.boxed_clone(), cx)
                         }))
-                        .child(Button::new("see-docs", "See Docs").size(ButtonSize::Compact).on_click(|_ev, _window, cx| {
+                        .child(Button::new("see-docs", locale::t_static("See Docs")).size(ButtonSize::Compact).on_click(|_ev, _window, cx| {
                             cx.open_url("https://zed.dev/docs/completions#edit-predictions-missing-keybinding");
                         })),
                 )
