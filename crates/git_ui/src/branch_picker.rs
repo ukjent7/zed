@@ -1151,7 +1151,10 @@ impl BranchListDelegate {
                                 PromptLevel::Warning,
                                 &prompt_message,
                                 None,
-                                &[force_delete.as_str(), cancel.as_str()],
+                                &[
+                                    gpui::PromptButton::new(force_delete.clone()),
+                                    gpui::PromptButton::cancel(cancel.clone()),
+                                ],
                                 cx,
                             )
                         })?;

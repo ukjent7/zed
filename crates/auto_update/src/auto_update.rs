@@ -341,7 +341,7 @@ pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
             gpui::PromptLevel::Info,
             locale::t("Zed was installed via a package manager.").as_str(),
             Some(&message),
-            &[ok.as_str()],
+            &[gpui::PromptButton::ok(ok.clone())],
             cx,
         ));
         return;
@@ -365,7 +365,7 @@ pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
             gpui::PromptLevel::Info,
             locale::t("Could not check for updates").as_str(),
             Some(locale::t("Auto-updates disabled for non-bundled app.").as_str()),
-            &[ok.as_str()],
+            &[gpui::PromptButton::ok(ok.clone())],
             cx,
         ));
     }

@@ -2585,7 +2585,10 @@ impl GitPanel {
                         PromptLevel::Warning,
                         &message,
                         None,
-                        &[confirm_text.as_str(), cancel.as_str()],
+                        &[
+                            gpui::PromptButton::new(confirm_text.clone()),
+                            gpui::PromptButton::cancel(cancel.clone()),
+                        ],
                         cx,
                     );
                     cx.background_spawn(prompt)
@@ -2654,7 +2657,10 @@ impl GitPanel {
                 PromptLevel::Warning,
                 message.as_str(),
                 Some(&details),
-                &[confirm_label.as_str(), cancel.as_str()],
+                &[
+                    gpui::PromptButton::new(confirm_label.clone()),
+                    gpui::PromptButton::cancel(cancel.clone()),
+                ],
                 cx,
             );
             cx.background_spawn(prompt)

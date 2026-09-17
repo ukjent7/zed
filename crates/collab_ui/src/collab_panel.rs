@@ -2549,7 +2549,10 @@ impl CollabPanel {
             PromptLevel::Warning,
             &prompt_message,
             None,
-            &[leave.as_str(), cancel.as_str()],
+            &[
+                gpui::PromptButton::new(leave.clone()),
+                gpui::PromptButton::cancel(cancel.clone()),
+            ],
             cx,
         );
         cx.spawn_in(window, async move |this, cx| {
@@ -2589,7 +2592,10 @@ impl CollabPanel {
                 PromptLevel::Warning,
                 &prompt_message,
                 None,
-                &[remove.as_str(), cancel.as_str()],
+                &[
+                    gpui::PromptButton::new(remove.clone()),
+                    gpui::PromptButton::cancel(cancel.clone()),
+                ],
                 cx,
             );
             let workspace = self.workspace.clone();
@@ -2628,7 +2634,10 @@ impl CollabPanel {
             PromptLevel::Warning,
             &prompt_message,
             None,
-            &[remove.as_str(), cancel.as_str()],
+            &[
+                gpui::PromptButton::new(remove.clone()),
+                gpui::PromptButton::cancel(cancel.clone()),
+            ],
             cx,
         );
         let workspace = self.workspace.clone();

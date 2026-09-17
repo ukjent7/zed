@@ -262,8 +262,8 @@ fn render_skill_row(
                                 &prompt_message,
                                 Some(&prompt_detail),
                                 &[
-                                    locale::t_static("Delete").as_str(),
-                                    locale::t_static("Cancel").as_str(),
+                                    gpui::PromptButton::new(locale::t_static("Delete")),
+                                    gpui::PromptButton::cancel(locale::t_static("Cancel")),
                                 ],
                                 cx,
                             );

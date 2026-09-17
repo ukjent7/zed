@@ -1905,7 +1905,11 @@ impl ProjectSearchView {
                 let save = locale::t("Save");
                 let do_not_save = locale::t("Don't Save");
                 let cancel = locale::t("Cancel");
-                let options = &[save.as_str(), do_not_save.as_str(), cancel.as_str()];
+                let options = [
+                    gpui::PromptButton::new(save.clone()),
+                    gpui::PromptButton::new(do_not_save.clone()),
+                    gpui::PromptButton::cancel(cancel.clone()),
+                ];
                 let result_channel = this.update_in(cx, |_, window, cx| {
                     window.prompt(
                         gpui::PromptLevel::Warning,
@@ -1914,7 +1918,7 @@ impl ProjectSearchView {
                         )
                         .as_str(),
                         None,
-                        options,
+                        &options,
                         cx,
                     )
                 })?;

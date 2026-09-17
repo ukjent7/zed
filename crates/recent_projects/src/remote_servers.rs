@@ -2056,7 +2056,7 @@ impl RemoteServerProjects {
                     gpui::PromptLevel::Critical,
                     locale::t("Failed to connect").as_str(),
                     Some(&e.to_string()),
-                    &[ok.as_str()],
+                    &[gpui::PromptButton::ok(ok.clone())],
                 )
                 .await
                 .ok();
@@ -2291,7 +2291,7 @@ impl RemoteServerProjects {
                             locale::t("Failed to start Dev Container. See logs for details")
                                 .as_str(),
                             Some(&format!("{e}")),
-                            &[ok.as_str()],
+                            &[gpui::PromptButton::ok(ok.clone())],
                         )
                         .await
                         .ok();
@@ -2347,7 +2347,7 @@ impl RemoteServerProjects {
                     gpui::PromptLevel::Critical,
                     locale::t("Failed to connect").as_str(),
                     Some(&e.to_string()),
-                    &[ok.as_str()],
+                    &[gpui::PromptButton::ok(ok.clone())],
                 )
                 .await
                 .ok();

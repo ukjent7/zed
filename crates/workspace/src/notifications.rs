@@ -1689,7 +1689,7 @@ where
                         PromptLevel::Critical,
                         &msg,
                         Some(&detail),
-                        &[ok.as_str()],
+                        &[gpui::PromptButton::ok(ok.clone())],
                         cx,
                     )
                 }) {

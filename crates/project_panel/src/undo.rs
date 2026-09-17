@@ -993,7 +993,10 @@ impl Inner {
                     PromptLevel::Info,
                     &prompt.message,
                     prompt.detail.as_deref(),
-                    &[prompt.confirmation_label.as_str(), cancel.as_str()],
+                    &[
+                        gpui::PromptButton::new(prompt.confirmation_label.clone()),
+                        gpui::PromptButton::cancel(cancel.clone()),
+                    ],
                     cx,
                 )
             })?

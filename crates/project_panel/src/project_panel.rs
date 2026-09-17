@@ -2667,7 +2667,10 @@ impl ProjectPanel {
                     PromptLevel::Info,
                     &prompt,
                     None,
-                    &[restore.as_str(), cancel.as_str()],
+                    &[
+                        gpui::PromptButton::new(restore.clone()),
+                        gpui::PromptButton::cancel(cancel.clone()),
+                    ],
                     cx,
                 ))
             } else {
@@ -2990,7 +2993,10 @@ impl ProjectPanel {
                     PromptLevel::Info,
                     &prompt.message,
                     prompt.detail.as_deref(),
-                    &[prompt.confirmation_label.as_str(), cancel.as_str()],
+                    &[
+                        gpui::PromptButton::new(prompt.confirmation_label.clone()),
+                        gpui::PromptButton::cancel(cancel.clone()),
+                    ],
                     cx,
                 ))
             } else {
@@ -5033,7 +5039,7 @@ impl ProjectPanel {
                                 PromptLevel::Info,
                                 &prompt_message,
                                 None,
-                                &[replace.as_str(), cancel.as_str()],
+                                &[gpui::PromptButton::new(replace.clone()), gpui::PromptButton::cancel(cancel.clone())],
                                 cx,
                             )
                         })?

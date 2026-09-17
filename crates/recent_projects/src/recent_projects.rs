@@ -508,7 +508,7 @@ pub fn init(cx: &mut App) {
                         gpui::PromptLevel::Critical,
                         locale::t("Cannot open Dev Container from remote project").as_str(),
                         None,
-                        &[ok.as_str()],
+                        &[gpui::PromptButton::ok(ok.clone())],
                     )
                     .await
                     .ok();
