@@ -2074,8 +2074,9 @@ impl ProjectPanel {
         let filename = self.filename_editor.read(cx).text(cx);
         if !filename.is_empty() {
             if filename.is_empty() {
-                edit_state.validation_state =
-                    ValidationState::Error("File or directory name cannot be empty.".to_string());
+                edit_state.validation_state = ValidationState::Error(
+                    locale::t_static("File or directory name cannot be empty.").to_string(),
+                );
                 cx.notify();
                 return;
             }
@@ -2083,7 +2084,10 @@ impl ProjectPanel {
             let trimmed_filename = filename.trim();
             if trimmed_filename != filename {
                 edit_state.validation_state = ValidationState::Warning(
-                    "File or directory name contains leading or trailing whitespace.".to_string(),
+                    locale::t_static(
+                        "File or directory name contains leading or trailing whitespace.",
+                    )
+                    .to_string(),
                 );
                 cx.notify();
                 return;
@@ -2092,7 +2096,10 @@ impl ProjectPanel {
 
             let Ok(filename) = RelPath::from_unix_str(trimmed_filename) else {
                 edit_state.validation_state = ValidationState::Warning(
-                    "File or directory name contains leading or trailing whitespace.".to_string(),
+                    locale::t_static(
+                        "File or directory name contains leading or trailing whitespace.",
+                    )
+                    .to_string(),
                 );
                 cx.notify();
                 return;
@@ -2123,10 +2130,13 @@ impl ProjectPanel {
                     }
                 };
                 if already_exists {
-                    edit_state.validation_state = ValidationState::Error(format!(
-                        "File or directory '{}' already exists at location. Please choose a different name.",
-                        filename.as_unix_str()
-                    ));
+                    edit_state.validation_state = ValidationState::Error(
+                        locale::t_format(
+                            "File or directory '{name}' already exists at location. Please choose a different name.",
+                            &[("{name}", filename.as_unix_str())],
+                        )
+                        .to_string(),
+                    );
                     cx.notify();
                     return;
                 }
@@ -2693,7 +2703,11 @@ impl ProjectPanel {
                 if let Err(e) = task.await {
                     panel
                         .update(cx, |panel, cx| {
-                            let message = format!("Failed to restore {}: {}", file_name, e);
+                            let message = locale::t_format(
+                                "Failed to restore {file}: {error}",
+                                &[("{file}", &file_name), ("{error}", &e.to_string())],
+                            )
+                            .to_string();
                             let toast = StatusToast::new(message, cx, |this, _| {
                                 this.icon(
                                     Icon::new(IconName::XCircle)
@@ -3081,12 +3095,19 @@ impl ProjectPanel {
         failed_count: usize,
         cx: &mut Context<Self>,
     ) {
-        let message = match (trash, total_count) {
-            (true, 1) => format!("Failed to trash {failed_count} of {total_count} file."),
-            (true, _) => format!("Failed to trash {failed_count} of {total_count} files."),
-            (false, 1) => format!("Failed to delete {failed_count} of {total_count} file."),
-            (false, _) => format!("Failed to delete {failed_count} of {total_count} files."),
-        };
+        let message = locale::t_format(
+            match (trash, total_count) {
+                (true, 1) => "Failed to trash {failed_count} of {total_count} file.",
+                (true, _) => "Failed to trash {failed_count} of {total_count} files.",
+                (false, 1) => "Failed to delete {failed_count} of {total_count} file.",
+                (false, _) => "Failed to delete {failed_count} of {total_count} files.",
+            },
+            &[
+                ("{failed_count}", &failed_count.to_string()),
+                ("{total_count}", &total_count.to_string()),
+            ],
+        )
+        .to_string();
 
         let toast = StatusToast::new(message, cx, |this, _| {
             this.icon(

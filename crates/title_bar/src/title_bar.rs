@@ -1349,7 +1349,10 @@ impl TitleBar {
                                     .w_full()
                                     .gap_1()
                                     .justify_between()
-                                    .child(Label::new("Restart to update Zed").color(Color::Accent))
+                                    .child(
+                                        Label::new(locale::t_static("Restart to update Zed"))
+                                            .color(Color::Accent),
+                                    )
                                     .child(
                                         Icon::new(IconName::Download)
                                             .size(IconSize::Small)
@@ -1364,7 +1367,7 @@ impl TitleBar {
                         .separator()
                     })
                     .when(is_signed_in, |this| {
-                        let mut this = this.header("Organization");
+                        let mut this = this.header(locale::t_static("Organization"));
 
                         for (organization, plan) in &organizations {
                             let organization = organization.clone();
@@ -1417,25 +1420,32 @@ impl TitleBar {
 
                         this.separator()
                     })
-                    .action("Settings", zed_actions::OpenSettings.boxed_clone())
-                    .action("Keymap", Box::new(zed_actions::OpenKeymap))
                     .action(
-                        "Themes…",
+                        locale::t_static("Settings"),
+                        zed_actions::OpenSettings.boxed_clone(),
+                    )
+                    .action(
+                        locale::t_static("Keymap"),
+                        Box::new(zed_actions::OpenKeymap),
+                    )
+                    .action(
+                        locale::t_static("Themes…"),
                         zed_actions::theme_selector::Toggle::default().boxed_clone(),
                     )
                     .action(
-                        "Icon Themes…",
+                        locale::t_static("Icon Themes…"),
                         zed_actions::icon_theme_selector::Toggle::default().boxed_clone(),
                     )
                     .action(
-                        "Extensions",
+                        locale::t_static("Extensions"),
                         zed_actions::Extensions::default().boxed_clone(),
                     )
                     .when(ai_enabled, |menu| {
-                        menu.separator()
-                            .submenu("Panel Layout", move |menu, _window, _cx| {
+                        menu.separator().submenu(
+                            locale::t_static("Panel Layout"),
+                            move |menu, _window, _cx| {
                                 menu.toggleable_entry(
-                                    "Classic",
+                                    locale::t_static("Classic"),
                                     is_editor,
                                     IconPosition::Start,
                                     Some(UseClassicLayout.boxed_clone()),
@@ -1444,7 +1454,7 @@ impl TitleBar {
                                     },
                                 )
                                 .toggleable_entry(
-                                    "Agentic",
+                                    locale::t_static("Agentic"),
                                     is_agent,
                                     IconPosition::Start,
                                     Some(UseAgenticLayout.boxed_clone()),
@@ -1454,16 +1464,17 @@ impl TitleBar {
                                 )
                                 .when(is_custom, |menu| {
                                     menu.item(
-                                        ContextMenuEntry::new("Custom")
+                                        ContextMenuEntry::new(locale::t_static("Custom"))
                                             .toggleable(IconPosition::Start, true)
                                             .disabled(true),
                                     )
                                 })
-                            })
+                            },
+                        )
                     })
                     .when(is_signed_in, |this| {
                         this.separator()
-                            .action("Sign Out", client::SignOut.boxed_clone())
+                            .action(locale::t_static("Sign Out"), client::SignOut.boxed_clone())
                     })
                 })
                 .into()

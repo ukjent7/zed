@@ -46,7 +46,7 @@ where
         move |mut menu, _, _cx| {
             let is_system_default = current_device.is_none();
             menu = menu.toggleable_entry(
-                SYSTEM_DEFAULT,
+                locale::t_static(SYSTEM_DEFAULT),
                 is_system_default,
                 IconPosition::Start,
                 None,
@@ -86,7 +86,7 @@ where
         dropdown_id,
         current_device
             .map(|info| info.desc.name().to_string())
-            .unwrap_or(SYSTEM_DEFAULT.to_string()),
+            .unwrap_or_else(|| locale::t_static(SYSTEM_DEFAULT).to_string()),
         menu,
     )
     .style(DropdownStyle::Outlined)
@@ -135,8 +135,8 @@ fn render_settings_audio_device_dropdown<T: AsRef<Option<String>> + From<Option<
             )
             .log_err();
         },
-        Some(SharedString::new_static(title)),
-        (!description.is_empty()).then(|| SharedString::new_static(description)),
+        Some(locale::t_static(title)),
+        (!description.is_empty()).then(|| locale::t_static(description)),
         window,
         cx,
     )

@@ -390,7 +390,7 @@ fn render_subpage_item(
                 .min_w_0()
                 .max_w_1_2()
                 .gap_0p5()
-                .child(Label::new("Configure Provider"))
+                .child(Label::new(locale::t_static("Configure Provider")))
                 .when_some(description, |this, description| {
                     this.child(render_inline_description(provider_name, description))
                 }),
@@ -1039,12 +1039,12 @@ fn render_form_actions(cx: &mut Context<SettingsWindow>) -> impl IntoElement {
         .gap_1()
         .justify_end()
         .child(
-            Button::new("llm-provider-form-cancel", "Cancel").on_click(cx.listener(
-                |this, _, window, cx| {
+            Button::new("llm-provider-form-cancel", locale::t_static("Cancel")).on_click(
+                cx.listener(|this, _, window, cx| {
                     this.llm_provider_form = None;
                     this.pop_sub_page(window, cx);
-                },
-            )),
+                }),
+            ),
         )
         .child(
             Button::new("llm-provider-form-save", locale::t_static("Save Provider"))

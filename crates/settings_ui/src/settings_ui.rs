@@ -3909,7 +3909,9 @@ impl SettingsWindow {
                         v_flex()
                             .my_0p5()
                             .gap_0p5()
-                            .child(Label::new(label))
+                            // Telemetry above keeps the English `label`; only the
+                            // rendered text is localized.
+                            .child(Label::new(locale::t(label)))
                             .child(Label::new(error).size(LabelSize::Small).color(Color::Muted)),
                     )
                     .action_slot(
@@ -3940,10 +3942,15 @@ impl SettingsWindow {
                 .map(|this| match &error.migration_status {
                     settings::MigrationStatus::Succeeded => this.child(banner(
                         "Your settings are out of date, and need to be updated.",
-                        match &self.current_file {
-                            SettingsUiFile::User => "They can be automatically migrated to the latest version.",
-                            SettingsUiFile::Server(_) | SettingsUiFile::Project(_)  => "They must be manually migrated to the latest version."
-                        }.to_string(),
+                        locale::t_static(match &self.current_file {
+                            SettingsUiFile::User => {
+                                "They can be automatically migrated to the latest version."
+                            }
+                            SettingsUiFile::Server(_) | SettingsUiFile::Project(_) => {
+                                "They must be manually migrated to the latest version."
+                            }
+                        })
+                        .to_string(),
                         &mut self.shown_errors,
                         cx,
                     )),
@@ -3981,7 +3988,7 @@ impl SettingsWindow {
                         v_flex()
                             .my_0p5()
                             .gap_0p5()
-                            .child(Label::new("Restricted Mode"))
+                            .child(Label::new(locale::t_static("Restricted Mode")))
                             .child(
                                 Label::new(
                                     locale::t("This project is in restricted mode. Some project settings may not apply."),

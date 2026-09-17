@@ -685,7 +685,7 @@ impl TitleBar {
                                     }
                                 });
                                 task.detach_and_prompt_err(
-                                    "Sharing Screen Failed",
+                                    locale::t("Sharing Screen Failed").as_str(),
                                     window,
                                     cx,
                                     |e, _, _| Some(format!("{e:?}")),
@@ -757,7 +757,7 @@ impl TitleBar {
                                 let label = meta
                                     .label
                                     .clone()
-                                    .unwrap_or_else(|| SharedString::from("Unknown screen"));
+                                    .unwrap_or_else(|| locale::t("Unknown screen"));
                                 let resolution = SharedString::from(format!(
                                     "{} × {}",
                                     meta.resolution.width.0, meta.resolution.height.0

@@ -478,7 +478,7 @@ impl Inner {
 
             if let Err(e) = res {
                 Self::show_error(
-                    error_title,
+                    locale::t_static(error_title),
                     self.workspace.clone(),
                     format!("{e:#}"),
                     &mut cx,

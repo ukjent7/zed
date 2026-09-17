@@ -2298,7 +2298,7 @@ impl Sidebar {
                         .size(IconSize::XSmall)
                         .color(Color::Muted),
                 )
-                .tooltip(Tooltip::text("Remote Project"))
+                .tooltip(Tooltip::text(locale::t_static("Remote Project")))
                 .into_any_element(),
         )
     }
@@ -2417,10 +2417,14 @@ impl Sidebar {
                         })
                         .when(waiting_thread_count > 0, |this| {
                             let tooltip_text = if waiting_thread_count == 1 {
-                                "1 thread is waiting for confirmation".to_string()
+                                locale::t_static("1 thread is waiting for confirmation")
                             } else {
-                                format!(
+                                locale::t_format(
                                     "{waiting_thread_count} threads are waiting for confirmation",
+                                    &[(
+                                        "{waiting_thread_count}",
+                                        &waiting_thread_count.to_string(),
+                                    )],
                                 )
                             };
                             this.child(
@@ -2692,60 +2696,68 @@ impl Sidebar {
                     });
 
                     if let Some(base_workspace) = base_workspace.filter(|_| !creation_blocked) {
-                        menu = menu.separator().submenu("Create New Worktree…", {
-                            let this = this.clone();
-                            move |mut submenu, _window, submenu_cx| {
-                                let project = base_workspace.read(submenu_cx).project().clone();
-                                let project_ref = project.read(submenu_cx);
-                                let has_multiple_repositories =
-                                    project_ref.repositories(submenu_cx).len() > 1;
-                                let current_branch =
-                                    project_ref.active_repository(submenu_cx).and_then(|repo| {
-                                        repo.read(submenu_cx)
-                                            .branch
-                                            .as_ref()
-                                            .map(|branch| branch.name().to_string())
-                                    });
-                                let default_branch = this
-                                    .read_with(submenu_cx, |sidebar, _| {
-                                        match sidebar.worktree_default_branches.get(&key) {
-                                            Some(DefaultBranchCache::Resolved(branch)) => {
-                                                branch.clone()
-                                            }
-                                            _ => None,
-                                        }
-                                    })
-                                    .ok()
-                                    .flatten();
+                        menu =
+                            menu.separator()
+                                .submenu(locale::t_static("Create New Worktree…"), {
+                                    let this = this.clone();
+                                    move |mut submenu, _window, submenu_cx| {
+                                        let project =
+                                            base_workspace.read(submenu_cx).project().clone();
+                                        let project_ref = project.read(submenu_cx);
+                                        let has_multiple_repositories =
+                                            project_ref.repositories(submenu_cx).len() > 1;
+                                        let current_branch = project_ref
+                                            .active_repository(submenu_cx)
+                                            .and_then(|repo| {
+                                                repo.read(submenu_cx)
+                                                    .branch
+                                                    .as_ref()
+                                                    .map(|branch| branch.name().to_string())
+                                            });
+                                        let default_branch = this
+                                            .read_with(submenu_cx, |sidebar, _| {
+                                                match sidebar.worktree_default_branches.get(&key) {
+                                                    Some(DefaultBranchCache::Resolved(branch)) => {
+                                                        branch.clone()
+                                                    }
+                                                    _ => None,
+                                                }
+                                            })
+                                            .ok()
+                                            .flatten();
 
-                                let targets = worktree_create_targets(
-                                    has_multiple_repositories,
-                                    default_branch,
-                                    current_branch.as_deref(),
-                                );
-                                for target in targets {
-                                    let label = format!(
-                                        "Based on {}",
-                                        target.branch_label(
+                                        let targets = worktree_create_targets(
                                             has_multiple_repositories,
+                                            default_branch,
                                             current_branch.as_deref(),
-                                        )
-                                    );
-                                    let branch_target = target.branch_target();
-                                    let workspace = base_workspace.clone();
-                                    submenu = submenu.entry(label, None, move |window, cx| {
-                                        create_worktree_in_workspace(
-                                            &workspace,
-                                            branch_target.clone(),
-                                            window,
-                                            cx,
                                         );
-                                    });
-                                }
+                                        for target in targets {
+                                            let label = locale::t_format(
+                                                "Based on {branch}",
+                                                &[(
+                                                    "{branch}",
+                                                    &target.branch_label(
+                                                        has_multiple_repositories,
+                                                        current_branch.as_deref(),
+                                                    ),
+                                                )],
+                                            );
+                                            let branch_target = target.branch_target();
+                                            let workspace = base_workspace.clone();
+                                            submenu =
+                                                submenu.entry(label, None, move |window, cx| {
+                                                    create_worktree_in_workspace(
+                                                        &workspace,
+                                                        branch_target.clone(),
+                                                        window,
+                                                        cx,
+                                                    );
+                                                });
+                                        }
 
-                                submenu
-                            }
-                        });
+                                        submenu
+                                    }
+                                });
                     }
 
                     menu
@@ -2918,7 +2930,7 @@ impl Sidebar {
 
                         let menu = menu.when(show_multi_project_entries, |this| {
                             this.entry(
-                                "Open Project in New Window",
+                                locale::t_static("Open Project in New Window"),
                                 Some(Box::new(workspace::MoveProjectToNewWindow)),
                                 {
                                     let project_group_key = project_group_key.clone();
@@ -2953,12 +2965,15 @@ impl Sidebar {
                                                 Some(TextSize::Default.rems(cx).into()),
                                                 false,
                                             ))
-                                            .child(Label::new("-click").color(Color::Muted));
+                                            .child(
+                                                Label::new(locale::t_static("-click"))
+                                                    .color(Color::Muted),
+                                            );
 
                                         let label = if has_threads {
-                                            "Focus Last Project"
+                                            locale::t_static("Focus Last Project")
                                         } else {
-                                            "Focus Project"
+                                            locale::t_static("Focus Project")
                                         };
 
                                         h_flex()
@@ -3164,16 +3179,20 @@ impl Sidebar {
 
                         let project_group_key = project_group_key.clone();
                         let remove_multi_workspace = multi_workspace.clone();
-                        menu.separator().entry("Remove", None, move |window, cx| {
-                            remove_multi_workspace
-                                .update(cx, |multi_workspace, cx| {
-                                    multi_workspace
-                                        .remove_project_group(&project_group_key, window, cx)
-                                        .detach_and_log_err(cx);
-                                })
-                                .ok();
-                            weak_menu.update(cx, |_, cx| cx.emit(DismissEvent)).ok();
-                        })
+                        menu.separator().entry(
+                            locale::t_static("Remove"),
+                            None,
+                            move |window, cx| {
+                                remove_multi_workspace
+                                    .update(cx, |multi_workspace, cx| {
+                                        multi_workspace
+                                            .remove_project_group(&project_group_key, window, cx)
+                                            .detach_and_log_err(cx);
+                                    })
+                                    .ok();
+                                weak_menu.update(cx, |_, cx| cx.emit(DismissEvent)).ok();
+                            },
+                        )
                     });
 
                 let this = this.clone();
@@ -6477,7 +6496,7 @@ impl Sidebar {
                     let rename_title = rename_title.clone();
                     let folder_paths = folder_paths.clone();
                     ContextMenu::build(_window, cx, move |mut menu, _window, _cx| {
-                        menu = menu.entry("Rename Title", None, {
+                        menu = menu.entry(locale::t_static("Rename Title"), None, {
                             let sidebar = sidebar.clone();
                             let rename_title = rename_title.clone();
                             move |window, cx| {
@@ -6496,7 +6515,7 @@ impl Sidebar {
                         });
 
                         if is_zed_thread {
-                            menu = menu.entry("Regenerate Thread Title", None, {
+                            menu = menu.entry(locale::t_static("Regenerate Thread Title"), None, {
                                 let session_id = session_id.clone();
                                 let sidebar = sidebar.clone();
                                 let thread_workspace = thread_workspace.clone();
@@ -6518,7 +6537,7 @@ impl Sidebar {
                         }
 
                         if can_open_as_markdown {
-                            menu = menu.entry("Open Thread as Markdown", None, {
+                            menu = menu.entry(locale::t_static("Open Thread as Markdown"), None, {
                                 let session_id = session_id.clone();
                                 let markdown_title = markdown_title.clone();
                                 let thread_workspace = thread_workspace.clone();
@@ -6555,16 +6574,17 @@ impl Sidebar {
                             });
                         }
 
-                        menu.separator().entry("Archive Thread", None, {
-                            let session_id = session_id.clone();
-                            move |window, cx| {
-                                sidebar
-                                    .update(cx, |sidebar, cx| {
-                                        sidebar.archive_thread(&session_id, window, cx);
-                                    })
-                                    .ok();
-                            }
-                        })
+                        menu.separator()
+                            .entry(locale::t_static("Archive Thread"), None, {
+                                let session_id = session_id.clone();
+                                move |window, cx| {
+                                    sidebar
+                                        .update(cx, |sidebar, cx| {
+                                            sidebar.archive_thread(&session_id, window, cx);
+                                        })
+                                        .ok();
+                                }
+                            })
                     })
                 }
             })
@@ -6674,7 +6694,7 @@ impl Sidebar {
                 let sidebar = sidebar.clone();
                 let rename_title = rename_title.clone();
                 ContextMenu::build(window, cx, move |menu, _window, _cx| {
-                    menu.entry("Rename Title", None, move |window, cx| {
+                    menu.entry(locale::t_static("Rename Title"), None, move |window, cx| {
                         sidebar
                             .update(cx, |sidebar, cx| {
                                 sidebar.start_renaming_entry(
