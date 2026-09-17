@@ -20,6 +20,7 @@ blocklist=(
   'crates/agent/'
   'crates/agent_servers/'
   'crates/agent_settings/'   # ships src/prompts/*.txt, reads AGENTS.md
+  'crates/agent_skills/builtin/'   # embedded SKILL.md is sent back as <skill_content>
   'crates/agent_ui/'         # pushes model-bound MessageContent::Text
   'crates/context_server/'   # JSON-RPC protocol, forwards tool schemas
   'crates/copilot/'
@@ -33,6 +34,7 @@ blocklist=(
   'crates/edit_prediction_ui/'
   'crates/eval_cli/'
   'crates/eval_utils/'
+  'crates/git_ui/src/commit_message_prompt.txt'   # git_panel.rs:build_commit_message_prompt
   'crates/language_model/'
   'crates/language_model_core/'
   'crates/language_models/'

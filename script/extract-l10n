@@ -35,6 +35,7 @@ BLOCKLIST = (
     "crates/agent/",
     "crates/agent_servers/",
     "crates/agent_settings/",
+    "crates/agent_skills/builtin/",  # embedded SKILL.md is sent back as <skill_content>
     "crates/agent_ui/",
     "crates/context_server/",
     "crates/copilot/",
@@ -48,6 +49,7 @@ BLOCKLIST = (
     "crates/edit_prediction_ui/",
     "crates/eval_cli/",
     "crates/eval_utils/",
+    "crates/git_ui/src/commit_message_prompt.txt",  # git_panel.rs:build_commit_message_prompt
     "crates/language_model/",
     "crates/language_model_core/",
     "crates/language_models/",

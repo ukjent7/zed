@@ -13,6 +13,19 @@ Reports, per crate:
 
 Descriptions and titles reach the screen through many call shapes, so the
 display-site heuristic is deliberately broad; the point is triage, not a gate.
+It now also covers the shapes that used to hide the largest single gap: the
+`ui::ContextMenu` builder family (`.action`/`.entry`/`.submenu`/
+`.toggleable_entry`), `Tooltip::for_action*`/`with_meta_in`, `Toast::new`,
+`.with_title`, the message argument of `prompt`/`prompt_err`, and a prompt's
+`&["Save", "Cancel"]` button array (which no call-shape prefix can anchor to).
+Widening the shape list measured 467 -> 685 unwrapped and 145 -> 285 already
+translated but unwrapped.
+
+Still invisible, so a zero is not coverage: text that reaches a display call
+through a variable or a function return (`fn title() -> &'static str`), copy
+assembled by `format!`, and anything behind `#[cfg(test)]`/`feature =
+"test-support"`.
+
 Test code is excluded everywhere: `#[cfg(test)]` helper functions named `t`
 (see crates/agent/src/tool_permissions.rs) otherwise swamp the counts. So is
 storybook data: `Component::preview` bodies are blanked (see
@@ -38,6 +51,13 @@ DICT = json.loads((ROOT / 'assets/locales/zh-CN.json').read_text(encoding='utf-8
 TRANSLATE = re.compile(r'(?<![\w.])(?:locale::)?t(?:_format|_static)?\(\s*"')
 
 STR = re.compile(r'"((?:[^"\\]|\\.)*)"', re.DOTALL)
+
+# `window.prompt(.., &["Save", "Don't Save", "Cancel"], cx)` - a button list is
+# an array literal, so no display-call prefix can ever anchor onto it. Requiring
+# a capitalized first literal keeps `&["key"]` map-lookup noise out.
+ANSWER_ARRAY = re.compile(
+    r'&\[\s*"[A-Z][^"]*"(?:\s*,\s*"(?:[^"\\]|\\.)*")*\s*\]'
+)
 
 # Argument positions that end up rendered on screen.
 DISPLAY_CALLS = (
@@ -96,6 +116,28 @@ DISPLAY_CALLS = (
     r'\.dismiss_label\(\s*',
     r'\.tooltip\(Tooltip::text\(\s*',
     r'\.notification\(\s*',
+    # `ui::ContextMenu` never translates: the builder hands the label straight
+    # to `Label::new`, so every `.action("Cut", ..)` is a gap. The label is the
+    # first argument there, unlike `Button::new(id, label)`.
+    r'\.entry\(\s*',
+    r'\.action\(\s*',
+    r'\.submenu\(\s*',
+    r'\.toggleable_entry\(\s*',
+    r'\.more_info_message\(\s*',
+    r'\.with_title\(\s*',
+    r'\.with_detail\(\s*',
+    # Tooltip::for_action* stores the title as `Title::Str` and looks the
+    # keystroke up from the action object, so the title is pure display.
+    r'Tooltip::for_action\(\s*',
+    r'Tooltip::for_action_in\(\s*',
+    r'Tooltip::for_action_title\(\s*',
+    r'Tooltip::for_action_title_in\(\s*',
+    r'Tooltip::with_meta_in\(\s*',
+    r'Toast::new\(\s*[^,()]*,\s*',
+    # The message is the second `prompt` argument, after `PromptLevel::*`.
+    r'\.prompt\(\s*[^,]*,\s*',
+    r'\.prompt_err\(\s*',
+    r'\.detach_and_prompt_err\(\s*',
 )
 PREFIX = re.compile(r'(?:' + '|'.join(DISPLAY_CALLS) + r')$', re.DOTALL)
 
@@ -240,6 +282,24 @@ def scan(path: pathlib.Path):
             bare.append((line, s))
         else:
             cands.append((line, s))
+
+    seen = {*cands, *bare, *ready}
+    for m in ANSWER_ARRAY.finditer(prod):
+        line = prod.count("\n", 0, m.start()) + 1
+        for lit in STR.finditer(m.group(0)):
+            s = lit.group(1)
+            if not looks_like_text(s, allow_single_word=True):
+                continue
+            hit = (line, s)
+            if hit in seen:
+                continue
+            seen.add(hit)
+            if s in DICT:
+                ready.append(hit)
+            elif SINGLE_WORD.match(s):
+                bare.append(hit)
+            else:
+                cands.append(hit)
     return calls, cands, bare, ready
 
 
