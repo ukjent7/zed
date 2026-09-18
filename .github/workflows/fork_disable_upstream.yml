@@ -20,10 +20,14 @@
 #     extension_bump, extension_tests, ...): they never fire on their own, so
 #     disabling them would change nothing.
 #
-# A merge from upstream can invalidate the parked state: a listed workflow that
-# upstream modified can come back enabled, and a new upstream workflow is not
-# in the list yet. The `paths` filter below re-runs this whenever any workflow
-# file changes, so that is self-correcting rather than something to remember.
+# A merge from upstream can invalidate the parked state, and the two halves are
+# handled differently:
+#   - a *listed* workflow that upstream re-enabled is fixed automatically - the
+#     `paths` filter below re-runs this job on any workflow change and the PUT
+#     parks it again;
+#   - a *new* upstream workflow is not in the list, so no re-run can park it.
+#     The job's drift check fails and names it instead of going green, so the
+#     list gets the entry it is missing.
 # If the API call returns 403, the repository's Actions token is read-only -
 # either allow write access (Settings -> Actions -> General -> Workflow
 # permissions) or disable the workflows by hand (Actions -> workflow ->
@@ -89,6 +93,15 @@ jobs:
           # workflow that is already parked is what turned this job red on its
           # second run: the first run had parked all 23, so every entry was
           # already `disabled_manually` and GitHub rejects the repeat call.
+          total=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/workflows" \
+                    --jq '.total_count')
+          if [ "${total}" -gt 100 ]; then
+            # `per_page=100` below would silently miss the rest, and a workflow
+            # that is never listed looks "already parked". Say so instead.
+            echo "::error::${total} workflows exceed the single page this job reads; paginate before trusting it"
+            exit 1
+          fi
+
           active=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/workflows?per_page=100" \
                      --jq '.workflows[] | select(.state == "active") | .path' \
                    | sed 's|^.*/||')
@@ -118,6 +131,25 @@ jobs:
             echo "A 403 means the repository's Actions token lacks write access"
             echo "(Settings -> Actions -> General -> Workflow permissions). The"
             echo "API error printed next to each FAILED entry says which it was."
+            exit 1
+          fi
+
+          # Drift: a newly merged upstream workflow is invisible to the loop
+          # above, because it is not in the list at all - the job would go green
+          # while that workflow keeps running here. Anything still active that
+          # this file does not track (`fork_*` being the fork's own) needs a
+          # decision, so fail rather than pretend to cover everything.
+          untracked=$(
+            printf '%s\n' ${active:-} \
+              | grep -vx -F -f <(printf '%s\n' "${workflows[@]}") \
+              | grep -v '^fork_' || true
+          )
+          if [ -n "${untracked}" ]; then
+            echo "::error::active workflow(s) not tracked by this file:"
+            echo "${untracked}" | sed 's|^|  |'
+            echo "Add each to the list above (it can publish artifacts, post to"
+            echo "Slack, or run on a schedule from this repository) or park it in"
+            echo "the Actions UI and note why here."
             exit 1
           fi
 

@@ -43,5 +43,12 @@ jobs:
         run: ./script/check-l10n-boundary
       - name: l10n strict audit
         run: ./script/extract-l10n --strict
+      # Advisory, not a gate: the display-site heuristic has known false
+      # positives (identity names, protocol fields it cannot classify), so a
+      # non-zero count must not redden a pull request. It is printed here so the
+      # untranslated-literal backlog cannot silently grow between manual runs.
+      - name: l10n coverage inventory
+        continue-on-error: true
+        run: python3 script/l10n-audit.py
       - name: locale unit tests
         run: cargo test -p locale

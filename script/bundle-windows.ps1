@@ -82,6 +82,13 @@ if ($vsDevShell) {
     Write-Warning "Launch-VsDevShell.ps1 not found. Continuing with current environment."
 }
 
+# What actually matters is the linker, not how it got here: a Developer shell
+# started by hand has no Launch-VsDevShell.ps1 either. Fail now instead of
+# thousands of lines later, inside the multi-hour link step.
+if (-not $Help -and -not (Get-Command link.exe -ErrorAction SilentlyContinue)) {
+    throw "link.exe is not on PATH and no Visual Studio developer shell was found. Run this from a Developer PowerShell, or install Build Tools 2022."
+}
+
 # Preserve Cargo/Rust toolchain in PATH (Launch-VsDevShell may not include user PATH additions)
 $cargoBin = if ($env:CARGO_HOME) { "$env:CARGO_HOME\bin" } else { "$env:USERPROFILE\.cargo\bin" }
 if (Test-Path $cargoBin) {
