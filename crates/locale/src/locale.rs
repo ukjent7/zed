@@ -110,18 +110,21 @@ fn system_locale_is_chinese() -> bool {
 }
 
 /// Detects whether the current process is running as a test runner.
-/// Test binaries built by Cargo are placed in `target/.../deps/` (this holds
-/// for `cargo nextest` too, which executes the same binaries). Runners with a
-/// different layout fall back to the OS locale unless pinned via
-/// [`set_language`] or `ZED_TEST_CHINESE`.
+///
+/// Two independent signals, because the two runners disagree on the path:
+/// `NEXTEST=1` is set by cargo-nextest for every test process it spawns (see
+/// nextest's "Environment variables" docs), and Cargo's own test binaries live
+/// in `target/.../deps/`. Runners that provide neither fall back to the OS
+/// locale unless pinned via [`set_language`] or `ZED_TEST_CHINESE`.
 fn is_test_runner() -> bool {
     static IS_TEST: OnceLock<bool> = OnceLock::new();
     *IS_TEST.get_or_init(|| {
-        std::env::current_exe().is_ok_and(|path| {
-            path.parent()
-                .and_then(|p| p.file_name())
-                .is_some_and(|name| name == "deps")
-        })
+        std::env::var_os("NEXTEST").is_some()
+            || std::env::current_exe().is_ok_and(|path| {
+                path.parent()
+                    .and_then(|p| p.file_name())
+                    .is_some_and(|name| name == "deps")
+            })
     })
 }
 
