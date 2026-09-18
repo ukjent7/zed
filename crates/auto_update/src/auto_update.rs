@@ -348,12 +348,11 @@ pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
         .map(ToOwned::to_owned)
         .or_else(|| env::var("ZED_UPDATE_EXPLANATION").ok())
     {
-        let ok = locale::t("OK");
         drop(window.prompt(
             gpui::PromptLevel::Info,
             locale::t("Zed was installed via a package manager.").as_str(),
             Some(&message),
-            &[gpui::PromptButton::ok(ok.clone())],
+            &[gpui::PromptButton::ok(locale::t_static("OK"))],
             cx,
         ));
         return;
@@ -372,12 +371,11 @@ pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
     if let Some(updater) = AutoUpdater::get(cx) {
         updater.update(cx, |updater, cx| updater.poll(UpdateCheckType::Manual, cx));
     } else {
-        let ok = locale::t("OK");
         drop(window.prompt(
             gpui::PromptLevel::Info,
             locale::t("Could not check for updates").as_str(),
             Some(locale::t("Auto-updates disabled for non-bundled app.").as_str()),
-            &[gpui::PromptButton::ok(ok.clone())],
+            &[gpui::PromptButton::ok(locale::t_static("OK"))],
             cx,
         ));
     }
