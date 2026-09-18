@@ -641,7 +641,7 @@ fn render_zed_agent_button(user_store: &Entity<UserStore>, cx: &mut App) -> impl
             .color(Color::Muted)
             .into_any_element()
     } else if is_signing_in {
-        Label::new(locale::t("Signing In…"))
+        Label::new(locale::t("Signing in…"))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .with_animation(

@@ -350,9 +350,8 @@ pub fn init(cx: &mut App) {
                     .collect::<Vec<_>>();
 
                 if paths.is_empty() {
-                    let ok = locale::t("OK");
                     let message = locale::t("Invalid path specified when trying to open a folder inside WSL.\n\nPlease note that Zed currently does not support opening network share folders inside wsl.\n");
-                    let _ = cx.prompt(gpui::PromptLevel::Critical, locale::t("Invalid path").as_str(), Some(message.as_str()), &[ok.as_str()]).await;
+                    let _ = cx.prompt(gpui::PromptLevel::Critical, locale::t("Invalid path").as_str(), Some(message.as_str()), &[gpui::PromptButton::ok(locale::t_static("OK"))]).await;
                     return;
                 }
 
@@ -503,12 +502,11 @@ pub fn init(cx: &mut App) {
         with_active_or_new_workspace(cx, move |workspace, window, cx| {
             if !workspace.project().read(cx).is_local() {
                 cx.spawn_in(window, async move |_, cx| {
-                    let ok = locale::t("OK");
                     cx.prompt(
                         gpui::PromptLevel::Critical,
                         locale::t("Cannot open Dev Container from remote project").as_str(),
                         None,
-                        &[gpui::PromptButton::ok(ok.clone())],
+                        &[gpui::PromptButton::ok(locale::t_static("OK"))],
                     )
                     .await
                     .ok();

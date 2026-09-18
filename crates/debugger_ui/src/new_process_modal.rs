@@ -499,7 +499,7 @@ impl NewProcessModal {
             .debugger
             .as_ref()
             .map(|d| d.0.clone())
-            .unwrap_or_else(|| SELECT_DEBUGGER_LABEL.clone());
+            .unwrap_or_else(|| locale::t_static("Select Debugger"));
 
         DropdownMenu::new(
             "dap-adapter-picker",
@@ -535,8 +535,6 @@ impl NewProcessModal {
         })
     }
 }
-
-static SELECT_DEBUGGER_LABEL: SharedString = SharedString::new_static("Select Debugger");
 
 #[derive(Clone, Copy)]
 pub(crate) enum NewProcessMode {

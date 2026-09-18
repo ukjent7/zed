@@ -448,10 +448,22 @@ impl CallStatsModal {
                 .maximum_queue_depth
                 .saturating_mul(PLAYBACK_FRAME_DURATION_MILLISECONDS) as f64,
         );
-        let repair_event_label = if audio.concealment_events == 1 {
-            locale::t("event")
+        // One key per plural form instead of nesting an `event`/`events`
+        // fragment inside the sentence: the fragment forced the count's
+        // position and needed a second lookup every frame.
+        let repair_events = if audio.concealment_events == 1 {
+            locale::t_format(
+                "WebRTC repaired {duration} in 1 event",
+                &[("{duration}", &repaired_audio_duration)],
+            )
         } else {
-            locale::t("events")
+            locale::t_format(
+                "WebRTC repaired {duration} in {count} events",
+                &[
+                    ("{duration}", &repaired_audio_duration),
+                    ("{count}", &audio.concealment_events.to_string()),
+                ],
+            )
         };
 
         v_flex()
@@ -490,16 +502,9 @@ impl CallStatsModal {
                 .color(Color::Muted),
             )
             .child(
-                Label::new(locale::t_format(
-                    "WebRTC repaired {repaired_audio_duration} in {count} {repair_event_label}",
-                    &[
-                        ("{repaired_audio_duration}", &repaired_audio_duration),
-                        ("{count}", &audio.concealment_events.to_string()),
-                        ("{repair_event_label}", repair_event_label.as_str()),
-                    ],
-                ))
-                .size(LabelSize::Small)
-                .color(Color::Muted),
+                Label::new(repair_events)
+                    .size(LabelSize::Small)
+                    .color(Color::Muted),
             )
             .child(
                 Label::new(locale::t_format(

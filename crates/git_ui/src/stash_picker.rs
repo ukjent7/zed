@@ -681,12 +681,13 @@ impl PickerDelegate for StashListDelegate {
                         }),
                 )
                 .child(
-                    // Kept English on purpose: the dictionary's "View" is the
-                    // noun used by the git_panel menu header, while this button
-                    // wants the verb. One source key cannot carry both senses,
-                    // so this one stays English instead of showing the wrong
-                    // word.
-                    Button::new("view-stash", locale::t_static("View"))
+                    // Kept English on purpose, and registered in
+                    // `NEVER_TRANSLATE_SITES` so the wrap sweep leaves it alone:
+                    // the dictionary's "View" is the noun used by the
+                    // git_panel menu header, while this button wants the verb.
+                    // One source key cannot carry both senses, so this one
+                    // stays English instead of showing the wrong word.
+                    Button::new("view-stash", "View")
                         .key_binding(
                             KeyBinding::for_action_in(
                                 &stash_picker::ShowStashItem,

@@ -484,7 +484,6 @@ pub async fn handle_import_vscode_settings(
             Ok(vscode_settings) => vscode_settings,
             Err(err) => {
                 zlog::error!("{err:?}");
-                let ok = locale::t("OK");
                 let _ = cx.prompt(
                     gpui::PromptLevel::Info,
                     locale::t_format(
@@ -493,15 +492,16 @@ pub async fn handle_import_vscode_settings(
                     )
                     .as_str(),
                     None,
-                    &[ok.as_str()],
+                    // Roles are set explicitly: `From<&str> for PromptButton`
+                    // infers them from the English word, so a translated label
+                    // would silently degrade every button to `Other`.
+                    &[gpui::PromptButton::ok(locale::t_static("OK"))],
                 );
                 return;
             }
         };
 
     if !skip_prompt {
-        let import = locale::t("Import");
-        let cancel = locale::t("Cancel");
         let prompt = cx.prompt(
             gpui::PromptLevel::Warning,
             locale::t_format(
@@ -519,7 +519,10 @@ pub async fn handle_import_vscode_settings(
             )
             .as_str(),
             None,
-            &[import.as_str(), cancel.as_str()],
+            &[
+                gpui::PromptButton::new(locale::t_static("Import")),
+                gpui::PromptButton::cancel(locale::t_static("Cancel")),
+            ],
         );
         let result = cx.spawn(async move |_| prompt.await.ok()).await;
         if result != Some(0) {

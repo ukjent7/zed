@@ -309,8 +309,6 @@ pub async fn open_remote_project(
                     }
                 });
                 log::error!("Failed to open project: {e:#}");
-                let retry = locale::t("Retry");
-                let cancel = locale::t("Cancel");
                 let response = window
                     .update(cx, |_, window, cx| {
                         window.prompt(
@@ -328,7 +326,10 @@ pub async fn open_remote_project(
                             })
                             .as_str(),
                             Some(&format!("{e:#}")),
-                            &[retry.as_str(), cancel.as_str()],
+                            &[
+                                gpui::PromptButton::new(locale::t_static("Retry")),
+                                gpui::PromptButton::cancel(locale::t_static("Cancel")),
+                            ],
                             cx,
                         )
                     })?
@@ -373,8 +374,6 @@ pub async fn open_remote_project(
         match opened {
             Err(e) => {
                 log::error!("Failed to open project: {e:#}");
-                let retry = locale::t("Retry");
-                let cancel = locale::t("Cancel");
                 let response = window
                     .update(cx, |_, window, cx| {
                         window.prompt(
@@ -392,7 +391,10 @@ pub async fn open_remote_project(
                             })
                             .as_str(),
                             Some(&format!("{e:#}")),
-                            &[retry.as_str(), cancel.as_str()],
+                            &[
+                                gpui::PromptButton::new(locale::t_static("Retry")),
+                                gpui::PromptButton::cancel(locale::t_static("Cancel")),
+                            ],
                             cx,
                         )
                     })?

@@ -1684,12 +1684,11 @@ where
                         display.push('.');
                     }
                     let detail = f(err, window, cx).unwrap_or(display);
-                    let ok = locale::t("OK");
                     window.prompt(
                         PromptLevel::Critical,
                         &msg,
                         Some(&detail),
-                        &[gpui::PromptButton::ok(ok.clone())],
+                        &[gpui::PromptButton::ok(locale::t_static("OK"))],
                         cx,
                     )
                 }) {

@@ -2051,12 +2051,11 @@ impl RemoteServerProjects {
             .await;
             if let Err(e) = result {
                 log::error!("Failed to connect: {e:#}");
-                let ok = locale::t("OK");
                 cx.prompt(
                     gpui::PromptLevel::Critical,
                     locale::t("Failed to connect").as_str(),
                     Some(&e.to_string()),
-                    &[gpui::PromptButton::ok(ok.clone())],
+                    &[gpui::PromptButton::ok(locale::t_static("OK"))],
                 )
                 .await
                 .ok();
@@ -2285,13 +2284,12 @@ impl RemoteServerProjects {
                     Ok((c, s)) => (c, s),
                     Err(e) => {
                         log::error!("Failed to start dev container: {:?}", e);
-                        let ok = locale::t("OK");
                         cx.prompt(
                             gpui::PromptLevel::Critical,
                             locale::t("Failed to start Dev Container. See logs for details")
                                 .as_str(),
                             Some(&format!("{e}")),
-                            &[gpui::PromptButton::ok(ok.clone())],
+                            &[gpui::PromptButton::ok(locale::t_static("OK"))],
                         )
                         .await
                         .ok();
@@ -2342,12 +2340,11 @@ impl RemoteServerProjects {
             .await;
             if let Err(e) = result {
                 log::error!("Failed to connect: {e:#}");
-                let ok = locale::t("OK");
                 cx.prompt(
                     gpui::PromptLevel::Critical,
                     locale::t("Failed to connect").as_str(),
                     Some(&e.to_string()),
-                    &[gpui::PromptButton::ok(ok.clone())],
+                    &[gpui::PromptButton::ok(locale::t_static("OK"))],
                 )
                 .await
                 .ok();

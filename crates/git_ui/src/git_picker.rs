@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use gpui::{
     App, Context, DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, InteractiveElement,
     KeyContext, ModifiersChangedEvent, MouseButton, ParentElement, Rems, Render, Styled,
@@ -26,13 +24,17 @@ pub enum GitPickerTab {
     Stashes,
 }
 
-impl Display for GitPickerTab {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let label = match self {
-            GitPickerTab::Branches => "Branches",
-            GitPickerTab::Stashes => "Stashes",
-        };
-        write!(f, "{}", locale::t(label))
+impl GitPickerTab {
+    /// Localized tab label.
+    ///
+    /// Deliberately an inherent method and not `Display`: a translated
+    /// `Display` would leak UI text into any future log line, telemetry field
+    /// or `format!("{tab}")` that reaches a machine.
+    fn label(self) -> SharedString {
+        match self {
+            GitPickerTab::Branches => locale::t_static("Branches"),
+            GitPickerTab::Stashes => locale::t_static("Stashes"),
+        }
     }
 }
 
@@ -199,7 +201,7 @@ impl GitPicker {
                 "git-picker-tabs",
                 [
                     ToggleButtonSimple::new(
-                        GitPickerTab::Branches.to_string(),
+                        GitPickerTab::Branches.label(),
                         cx.listener(|this, _, window, cx| {
                             this.tab = GitPickerTab::Branches;
                             this.ensure_active_picker(window, cx);
@@ -216,7 +218,7 @@ impl GitPicker {
                         )
                     }),
                     ToggleButtonSimple::new(
-                        GitPickerTab::Stashes.to_string(),
+                        GitPickerTab::Stashes.label(),
                         cx.listener(|this, _, window, cx| {
                             this.tab = GitPickerTab::Stashes;
                             this.ensure_active_picker(window, cx);
