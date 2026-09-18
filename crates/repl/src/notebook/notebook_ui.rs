@@ -1257,7 +1257,7 @@ impl NotebookEditor {
                         IconButton::new("repl", icon)
                             .icon_color(icon_color)
                             .tooltip(move |window, cx| {
-                                let status = kernel_status.to_string();
+                                let status = kernel_status.label();
                                 Tooltip::text(locale::t_format(
                                     "{kernel} ({status}). Click to change kernel.",
                                     &[
@@ -1349,7 +1349,7 @@ impl NotebookEditor {
                         "Kernel: {kernel} ({status}). Click to change.",
                         &[
                             ("{kernel}", kernel_name.as_str()),
-                            ("{status}", kernel_status.to_string().as_str()),
+                            ("{status}", kernel_status.label().as_str()),
                         ],
                     )),
                 )

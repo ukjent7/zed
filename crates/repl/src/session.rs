@@ -926,7 +926,7 @@ impl Render for Session {
                 kernel
                     .kernel_info()
                     .as_ref()
-                    .map(|info| info.language_info.name.clone()),
+                    .map(|info| SharedString::from(info.language_info.name.clone())),
                 Some(
                     Button::new("interrupt", locale::t("Interrupt"))
                         .style(ButtonStyle::Subtle)
@@ -935,14 +935,17 @@ impl Render for Session {
                         })),
                 ),
             ),
-            Kernel::StartingKernel(_) => (Some(locale::t("Starting").to_string()), None),
+            Kernel::StartingKernel(_) => (Some(KernelStatus::Starting.label()), None),
             Kernel::ErroredLaunch(err) => (
-                Some(locale::t_format("Error: {error}", &[("{error}", err.as_str())]).to_string()),
+                Some(locale::t_format(
+                    "Error: {error}",
+                    &[("{error}", err.as_str())],
+                )),
                 None,
             ),
-            Kernel::ShuttingDown => (Some(locale::t("Shutting Down").to_string()), None),
-            Kernel::Shutdown => (Some(locale::t("Shutdown").to_string()), None),
-            Kernel::Restarting => (Some(locale::t("Restarting").to_string()), None),
+            Kernel::ShuttingDown => (Some(KernelStatus::ShuttingDown.label()), None),
+            Kernel::Shutdown => (Some(KernelStatus::Shutdown.label()), None),
+            Kernel::Restarting => (Some(KernelStatus::Restarting.label()), None),
         };
 
         KernelListItem::new(self.kernel_specification.clone())

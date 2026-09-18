@@ -689,19 +689,31 @@ impl KernelStatus {
     pub fn is_connected(&self) -> bool {
         matches!(self, KernelStatus::Idle | KernelStatus::Busy)
     }
+
+    /// English name of the state: the `kernel_status` field of the
+    /// `Kernel Status Changed` telemetry event (see `session.rs`), and the
+    /// dictionary key behind [`Self::label`]. Must never be translated.
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            KernelStatus::Idle => "Idle",
+            KernelStatus::Busy => "Busy",
+            KernelStatus::Starting => "Starting",
+            KernelStatus::Error => "Error",
+            KernelStatus::ShuttingDown => "Shutting Down",
+            KernelStatus::Shutdown => "Shutdown",
+            KernelStatus::Restarting => "Restarting",
+        }
+    }
+
+    /// Localized state name, for display sites only.
+    pub fn label(&self) -> SharedString {
+        locale::t_static(self.as_str())
+    }
 }
 
 impl ToString for KernelStatus {
     fn to_string(&self) -> String {
-        match self {
-            KernelStatus::Idle => locale::t("Idle").to_string(),
-            KernelStatus::Busy => locale::t("Busy").to_string(),
-            KernelStatus::Starting => locale::t("Starting").to_string(),
-            KernelStatus::Error => locale::t("Error").to_string(),
-            KernelStatus::ShuttingDown => locale::t("Shutting Down").to_string(),
-            KernelStatus::Shutdown => locale::t("Shutdown").to_string(),
-            KernelStatus::Restarting => locale::t("Restarting").to_string(),
-        }
+        self.as_str().to_string()
     }
 }
 
