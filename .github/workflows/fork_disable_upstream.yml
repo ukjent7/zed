@@ -18,7 +18,9 @@
 #   - `workflow_dispatch`-only and `workflow_call`-only workflows
 #     (bump_*, cherry_pick, autofix_pr, publish_extension_cli, deploy_docs,
 #     extension_bump, extension_tests, ...): they never fire on their own, so
-#     disabling them would change nothing.
+#     disabling them would change nothing. GitHub keeps them `active` forever,
+#     so the drift check below reads each file's `on:` block to recognise this
+#     class rather than carrying a second copy of the list by hand.
 #
 # A merge from upstream can invalidate the parked state, and the two halves are
 # handled differently:
@@ -47,6 +49,10 @@ on:
       - '.github/workflows/**'
 permissions:
   actions: write
+  # An explicit `permissions` block sets every other scope to `none`, and
+  # `actions/checkout` below needs `contents: read` to fetch the tree that the
+  # drift check reads triggers out of.
+  contents: read
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
@@ -57,6 +63,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
+      - uses: actions/checkout@v7
       - name: disable workflows that can never run on a fork
         run: |
           set -euo pipefail
@@ -102,6 +109,68 @@ jobs:
             exit 1
           fi
 
+          # The two checks below judge a workflow by what it declares, so read
+          # that from the tree rather than trusting a name or a state string.
+          #
+          # Top-level `on:` trigger names of a workflow file: the keys at the
+          # indent of the block's first entry, with comments and nested keys
+          # dropped. Covers the block, sequence (`- push`) and inline
+          # (`on: [push]`) spellings. Prints nothing for anything it cannot
+          # read - a quoted `"on":` key, say - and the caller treats that as
+          # "unknown", never as "no triggers".
+          on_triggers() {
+            awk '
+              BEGIN { in_on = 0; ind = 0 }
+              { sub(/\r$/, "") }
+              !in_on {
+                if ($0 ~ /^on:[ \t]*$/) { in_on = 1; next }
+                if ($0 ~ /^on:[ \t]*[^ \t]/) {
+                  sub(/^on:[ \t]*/, "")
+                  gsub(/[^A-Za-z0-9_]/, " ")
+                  print
+                  exit
+                }
+                next
+              }
+              /^[ \t]*$/ { next }
+              /^[ \t]*#/ { next }
+              !/^[ \t]/ { exit }
+              {
+                key = $0
+                lead = length(key)
+                sub(/^[ \t]+/, "", key)
+                lead -= length(key)
+                if (!ind) ind = lead
+                if (lead > ind) next
+                if (lead < ind) exit
+                if (key ~ /^-/) {
+                  sub(/^- +/, "", key)
+                  if (key ~ /:/) next
+                } else {
+                  sub(/:.*/, "", key)
+                }
+                gsub(/[^A-Za-z0-9_]/, "", key)
+                print key
+              }
+            ' "$1" | paste -sd ' ' -
+          }
+
+          # Can these triggers start a run by themselves? `workflow_dispatch`
+          # needs a person to press the button and `workflow_call` needs a
+          # caller, which on a fork means a workflow that is itself parked, so a
+          # file whose triggers are all of those two is inert however GitHub
+          # labels its record.
+          fires_by_itself() {
+            local trigger
+            for trigger in $1; do
+              case "${trigger}" in
+                workflow_dispatch | workflow_call) ;;
+                *) return 0 ;;
+              esac
+            done
+            return 1
+          }
+
           active=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/workflows?per_page=100" \
                      --jq '.workflows[] | select(.state == "active") | .path' \
                    | sed 's|^.*/||')
@@ -111,6 +180,13 @@ jobs:
             printf '%-56s ' "${workflow}"
             if ! grep -qx "${workflow}" <<<"${active}"; then
               echo 'already parked'
+              continue
+            fi
+            if [ ! -f ".github/workflows/${workflow}" ]; then
+              # Upstream deleted it. GitHub keeps the record - and keeps calling
+              # it active - for a while after the file goes, so the PUT has
+              # nothing to act on and the entry above is just stale.
+              echo 'gone from the tree (drop it from the list above)'
               continue
             fi
             if err=$(gh api --silent -X PUT \
@@ -136,20 +212,38 @@ jobs:
 
           # Drift: a newly merged upstream workflow is invisible to the loop
           # above, because it is not in the list at all - the job would go green
-          # while that workflow keeps running here. Anything still active that
-          # this file does not track (`fork_*` being the fork's own) needs a
-          # decision, so fail rather than pretend to cover everything.
+          # while that workflow keeps running here. Being `active` is not enough
+          # to call one drift, though, because that is also the state GitHub
+          # leaves every dispatch-only file in; the verdict has to come from the
+          # file. So of the active workflows this file does not track (`fork_*`
+          # being the fork's own), fail only on the ones that can fire.
           untracked=$(
             printf '%s\n' ${active:-} \
               | grep -vx -F -f <(printf '%s\n' "${workflows[@]}") \
               | grep -v '^fork_' || true
           )
-          if [ -n "${untracked}" ]; then
-            echo "::error::active workflow(s) not tracked by this file:"
-            echo "${untracked}" | sed 's|^|  |'
-            echo "Add each to the list above (it can publish artifacts, post to"
-            echo "Slack, or run on a schedule from this repository) or park it in"
-            echo "the Actions UI and note why here."
+
+          drift=()
+          while IFS= read -r workflow; do
+            if [ -z "${workflow}" ]; then
+              continue
+            elif [ ! -f ".github/workflows/${workflow}" ]; then
+              echo "${workflow}: active but not in this commit, so it cannot run"
+              continue
+            fi
+            triggers=$(on_triggers ".github/workflows/${workflow}")
+            if [ -z "${triggers}" ]; then
+              drift+=("${workflow} (triggers unread: check its on: block by hand)")
+            elif fires_by_itself "${triggers}"; then
+              drift+=("${workflow} (${triggers})")
+            fi
+          done <<<"${untracked}"
+
+          if ((${#drift[@]})); then
+            echo "::error::workflow(s) that fire here but are not tracked by this file:"
+            printf '  %s\n' "${drift[@]}"
+            echo "Add each to the list above - or, if a fork can never run it,"
+            echo "park it in the Actions UI and note why here."
             exit 1
           fi
 
