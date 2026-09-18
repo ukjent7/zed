@@ -248,6 +248,14 @@ NEVER_TRANSLATE_SITES = {
     'crates/git_ui/src/git_graph.rs': frozenset({
         'Graph', 'Description', 'Date', 'Author', 'Commit',
     }),
+    # Homograph the source-as-key scheme cannot express: the dictionary's
+    # "View" is the noun (视图) used by the git_panel menu header, while these
+    # two buttons want the verb (查看). Deliberately left unwrapped instead of
+    # shipping the wrong word; without these entries the audit reports them as
+    # "translated but unwrapped" and the next wrap sweep re-wraps them, which
+    # is exactly what happened once (see the comments at both call sites).
+    'crates/git_ui/src/stash_picker.rs': frozenset({'View'}),
+    'crates/keymap_editor/src/keymap_editor.rs': frozenset({'View'}),
     # Dev scaffold behind `#[cfg(debug_assertions)]`: fake errors registered
     # so the error UI can be exercised, never shown to a user.
     'crates/zed/src/zed.rs': frozenset({

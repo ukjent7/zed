@@ -25,18 +25,6 @@
   // 8. "Cursor"
   // 9. "None"
   "base_keymap": "Zed",
-  // The language of Zed's user interface. Only GUI labels are translated;
-  // prompts sent to AI models always stay in English.
-  // Takes effect immediately as settings are saved without restarting.
-  // This setting can take the following values:
-  //
-  // 1. "system": Follow the operating system locale
-  //    (Simplified Chinese on Chinese systems)
-  // 2. "en": English
-  // 3. "zh-CN": Simplified Chinese
-  //
-  // Default: system
-  "language": "system",
   // The name of a font to use for rendering text in the editor
   // ".ZedMono" currently aliases to Lilex
   // but this may change in the future.
@@ -2981,4 +2969,16 @@
       "enabled": false,
     },
   },
+  // The language of Zed's user interface. Only GUI labels are translated;
+  // prompts sent to AI models always stay in English.
+  // Takes effect immediately as settings are saved without restarting.
+  // This setting can take the following values:
+  //
+  // 1. "system": Follow the operating system locale
+  //    (Simplified Chinese on Chinese systems)
+  // 2. "en": English
+  // 3. "zh-CN": Simplified Chinese
+  //
+  // Default: system
+  "language": "system",
 }

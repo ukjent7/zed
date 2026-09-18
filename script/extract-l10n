@@ -71,6 +71,20 @@ KNOWN_FORMAT_KEYS = frozenset(
 # is on the next line are not misreported; skips the fn definitions in
 # crates/locale itself.)
 DYNAMIC_PATTERN = re.compile(r"(?<!\w)(?<!fn )(?<!\$)t(?:_format|_static)?\(\s*(?!\s*\")")
+# SCREAMING_CASE keys that *are* recoverable: `t(CONST)` / `t_static(CONST)`
+# where the file also defines `const NAME: &str = "..."` or
+# `static NAME: &str = "..."`. DYNAMIC_PATTERN files these as "for manual
+# audit", which is how nine wrapped labels shipped with a key the dictionary
+# never had (crates/editor/src/editor.rs RIGHT_CLICK_HINT,
+# crates/workspace/src/pane.rs DELETED_MESSAGE, ...) - they render in English
+# forever and `--strict` reports `missing: 0`. Resolving the consts here closes
+# that hole without asking anyone to read a list of 130 call sites.
+CONST_PATTERN = re.compile(
+    r'(?:const|static)\s+([A-Z0-9_]{3,})\s*:\s*&str\s*=\s*"((?:[^"\\]|\\.)*)"'
+)
+INDIRECT_CALL_PATTERN = re.compile(
+    r'(?<!\w)(?<!fn )(?<!\$)(?:locale::)?t(?:_format|_static)?\(\s*([A-Z0-9_]{3,})\s*\)'
+)
 # DOTALL: `\\.` must also match a `\` + newline line continuation inside a
 # string literal, or pairing silently derails for the rest of the file.
 LITERAL_PATTERN = re.compile(r'"((?:[^"\\]|\\.)*)"', re.DOTALL)
@@ -230,6 +244,7 @@ def main() -> int:
     root = repo_root()
     blocklist = read_blocklist(root)
     used: set[str] = set()
+    indirect: dict[str, str] = {}
     dynamic: set[str] = set()
     # First non-blocklisted file in which each string literal occurs, used to
     # tell "reachable through a dynamic t() call" from "no call site at all".
@@ -252,6 +267,15 @@ def main() -> int:
             key = decode_source_key(match.group(1))
             if key:
                 used.add(key)
+        consts = {
+            name: decode_source_key(value)
+            for name, value in CONST_PATTERN.findall(masked)
+        }
+        for match in INDIRECT_CALL_PATTERN.finditer(masked):
+            key = consts.get(match.group(1))
+            if key:
+                used.add(key)
+                indirect.setdefault(key, f"{rel.rstrip('/')}:{match.group(1)}")
         for match in DYNAMIC_PATTERN.finditer(masked):
             line = masked.count("\n", 0, match.start()) + 1
             dynamic.add(f"{rel.rstrip('/')}:{line}")
@@ -270,7 +294,10 @@ def main() -> int:
     # `missing` is the actionable list, so it is not truncated the way the
     # (mostly deprecated) unused lists are.
     for key in sorted(missing)[:MISSING_LISTED]:
-        print(f"  MISSING  {key!r}")
+        # Say so when the key only shows up through a const: the wrapped call
+        # site is not visible from the key text alone.
+        site = indirect.get(key)
+        print(f"  MISSING  {key!r}" + (f"  (via {site})" if site else ""))
     if len(missing) > MISSING_LISTED:
         print(f"  ... and {len(missing) - MISSING_LISTED} more")
     print(f"unused: {len(unused)} ({len(unused_dynamic)} reachable via a dynamic t() call)")

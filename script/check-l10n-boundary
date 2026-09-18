@@ -48,4 +48,9 @@ fi
 "${python}" -m json.tool assets/locales/zh-CN.json > /dev/null
 "${python}" -m json.tool assets/locales/actions-zh-CN.json > /dev/null
 
+# Path blocklists cannot see the shape that produced this fork's two real
+# leaks: a `Display`/`ToString` impl that localizes, whose value a telemetry
+# event in the same GUI-only crate then reports. Check that separately.
+"${python}" script/check-l10n-shapes.py || exit 1
+
 echo "l10n boundary check passed."
