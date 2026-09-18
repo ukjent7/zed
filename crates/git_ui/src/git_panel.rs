@@ -84,7 +84,7 @@ use std::ops::Range;
 use std::path::Path;
 use std::rc::Rc;
 use std::{sync::Arc, time::Duration};
-use strum::IntoEnumIterator;
+use strum::{IntoEnumIterator, VariantNames};
 use theme_settings::ThemeSettings;
 use time::OffsetDateTime;
 use ui::{
@@ -175,22 +175,34 @@ actions!(
 
 /// Confirms an action whose buttons come from a strum enum.
 ///
-/// `buttons` must be listed in the enum's variant order: the clicked index is
-/// mapped back with `T::iter().nth(..)`. Call sites build `gpui::PromptButton`
-/// values instead of passing `T::VARIANTS`, so labels can be translated without
-/// losing the cancel/ok role that `From<&str> for PromptButton` derives from the
-/// English word.
+/// The buttons are derived from `T::VARIANTS`, so the clicked index can never
+/// drift from `T::iter().nth(..)` below: a call site cannot reorder, drop or
+/// add a button out of step with the enum. Translation happens here, at the one
+/// place that knows both the variant order and each button's role, which keeps
+/// every call site byte-identical to upstream.
 fn prompt<T>(
     msg: &str,
     detail: Option<&str>,
-    buttons: &[gpui::PromptButton],
     window: &mut Window,
     cx: &mut App,
 ) -> Task<anyhow::Result<T>>
 where
-    T: IntoEnumIterator + 'static,
+    T: IntoEnumIterator + VariantNames + 'static,
 {
-    let rx = window.prompt(PromptLevel::Info, msg, detail, buttons, cx);
+    let buttons: Vec<gpui::PromptButton> = T::VARIANTS
+        .iter()
+        .map(|variant| {
+            let label = locale::t_static(*variant);
+            // Reuse the role `From<&str>` infers from the *English* variant
+            // name, then swap in the translated label.
+            match gpui::PromptButton::from(*variant) {
+                gpui::PromptButton::Ok(_) => gpui::PromptButton::ok(label),
+                gpui::PromptButton::Cancel(_) => gpui::PromptButton::cancel(label),
+                gpui::PromptButton::Other(_) => gpui::PromptButton::new(label),
+            }
+        })
+        .collect();
+    let rx = window.prompt(PromptLevel::Info, msg, detail, &buttons, cx);
     cx.spawn(async move |_| Ok(T::iter().nth(rx.await?).unwrap()))
 }
 
@@ -2837,16 +2849,7 @@ impl GitPanel {
                 self.perform_checkout(vec![entry.clone()], window, cx);
             } else {
                 let message = locale::t_format("Trash {file}?", &[("{file}", &filename)]);
-                let prompt = prompt(
-                    message.as_str(),
-                    None,
-                    &[
-                        gpui::PromptButton::new(locale::t_static("Trash")),
-                        gpui::PromptButton::cancel(locale::t_static("Cancel")),
-                    ],
-                    window,
-                    cx,
-                );
+                let prompt = prompt(message.as_str(), None, window, cx);
                 cx.spawn_in(window, async move |_, cx| {
                     match prompt.await? {
                         TrashCancel::Trash => {}
@@ -2988,16 +2991,7 @@ impl GitPanel {
             Cancel,
         }
         let message = locale::t_static("Discard changes to these files?");
-        let prompt = prompt(
-            message.as_str(),
-            Some(&details),
-            &[
-                gpui::PromptButton::new(locale::t_static("Restore Tracked Files")),
-                gpui::PromptButton::cancel(locale::t_static("Cancel")),
-            ],
-            window,
-            cx,
-        );
+        let prompt = prompt(message.as_str(), Some(&details), window, cx);
         cx.spawn_in(window, async move |this, cx| {
             if let Ok(RestoreCancel::RestoreTrackedFiles) = prompt.await {
                 this.update_in(cx, |this, window, cx| {
@@ -3051,16 +3045,7 @@ impl GitPanel {
         }
 
         let message = locale::t_static("Trash these files?");
-        let prompt = prompt(
-            message.as_str(),
-            Some(&details),
-            &[
-                gpui::PromptButton::new(locale::t_static("Trash")),
-                gpui::PromptButton::cancel(locale::t_static("Cancel")),
-            ],
-            window,
-            cx,
-        );
+        let prompt = prompt(message.as_str(), Some(&details), window, cx);
         cx.spawn_in(window, async move |this, cx| {
             match prompt.await? {
                 TrashCancel::Trash => {}
@@ -3920,10 +3905,6 @@ impl GitPanel {
                         prompt(
                             locale::t_static("Are you sure?").as_str(),
                             Some(detail.as_str()),
-                            &[
-                                gpui::PromptButton::new(locale::t_static("Uncommit")),
-                                gpui::PromptButton::cancel(locale::t_static("Cancel")),
-                            ],
                             window,
                             cx,
                         )
