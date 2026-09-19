@@ -2366,7 +2366,10 @@ impl RemoteServerProjects {
                         .child(
                             div().track_focus(&self.focus_handle(cx)).size_full().child(
                                 v_flex().py_1().child(
-                                    ListItem::new(locale::t_static("Error"))
+                                    // Element id, not a label: it must not
+                                    // change with the UI language. The labels
+                                    // below are the translated display text.
+                                    ListItem::new("Error")
                                         .inset(true)
                                         .selectable(false)
                                         .spacing(ui::ListItemSpacing::Sparse)

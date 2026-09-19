@@ -340,17 +340,17 @@ fn git_panel_context_menu(
     ContextMenu::build(window, cx, |context_menu, _, _| {
         context_menu
             .context(focus_handle.clone())
-            .action_disabled_when(!has_unstaged_changes, "Stage All", StageAll.boxed_clone())
-            .action_disabled_when(!has_staged_changes, "Unstage All", UnstageAll.boxed_clone())
+            .action_disabled_when(!has_unstaged_changes, locale::t("Stage All"), StageAll.boxed_clone())
+            .action_disabled_when(!has_staged_changes, locale::t("Unstage All"), UnstageAll.boxed_clone())
             .action_disabled_when(
                 !has_staged_tracked_changes,
-                "Restore All Changes",
+                locale::t("Restore All Changes"),
                 RestoreTrackedFiles.boxed_clone(),
             )
             .separator()
             .action_disabled_when(
                 !(has_new_changes || has_tracked_changes),
-                "Stash All",
+                locale::t("Stash All"),
                 StashAll.boxed_clone(),
             )
             // Offer the stash variant that matches how the list is currently grouped,
@@ -358,18 +358,18 @@ fn git_panel_context_menu(
             .when(group_by == GitPanelGroupBy::Status, |context_menu| {
                 context_menu.action_disabled_when(
                     !has_tracked_changes,
-                    "Stash Tracked",
+                    locale::t("Stash Tracked"),
                     StashTracked.boxed_clone(),
                 )
             })
             .when(group_by == GitPanelGroupBy::Staging, |context_menu| {
                 context_menu.action_disabled_when(
                     !has_staged_changes,
-                    "Stash Staged",
+                    locale::t("Stash Staged"),
                     StashStaged.boxed_clone(),
                 )
             })
-            .action_disabled_when(!has_stash_items, "Stash Pop", StashPop.boxed_clone())
+            .action_disabled_when(!has_stash_items, locale::t("Stash Pop"), StashPop.boxed_clone())
             .action(
                 locale::t("View Stash"),
                 zed_actions::git::ViewStash.boxed_clone(),
