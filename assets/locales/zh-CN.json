@@ -689,6 +689,7 @@
   "Enter a tool input to test your rules…": "输入工具输入内容以测试你的规则…",
   "Enter a valid GitHub URL": "请输入有效的 GitHub URL",
   "Enter an absolute folder path": "请输入绝对的文件夹路径",
+  "Enter commit message": "输入提交信息",
   "Enter git ref...": "输入 git 引用...",
   "Enter repository URL…": "输入仓库 URL…",
   "Enter the command you use to SSH into this server.": "输入用于 SSH 登录此服务器的命令。",

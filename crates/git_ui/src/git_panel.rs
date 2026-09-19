@@ -1265,7 +1265,7 @@ pub(crate) fn commit_message_editor(
     commit_editor.set_use_modal_editing(true);
     commit_editor.set_show_wrap_guides(false, cx);
     commit_editor.set_show_indent_guides(false, cx);
-    let placeholder = placeholder.unwrap_or("Enter commit message".into());
+    let placeholder = placeholder.unwrap_or_else(|| locale::t_static("Enter commit message"));
     commit_editor.set_placeholder_text(&placeholder, window, cx);
     commit_editor.set_custom_context_menu(|editor, _point, window, cx| {
         let has_selection = editor.has_non_empty_selection(&editor.display_snapshot(cx));
@@ -1273,8 +1273,16 @@ pub(crate) fn commit_message_editor(
 
         Some(ContextMenu::build(window, cx, |menu, _, _| {
             menu.context(focus_handle)
-                .action_disabled_when(!has_selection, "Cut", Box::new(editor::actions::Cut))
-                .action_disabled_when(!has_selection, "Copy", Box::new(editor::actions::Copy))
+                .action_disabled_when(
+                    !has_selection,
+                    locale::t_static("Cut"),
+                    Box::new(editor::actions::Cut),
+                )
+                .action_disabled_when(
+                    !has_selection,
+                    locale::t_static("Copy"),
+                    Box::new(editor::actions::Copy),
+                )
                 .action(locale::t_static("Paste"), Box::new(editor::actions::Paste))
         }))
     });

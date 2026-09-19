@@ -1425,8 +1425,11 @@ impl Render for PanelButtons {
                 let (action, tooltip) = if is_active_button {
                     let action = dock.toggle_action();
 
-                    let tooltip: SharedString =
-                        locale::t(&format!("Close {} Dock", dock.position.label()));
+                    let tooltip: SharedString = match dock.position {
+                        DockPosition::Left => locale::t_static("Close Left Dock"),
+                        DockPosition::Right => locale::t_static("Close Right Dock"),
+                        DockPosition::Bottom => locale::t_static("Close Bottom Dock"),
+                    };
 
                     (action, tooltip)
                 } else {
@@ -1454,8 +1457,13 @@ impl Render for PanelButtons {
                                     if panel.position_is_valid(position, cx) {
                                         let is_current = position == dock_position;
                                         let panel = panel.clone();
+                                        let label = match position {
+                                            DockPosition::Left => locale::t_static("Dock Left"),
+                                            DockPosition::Right => locale::t_static("Dock Right"),
+                                            DockPosition::Bottom => locale::t_static("Dock Bottom"),
+                                        };
                                         menu = menu.toggleable_entry(
-                                            locale::t(&format!("Dock {}", position.label())),
+                                            label,
                                             is_current,
                                             IconPosition::Start,
                                             None,

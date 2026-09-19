@@ -17,7 +17,8 @@ use filter::{FilterData, FilteredServer};
 use futures::{FutureExt, StreamExt as _, channel::oneshot, future::Shared};
 use gpui::{
     Action, AnyElement, App, ClipboardItem, Context, DismissEvent, Entity, EventEmitter,
-    FocusHandle, Focusable, PromptLevel, Subscription, Task, TaskExt, WeakEntity, Window,
+    FocusHandle, Focusable, PromptButton, PromptLevel, Subscription, Task, TaskExt, WeakEntity,
+    Window,
 };
 use log::{debug, info};
 use open_path_prompt::OpenPathDelegate;
@@ -2745,13 +2746,14 @@ impl RemoteServerProjects {
                 )
                 .to_string();
 
-                let yes = locale::t_static("Yes, remove it");
-                let no = locale::t_static("No, keep it");
                 let confirmation = window.prompt(
                     PromptLevel::Warning,
                     &prompt_message,
                     None,
-                    &[yes.as_str(), no.as_str()],
+                    &[
+                        PromptButton::new(locale::t_static("Yes, remove it")),
+                        PromptButton::cancel(locale::t_static("No, keep it")),
+                    ],
                     cx,
                 );
 
@@ -2901,13 +2903,14 @@ impl RemoteServerProjects {
                     )
                     .to_string();
 
-                    let yes = locale::t_static("Yes, remove it");
-                    let no = locale::t_static("No, keep it");
                     let confirmation = window.prompt(
                         PromptLevel::Warning,
                         &prompt_message,
                         None,
-                        &[yes.as_str(), no.as_str()],
+                        &[
+                            PromptButton::new(locale::t_static("Yes, remove it")),
+                            PromptButton::cancel(locale::t_static("No, keep it")),
+                        ],
                         cx,
                     );
 
