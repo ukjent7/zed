@@ -98,7 +98,7 @@ impl picker::PickerDelegate for WslPickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Enter WSL distro name").as_str().into()
+        locale::t_static("Enter WSL distro name").as_str().into()
     }
 
     fn update_matches(

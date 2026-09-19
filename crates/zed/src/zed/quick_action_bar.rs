@@ -148,7 +148,7 @@ impl Render for QuickActionBar {
                 !self.buffer_search_bar.read(cx).is_dismissed(),
                 Box::new(buffer_search::Deploy::find()),
                 focus_handle.clone(),
-                locale::t("Buffer Search"),
+                locale::t_static("Buffer Search"),
                 {
                     let buffer_search_bar = self.buffer_search_bar.clone();
                     move |_, window, cx| {
@@ -166,7 +166,7 @@ impl Render for QuickActionBar {
             false,
             Box::new(InlineAssist::default()),
             focus_handle,
-            locale::t("Inline Assist"),
+            locale::t_static("Inline Assist"),
             move |_, window, cx| {
                 window.dispatch_action(Box::new(InlineAssist::default()), cx);
             },
@@ -199,7 +199,7 @@ impl Render for QuickActionBar {
                         .when(!is_deployed, |this| {
                             this.when(has_available_code_actions, |this| {
                                 this.tooltip(Tooltip::for_action_title(
-                                    locale::t("Code Actions"),
+                                    locale::t_static("Code Actions"),
                                     &ToggleCodeActions::default(),
                                 ))
                             })
@@ -207,7 +207,7 @@ impl Render for QuickActionBar {
                                 !has_available_code_actions,
                                 |this| {
                                     this.tooltip(Tooltip::for_action_title(
-                                        locale::t("No Code Actions Available"),
+                                        locale::t_static("No Code Actions Available"),
                                         &ToggleCodeActions::default(),
                                     ))
                                 },
@@ -261,7 +261,7 @@ impl Render for QuickActionBar {
                         .icon_size(IconSize::Small)
                         .style(ButtonStyle::Subtle)
                         .toggle_state(self.toggle_selections_handle.is_deployed()),
-                    Tooltip::text(locale::t("Selection Controls")),
+                    Tooltip::text(locale::t_static("Selection Controls")),
                 )
                 .with_handle(self.toggle_selections_handle.clone())
                 .anchor(Anchor::TopRight)
@@ -269,29 +269,29 @@ impl Render for QuickActionBar {
                     let focus = focus.clone();
                     let menu = ContextMenu::build(window, cx, move |menu, _, _| {
                         menu.context(focus.clone())
-                            .action(locale::t("Select All"), Box::new(SelectAll))
+                            .action(locale::t_static("Select All"), Box::new(SelectAll))
                             .action(
-                                locale::t("Select Next Occurrence"),
+                                locale::t_static("Select Next Occurrence"),
                                 Box::new(SelectNext {
                                     replace_newest: false,
                                 }),
                             )
                             .action(
-                                locale::t("Expand Selection"),
+                                locale::t_static("Expand Selection"),
                                 Box::new(SelectLargerSyntaxNode),
                             )
                             .action(
-                                locale::t("Shrink Selection"),
+                                locale::t_static("Shrink Selection"),
                                 Box::new(SelectSmallerSyntaxNode),
                             )
                             .action(
-                                locale::t("Add Cursor Above"),
+                                locale::t_static("Add Cursor Above"),
                                 Box::new(AddSelectionAbove {
                                     skip_soft_wrap: true,
                                 }),
                             )
                             .action(
-                                locale::t("Add Cursor Below"),
+                                locale::t_static("Add Cursor Below"),
                                 Box::new(AddSelectionBelow {
                                     skip_soft_wrap: true,
                                 }),
@@ -299,38 +299,41 @@ impl Render for QuickActionBar {
                             .when(!disable_ai, |this| {
                                 this.separator().action_disabled_when(
                                     !has_selection,
-                                    locale::t("Add to Agent Thread"),
+                                    locale::t_static("Add to Agent Thread"),
                                     Box::new(AddSelectionToThread),
                                 )
                             })
                             .separator()
-                            .action(locale::t("Go to Symbol"), Box::new(ToggleOutline))
-                            .action(locale::t("Go to Line/Column"), Box::new(ToggleGoToLine))
+                            .action(locale::t_static("Go to Symbol"), Box::new(ToggleOutline))
+                            .action(
+                                locale::t_static("Go to Line/Column"),
+                                Box::new(ToggleGoToLine),
+                            )
                             .separator()
                             .action(
-                                locale::t("Next Problem"),
+                                locale::t_static("Next Problem"),
                                 Box::new(GoToDiagnostic::default()),
                             )
                             .action(
-                                locale::t("Previous Problem"),
+                                locale::t_static("Previous Problem"),
                                 Box::new(GoToPreviousDiagnostic::default()),
                             )
                             .separator()
                             .action_disabled_when(
                                 !has_diff_hunks,
-                                locale::t("Next Hunk"),
+                                locale::t_static("Next Hunk"),
                                 Box::new(GoToHunk),
                             )
                             .action_disabled_when(
                                 !has_diff_hunks,
-                                locale::t("Previous Hunk"),
+                                locale::t_static("Previous Hunk"),
                                 Box::new(GoToPreviousHunk),
                             )
                             .separator()
-                            .action(locale::t("Move Line Up"), Box::new(MoveLineUp))
-                            .action(locale::t("Move Line Down"), Box::new(MoveLineDown))
+                            .action(locale::t_static("Move Line Up"), Box::new(MoveLineUp))
+                            .action(locale::t_static("Move Line Down"), Box::new(MoveLineDown))
                             .action(
-                                locale::t("Duplicate Selection"),
+                                locale::t_static("Duplicate Selection"),
                                 Box::new(DuplicateLineDown),
                             )
                     });
@@ -355,7 +358,7 @@ impl Render for QuickActionBar {
                     IconButton::new("toggle_editor_settings_icon", IconName::Filter)
                         .icon_size(IconSize::Small)
                         .toggle_state(self.toggle_settings_handle.is_deployed()),
-                    Tooltip::text(locale::t("Editor Controls")),
+                    Tooltip::text(locale::t_static("Editor Controls")),
                 )
                 .anchor(Anchor::TopRight)
                 .with_handle(self.toggle_settings_handle.clone())
@@ -367,7 +370,7 @@ impl Render for QuickActionBar {
 
                             if supports_inlay_hints {
                                 menu = menu.toggleable_entry(
-                                    locale::t("Inlay Hints"),
+                                    locale::t_static("Inlay Hints"),
                                     inlay_hints_enabled,
                                     IconPosition::Start,
                                     Some(editor::actions::ToggleInlayHints.boxed_clone()),
@@ -388,7 +391,7 @@ impl Render for QuickActionBar {
                                 );
 
                                 menu = menu.toggleable_entry(
-                                    locale::t("Inline Values"),
+                                    locale::t_static("Inline Values"),
                                     inline_values_enabled,
                                     IconPosition::Start,
                                     Some(editor::actions::ToggleInlineValues.boxed_clone()),
@@ -411,7 +414,7 @@ impl Render for QuickActionBar {
 
                             if supports_semantic_tokens {
                                 menu = menu.toggleable_entry(
-                                    locale::t("Semantic Highlights"),
+                                    locale::t_static("Semantic Highlights"),
                                     semantic_highlights_enabled,
                                     IconPosition::Start,
                                     Some(editor::actions::ToggleSemanticHighlights.boxed_clone()),
@@ -434,7 +437,7 @@ impl Render for QuickActionBar {
 
                             if supports_code_lens {
                                 menu = menu.toggleable_entry(
-                                    locale::t("Code Lens"),
+                                    locale::t_static("Code Lens"),
                                     code_lens_enabled,
                                     IconPosition::Start,
                                     Some(editor::actions::ToggleCodeLens.boxed_clone()),
@@ -457,7 +460,7 @@ impl Render for QuickActionBar {
 
                             if supports_minimap {
                                 menu = menu.toggleable_entry(
-                                    locale::t("Minimap"),
+                                    locale::t_static("Minimap"),
                                     minimap_enabled,
                                     IconPosition::Start,
                                     Some(editor::actions::ToggleMinimap.boxed_clone()),
@@ -478,7 +481,7 @@ impl Render for QuickActionBar {
                             }
 
                             if has_edit_prediction_provider {
-                                let mut edit_prediction_entry = ContextMenuEntry::new(locale::t("Edit Predictions"))
+                                let mut edit_prediction_entry = ContextMenuEntry::new(locale::t_static("Edit Predictions"))
                                     .toggleable(IconPosition::Start, edit_predictions_enabled_at_cursor && show_edit_predictions)
                                     .disabled(!edit_predictions_enabled_at_cursor)
                                     .action(
@@ -499,7 +502,7 @@ impl Render for QuickActionBar {
                                     });
                                 if !edit_predictions_enabled_at_cursor {
                                     edit_prediction_entry = edit_prediction_entry.documentation_aside(DocumentationSide::Left, |_| {
-                                        Label::new(locale::t("You can't toggle edit predictions for this file as it is within the excluded files list.")).into_any_element()
+                                        Label::new(locale::t_static("You can't toggle edit predictions for this file as it is within the excluded files list.")).into_any_element()
                                     });
                                 }
 
@@ -510,7 +513,7 @@ impl Render for QuickActionBar {
 
                             if is_full {
                                 menu = menu.toggleable_entry(
-                                    locale::t("Diagnostics"),
+                                    locale::t_static("Diagnostics"),
                                     diagnostics_enabled,
                                     IconPosition::Start,
                                     Some(ToggleDiagnostics.boxed_clone()),
@@ -531,7 +534,7 @@ impl Render for QuickActionBar {
                                 );
 
                                 if supports_inline_diagnostics {
-                                    let mut inline_diagnostics_item = ContextMenuEntry::new(locale::t("Inline Diagnostics"))
+                                    let mut inline_diagnostics_item = ContextMenuEntry::new(locale::t_static("Inline Diagnostics"))
                                         .toggleable(IconPosition::Start, diagnostics_enabled && inline_diagnostics_enabled)
                                         .action(ToggleInlineDiagnostics.boxed_clone())
                                         .handler({
@@ -549,7 +552,7 @@ impl Render for QuickActionBar {
                                             }
                                         });
                                     if !diagnostics_enabled {
-                                        inline_diagnostics_item = inline_diagnostics_item.disabled(true).documentation_aside(DocumentationSide::Left, |_|  Label::new(locale::t("Inline diagnostics are not available until regular diagnostics are enabled.")).into_any_element());
+                                        inline_diagnostics_item = inline_diagnostics_item.disabled(true).documentation_aside(DocumentationSide::Left, |_|  Label::new(locale::t_static("Inline diagnostics are not available until regular diagnostics are enabled.")).into_any_element());
                                     }
                                     menu = menu.item(inline_diagnostics_item)
                                 }
@@ -558,7 +561,7 @@ impl Render for QuickActionBar {
                             }
 
                             menu = menu.toggleable_entry(
-                                locale::t("Line Numbers"),
+                                locale::t_static("Line Numbers"),
                                 show_line_numbers,
                                 IconPosition::Start,
                                 Some(editor::actions::ToggleLineNumbers.boxed_clone()),
@@ -579,7 +582,7 @@ impl Render for QuickActionBar {
                             );
 
                             menu = menu.toggleable_entry(
-                                locale::t("Selection Menu"),
+                                locale::t_static("Selection Menu"),
                                 selection_menu_enabled,
                                 IconPosition::Start,
                                 Some(editor::actions::ToggleSelectionMenu.boxed_clone()),
@@ -600,7 +603,7 @@ impl Render for QuickActionBar {
                             );
 
                             menu = menu.toggleable_entry(
-                                locale::t("Auto Signature Help"),
+                                locale::t_static("Auto Signature Help"),
                                 auto_signature_help_enabled,
                                 IconPosition::Start,
                                 Some(editor::actions::ToggleAutoSignatureHelp.boxed_clone()),
@@ -623,7 +626,7 @@ impl Render for QuickActionBar {
                             menu = menu.separator();
 
                             menu = menu.toggleable_entry(
-                                locale::t("Inline Git Blame"),
+                                locale::t_static("Inline Git Blame"),
                                 git_blame_inline_enabled,
                                 IconPosition::Start,
                                 Some(editor::actions::ToggleGitBlameInline.boxed_clone()),
@@ -644,7 +647,7 @@ impl Render for QuickActionBar {
                             );
 
                             menu = menu.toggleable_entry(
-                                locale::t("Column Git Blame"),
+                                locale::t_static("Column Git Blame"),
                                 show_git_blame_gutter,
                                 IconPosition::Start,
                                 Some(git::Blame.boxed_clone()),
@@ -666,7 +669,7 @@ impl Render for QuickActionBar {
 
                             if let Some(fs) = fs.clone() {
                                 menu = menu.toggleable_entry(
-                                    locale::t("Diff Against Default Branch"),
+                                    locale::t_static("Diff Against Default Branch"),
                                     diff_against_default_branch,
                                     IconPosition::Start,
                                     None,
@@ -689,7 +692,7 @@ impl Render for QuickActionBar {
                             menu = menu.separator();
 
                             menu = menu.toggleable_entry(
-                                locale::t("Vim Mode"),
+                                locale::t_static("Vim Mode"),
                                 vim_mode_enabled,
                                 IconPosition::Start,
                                 None,
@@ -703,7 +706,7 @@ impl Render for QuickActionBar {
                                 },
                             );
                             menu = menu.toggleable_entry(
-                                locale::t("Helix Mode"),
+                                locale::t_static("Helix Mode"),
                                 helix_mode_enabled,
                                 IconPosition::Start,
                                 None,

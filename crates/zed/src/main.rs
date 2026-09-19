@@ -133,7 +133,7 @@ fn files_not_created_on_launch(errors: HashMap<io::ErrorKind, Vec<&Path>>) {
                             gpui::PromptLevel::Critical,
                             &locale::t(message),
                             Some(&error_details),
-                            &[gpui::PromptButton::new(locale::t("Exit"))],
+                            &[gpui::PromptButton::new(locale::t_static("Exit"))],
                             cx,
                         );
 

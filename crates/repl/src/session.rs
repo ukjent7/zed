@@ -183,7 +183,7 @@ impl EditorBlock {
                         .icon_color(Color::Muted)
                         .size(ButtonSize::Compact)
                         .shape(IconButtonShape::Square)
-                        .tooltip(Tooltip::text(locale::t("Close output area")))
+                        .tooltip(Tooltip::text(locale::t_static("Close output area")))
                         .on_click(move |_, window, cx| {
                             if let BlockId::Custom(block_id) = block_id {
                                 (on_close)(block_id, window, cx)
@@ -928,7 +928,7 @@ impl Render for Session {
                     .as_ref()
                     .map(|info| SharedString::from(info.language_info.name.clone())),
                 Some(
-                    Button::new("interrupt", locale::t("Interrupt"))
+                    Button::new("interrupt", locale::t_static("Interrupt"))
                         .style(ButtonStyle::Subtle)
                         .on_click(cx.listener(move |session, _, _, cx| {
                             session.interrupt(cx);
@@ -970,7 +970,7 @@ impl Render for Session {
             .child(Label::new(self.kernel_specification.name()))
             .children(status_text.map(|status_text| Label::new(format!("({status_text})"))))
             .button(
-                Button::new("shutdown", locale::t("Shutdown"))
+                Button::new("shutdown", locale::t_static("Shutdown"))
                     .style(ButtonStyle::Subtle)
                     .disabled(self.kernel.is_shutting_down())
                     .on_click(cx.listener(move |session, _, window, cx| {

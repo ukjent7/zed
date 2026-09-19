@@ -237,7 +237,7 @@ pub(crate) fn show_no_more_matches(window: &mut Window, cx: &mut App) {
             workspace.show_toast(
                 Toast::new(
                     notification_id.clone(),
-                    locale::t("No more matches").to_string(),
+                    locale::t_static("No more matches").to_string(),
                 )
                 .autohide(),
                 cx,

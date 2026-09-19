@@ -69,28 +69,30 @@ impl DebuggerPaneItem {
     }
     pub(crate) fn tab_tooltip(self) -> SharedString {
         let tooltip = match self {
-            DebuggerPaneItem::Console => {
-                locale::t("Displays program output and allows manual input of debugger commands")
-            }
-            DebuggerPaneItem::Variables => locale::t(
+            DebuggerPaneItem::Console => locale::t_static(
+                "Displays program output and allows manual input of debugger commands",
+            ),
+            DebuggerPaneItem::Variables => locale::t_static(
                 "Shows current values of local and global variables in the current stack frame",
             ),
             DebuggerPaneItem::BreakpointList => {
-                locale::t("Lists all active breakpoints set in the code")
+                locale::t_static("Lists all active breakpoints set in the code")
             }
-            DebuggerPaneItem::Frames => {
-                locale::t("Displays the call stack, letting you navigate between function calls")
-            }
+            DebuggerPaneItem::Frames => locale::t_static(
+                "Displays the call stack, letting you navigate between function calls",
+            ),
             DebuggerPaneItem::Modules => {
-                locale::t("Shows all modules or libraries loaded by the program")
+                locale::t_static("Shows all modules or libraries loaded by the program")
             }
             DebuggerPaneItem::LoadedSources => {
-                locale::t("Lists all source files currently loaded and used by the debugger")
+                locale::t_static("Lists all source files currently loaded and used by the debugger")
             }
-            DebuggerPaneItem::Terminal => locale::t(
+            DebuggerPaneItem::Terminal => locale::t_static(
                 "Provides an interactive terminal session within the debugging environment",
             ),
-            DebuggerPaneItem::MemoryView => locale::t("Allows inspection of memory contents"),
+            DebuggerPaneItem::MemoryView => {
+                locale::t_static("Allows inspection of memory contents")
+            }
         };
         tooltip
     }

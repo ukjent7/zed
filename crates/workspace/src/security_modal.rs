@@ -85,7 +85,7 @@ impl Render for SecurityModal {
 
         let restricted_count = self.restricted_paths.len();
         let header_label: SharedString = if restricted_count == 1 {
-            locale::t("Unrecognized Project")
+            locale::t_static("Unrecognized Project")
         } else {
             locale::t_format(
                 "Unrecognized Projects ({count})",
@@ -189,13 +189,13 @@ impl Render for SecurityModal {
                     .child(
                         v_flex()
                             .child(
-                                Label::new(locale::t(
+                                Label::new(locale::t_static(
                                     "Untrusted projects are opened in Restricted Mode to protect your system.",
                                 ))
                                 .color(Color::Muted),
                             )
                             .child(
-                                Label::new(locale::t(
+                                Label::new(locale::t_static(
                                     "Review .zed/settings.json for any extensions or commands configured by this project.",
                                 ))
                                 .color(Color::Muted),
@@ -204,16 +204,16 @@ impl Render for SecurityModal {
                     .child(
                         v_flex()
                             .child(
-                                Label::new(locale::t("Restricted Mode prevents:"))
+                                Label::new(locale::t_static("Restricted Mode prevents:"))
                                     .color(Color::Muted),
                             )
-                            .child(ListBulletItem::new(locale::t(
+                            .child(ListBulletItem::new(locale::t_static(
                                 "Project settings from being applied",
                             )))
-                            .child(ListBulletItem::new(locale::t(
+                            .child(ListBulletItem::new(locale::t_static(
                                 "Language servers from running",
                             )))
-                            .child(ListBulletItem::new(locale::t(
+                            .child(ListBulletItem::new(locale::t_static(
                                 "MCP Server integrations from installing",
                             ))),
                     )
@@ -238,7 +238,7 @@ impl Render for SecurityModal {
                                             "trust-parents",
                                             ToggleState::from(self.trust_parents),
                                         )
-                                        .label(locale::t("Trust all projects in"))
+                                        .label(locale::t_static("Trust all projects in"))
                                         .on_click(cx.listener(
                                             |security_modal, state: &ToggleState, _, cx| {
                                                 let trust_parents = state.selected();
@@ -285,7 +285,7 @@ impl Render for SecurityModal {
                     .gap_1()
                     .justify_end()
                     .child(
-                        Button::new("rm", locale::t("Stay in Restricted Mode"))
+                        Button::new("rm", locale::t_static("Stay in Restricted Mode"))
                             .key_binding(
                                 KeyBinding::for_action(
                                     &ToggleWorktreeSecurity,
@@ -300,7 +300,7 @@ impl Render for SecurityModal {
                             })),
                     )
                     .child(
-                        Button::new("tc", locale::t("Trust and Continue"))
+                        Button::new("tc", locale::t_static("Trust and Continue"))
                             .style(ButtonStyle::Filled)
                             .layer(ui::ElevationIndex::ModalSurface)
                             .key_binding(
@@ -325,7 +325,7 @@ impl SecurityModal {
         cx: &mut Context<Self>,
     ) -> Self {
         let trust_path_input =
-            cx.new(|cx| InputField::new(window, cx, locale::t("Folder to trust").as_str()));
+            cx.new(|cx| InputField::new(window, cx, locale::t_static("Folder to trust").as_str()));
         let mut this = Self {
             worktree_store,
             remote_host: remote_host.map(|host| host.into()),
@@ -367,7 +367,7 @@ impl SecurityModal {
         match available_parents.len() {
             0 => {
                 if has_restricted_files {
-                    Some(locale::t("Trust all single files"))
+                    Some(locale::t_static("Trust all single files"))
                 } else {
                     None
                 }
@@ -382,7 +382,7 @@ impl SecurityModal {
                         .to_string(),
                 )],
             )),
-            _ => Some(locale::t("Trust all projects in the parent folders")),
+            _ => Some(locale::t_static("Trust all projects in the parent folders")),
         }
     }
 
@@ -528,7 +528,7 @@ fn validate_trust_scope(
 ) -> Result<PathBuf, SharedString> {
     let trimmed = typed.trim();
     if trimmed.is_empty() {
-        return Err(locale::t("Enter a folder to trust"));
+        return Err(locale::t_static("Enter a folder to trust"));
     }
     let expanded = match (trimmed.strip_prefix('~'), home_dir) {
         (Some(rest), Some(home_dir)) => home_dir.join(
@@ -538,10 +538,10 @@ fn validate_trust_scope(
         _ => PathBuf::from(trimmed),
     };
     if !util::paths::is_absolute(&expanded.to_string_lossy(), path_style) {
-        return Err(locale::t("Enter an absolute folder path"));
+        return Err(locale::t_static("Enter an absolute folder path"));
     }
     if !project.starts_with(&expanded) {
-        return Err(locale::t("Must be a parent folder of the project"));
+        return Err(locale::t_static("Must be a parent folder of the project"));
     }
     Ok(expanded)
 }

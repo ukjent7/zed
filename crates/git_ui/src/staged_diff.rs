@@ -70,7 +70,7 @@ impl DiffHunkRenderer for StagedDiffHunkRenderer {
             .child(
                 Button::new(("unstage", row as u64), "Unstage")
                     .alpha(if status.is_pending() { 0.66 } else { 1.0 })
-                    .tooltip(Tooltip::text(locale::t("Unstage Hunk")))
+                    .tooltip(Tooltip::text(locale::t_static("Unstage Hunk")))
                     .on_click({
                         let editor = editor.clone();
                         move |_event, window, cx| {
@@ -610,7 +610,7 @@ impl Render for StagedDiffToolbar {
                             .icon_size(IconSize::Small)
                             .disabled(!button_states.prev_next)
                             .tooltip(Tooltip::for_action_title_in(
-                                locale::t("Go to Previous Hunk"),
+                                locale::t_static("Go to Previous Hunk"),
                                 &GoToPreviousHunk,
                                 &focus_handle,
                             ))
@@ -623,7 +623,7 @@ impl Render for StagedDiffToolbar {
                             .icon_size(IconSize::Small)
                             .disabled(!button_states.prev_next)
                             .tooltip(Tooltip::for_action_title_in(
-                                locale::t("Go to Next Hunk"),
+                                locale::t_static("Go to Next Hunk"),
                                 &GoToHunk,
                                 &focus_handle,
                             ))
@@ -637,9 +637,9 @@ impl Render for StagedDiffToolbar {
                 h_group_sm()
                     .when(button_states.selection, |this| {
                         this.child(
-                            Button::new("unstage", locale::t("Unstage"))
+                            Button::new("unstage", locale::t_static("Unstage"))
                                 .disabled(!button_states.unstage)
-                                .tooltip(Tooltip::text(locale::t("Unstage Selected Hunks")))
+                                .tooltip(Tooltip::text(locale::t_static("Unstage Selected Hunks")))
                                 .on_click(cx.listener(|this, _, window, cx| {
                                     this.unstage_selected_staged_hunks(false, window, cx)
                                 })),
@@ -647,10 +647,10 @@ impl Render for StagedDiffToolbar {
                     })
                     .when(!button_states.selection, |this| {
                         this.child(
-                            Button::new("unstage", locale::t("Unstage"))
+                            Button::new("unstage", locale::t_static("Unstage"))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
-                                    locale::t("Unstage and Go to Next Hunk"),
+                                    locale::t_static("Unstage and Go to Next Hunk"),
                                     &UnstageAndNext,
                                     &focus_handle,
                                 ))
@@ -662,11 +662,11 @@ impl Render for StagedDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("unstage-all", locale::t("Unstage All"))
+                Button::new("unstage-all", locale::t_static("Unstage All"))
                     .width(rems_from_px(80_f32))
                     .disabled(!button_states.unstage_all)
                     .tooltip(Tooltip::for_action_title_in(
-                        locale::t("Unstage All Changes"),
+                        locale::t_static("Unstage All Changes"),
                         &UnstageAll,
                         &focus_handle,
                     ))
@@ -674,9 +674,9 @@ impl Render for StagedDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("commit", locale::t("Commit"))
+                Button::new("commit", locale::t_static("Commit"))
                     .tooltip(Tooltip::for_action_title_in(
-                        locale::t("Commit"),
+                        locale::t_static("Commit"),
                         &Commit,
                         &focus_handle,
                     ))

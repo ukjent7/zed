@@ -365,23 +365,25 @@ impl Render for LanguageServerPrompt {
                                             "copy-description",
                                             request.message.clone(),
                                         )
-                                        .tooltip_label(locale::t("Copy Description")),
+                                        .tooltip_label(locale::t_static("Copy Description")),
                                     )
                                     .child(
                                         IconButton::new(close_id, close_icon)
                                             .tooltip(move |_window, cx| {
                                                 if suppress {
                                                     Tooltip::with_meta(
-                                                        locale::t("Suppress"),
+                                                        locale::t_static("Suppress"),
                                                         Some(&SuppressNotification),
-                                                        locale::t("Click to close"),
+                                                        locale::t_static("Click to close"),
                                                         cx,
                                                     )
                                                 } else {
                                                     Tooltip::with_meta(
-                                                        locale::t("Close"),
+                                                        locale::t_static("Close"),
                                                         Some(&menu::Cancel),
-                                                        locale::t("Suppress with shift-click"),
+                                                        locale::t_static(
+                                                            "Suppress with shift-click",
+                                                        ),
                                                         cx,
                                                     )
                                                 }
@@ -1000,7 +1002,7 @@ pub mod simple_message_notification {
                 .when_some(copy_text, |el, text| {
                     el.child(
                         CopyButton::new("copy-notification-message", text)
-                            .tooltip_label(locale::t("Copy Message")),
+                            .tooltip_label(locale::t_static("Copy Message")),
                     )
                 })
                 .when(show_close_button, |el| {
@@ -1009,20 +1011,24 @@ pub mod simple_message_notification {
                             .tooltip(move |_window, cx| {
                                 if suppress {
                                     Tooltip::with_meta(
-                                        locale::t("Suppress"),
+                                        locale::t_static("Suppress"),
                                         Some(&SuppressNotification),
-                                        locale::t("Click to Close"),
+                                        locale::t_static("Click to Close"),
                                         cx,
                                     )
                                 } else if show_suppress_button {
                                     Tooltip::with_meta(
-                                        locale::t("Close"),
+                                        locale::t_static("Close"),
                                         Some(&menu::Cancel),
-                                        locale::t("Shift-click to Suppress"),
+                                        locale::t_static("Shift-click to Suppress"),
                                         cx,
                                     )
                                 } else {
-                                    Tooltip::for_action(locale::t("Close"), &menu::Cancel, cx)
+                                    Tooltip::for_action(
+                                        locale::t_static("Close"),
+                                        &menu::Cancel,
+                                        cx,
+                                    )
                                 }
                             })
                             .on_click(cx.listener(move |_, _, _, cx| {

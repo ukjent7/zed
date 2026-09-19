@@ -100,22 +100,31 @@ impl UpdateButton {
     }
 
     pub fn checking() -> Self {
-        Self::new(IconName::LoadCircle, locale::t("Checking for Zed Updates…"))
-            .icon_animate(true)
-            .disabled(true)
+        Self::new(
+            IconName::LoadCircle,
+            locale::t_static("Checking for Zed Updates…"),
+        )
+        .icon_animate(true)
+        .disabled(true)
     }
 
     pub fn downloading(progress: Option<f32>) -> Self {
-        Self::new(IconName::Download, locale::t("Downloading Zed Update…"))
-            .progress(progress)
-            .disabled(true)
+        Self::new(
+            IconName::Download,
+            locale::t_static("Downloading Zed Update…"),
+        )
+        .progress(progress)
+        .disabled(true)
     }
 
     pub fn installing(version: impl Into<SharedString>) -> Self {
-        Self::new(IconName::LoadCircle, locale::t("Installing Zed Update…"))
-            .icon_animate(true)
-            .tooltip(version)
-            .disabled(true)
+        Self::new(
+            IconName::LoadCircle,
+            locale::t_static("Installing Zed Update…"),
+        )
+        .icon_animate(true)
+        .tooltip(version)
+        .disabled(true)
     }
 
     pub fn up_to_date() -> Self {
@@ -123,13 +132,13 @@ impl UpdateButton {
     }
 
     pub fn updated(version: impl Into<SharedString>) -> Self {
-        Self::new(IconName::Download, locale::t("Restart to Update"))
+        Self::new(IconName::Download, locale::t_static("Restart to Update"))
             .tooltip(version)
             .with_dismiss()
     }
 
     pub fn errored(error: impl Into<SharedString>) -> Self {
-        Self::new(IconName::Warning, locale::t("Failed to Update"))
+        Self::new(IconName::Warning, locale::t_static("Failed to Update"))
             .icon_color(Color::Warning)
             .tooltip(error)
             .with_dismiss()
@@ -221,7 +230,7 @@ impl RenderOnce for UpdateButton {
                         IconButton::new(dismiss_button_id, IconName::Close)
                             .icon_size(IconSize::Indicator)
                             .when_some(self.on_dismiss, |this, handler| this.on_click(handler))
-                            .tooltip(Tooltip::text(locale::t("Dismiss"))),
+                            .tooltip(Tooltip::text(locale::t_static("Dismiss"))),
                     ),
                 )
             })

@@ -713,9 +713,11 @@ fn initialize_file_watcher(fs: &dyn Fs, window: &mut Window, cx: &mut Context<Wo
         );
         let prompt = window.prompt(
             PromptLevel::Critical,
-            &locale::t("Could not start inotify"),
+            &locale::t_static("Could not start inotify"),
             Some(&message),
-            &[gpui::PromptButton::new(locale::t("Troubleshoot and Quit"))],
+            &[gpui::PromptButton::new(locale::t_static(
+                "Troubleshoot and Quit",
+            ))],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -744,9 +746,11 @@ fn initialize_file_watcher(fs: &dyn Fs, window: &mut Window, cx: &mut Context<Wo
         );
         let prompt = window.prompt(
             PromptLevel::Critical,
-            &locale::t("Could not start ReadDirectoryChangesW"),
+            &locale::t_static("Could not start ReadDirectoryChangesW"),
             Some(&message),
-            &[gpui::PromptButton::new(locale::t("Troubleshoot and Quit"))],
+            &[gpui::PromptButton::new(locale::t_static(
+                "Troubleshoot and Quit",
+            ))],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -794,11 +798,11 @@ fn show_software_emulation_warning_if_needed(
         );
         let prompt = window.prompt(
             PromptLevel::Critical,
-            &locale::t("Unsupported GPU"),
+            &locale::t_static("Unsupported GPU"),
             Some(&message),
             &[
-                gpui::PromptButton::new(locale::t("Skip")),
-                gpui::PromptButton::new(locale::t("Troubleshoot and Quit")),
+                gpui::PromptButton::new(locale::t_static("Skip")),
+                gpui::PromptButton::new(locale::t_static("Troubleshoot and Quit")),
             ],
             cx,
         );
@@ -1330,7 +1334,7 @@ fn register_actions(
                 Ok(())
             })
             .detach_and_prompt_err(
-                locale::t("Error registering zed:// scheme").as_str(),
+                locale::t_static("Error registering zed:// scheme").as_str(),
                 window,
                 cx,
                 |_, _, _| None,
@@ -1664,14 +1668,14 @@ fn open_about_window(cx: &mut App) {
                             .child(Headline::new(self.message.clone()))
                             .when_some(self.commit.clone(), |this, commit| {
                                 this.child(
-                                    Label::new(locale::t("Commit"))
+                                    Label::new(locale::t_static("Commit"))
                                         .color(Color::Muted)
                                         .size(LabelSize::XSmall),
                                 )
                                 .child(Label::new(commit).size(LabelSize::Small))
                             })
                             .child(
-                                Label::new(locale::t("Version"))
+                                Label::new(locale::t_static("Version"))
                                     .color(Color::Muted)
                                     .size(LabelSize::XSmall),
                             )
@@ -1689,7 +1693,7 @@ fn open_about_window(cx: &mut App) {
                                         window.remove_window();
                                     }))
                                     .child(
-                                        Button::new("ok", locale::t("OK"))
+                                        Button::new("ok", locale::t_static("OK"))
                                             .full_width()
                                             .style(ButtonStyle::OutlinedGhost)
                                             .toggle_state(ok_is_focused)
@@ -1709,7 +1713,7 @@ fn open_about_window(cx: &mut App) {
                                         },
                                     ))
                                     .child(
-                                        Button::new("copy", locale::t("Copy"))
+                                        Button::new("copy", locale::t_static("Copy"))
                                             .full_width()
                                             .style(ButtonStyle::Tinted(TintColor::Accent))
                                             .toggle_state(copy_is_focused)
@@ -1814,11 +1818,11 @@ fn quit(_: &Quit, cx: &mut App) {
                 .update(cx, |_, window, cx| {
                     window.prompt(
                         PromptLevel::Info,
-                        &locale::t("Are you sure you want to quit?"),
+                        &locale::t_static("Are you sure you want to quit?"),
                         None,
                         &[
-                            gpui::PromptButton::new(locale::t("Quit")),
-                            gpui::PromptButton::cancel(locale::t("Cancel")),
+                            gpui::PromptButton::new(locale::t_static("Quit")),
+                            gpui::PromptButton::cancel(locale::t_static("Cancel")),
                         ],
                         cx,
                     )
@@ -1926,7 +1930,7 @@ fn open_log_file(workspace: &mut Workspace, window: &mut Window, cx: &mut Contex
             });
 
             let buffer = cx.new(|cx| {
-                MultiBuffer::singleton(buffer, cx).with_title(locale::t("Log").to_string())
+                MultiBuffer::singleton(buffer, cx).with_title(locale::t_static("Log").to_string())
             });
 
             let editor = cx
@@ -1992,7 +1996,7 @@ fn notify_settings_errors(result: settings::SettingsParseResult, is_user: bool, 
                             ),
                             cx,
                         )
-                        .primary_message(locale::t("Open Settings File"))
+                        .primary_message(locale::t_static("Open Settings File"))
                         .primary_icon(IconName::Settings)
                         .primary_on_click(|window, cx| {
                             window.dispatch_action(zed_actions::OpenSettingsFile.boxed_clone(), cx);
@@ -2025,7 +2029,7 @@ fn notify_settings_errors(result: settings::SettingsParseResult, is_user: bool, 
                             ),
                             cx,
                         )
-                        .primary_message(locale::t("Open Settings File"))
+                        .primary_message(locale::t_static("Open Settings File"))
                         .primary_icon(IconName::Settings)
                         .primary_on_click(|window, cx| {
                             window.dispatch_action(zed_actions::OpenSettingsFile.boxed_clone(), cx);
@@ -2062,7 +2066,7 @@ fn init_global_config_error_notifications(cx: &mut App) {
                     show_app_notification(id, cx, move |cx| {
                         cx.new(|cx| {
                             MessageNotification::new(message.clone(), cx)
-                                .primary_message(locale::t("Open File"))
+                                .primary_message(locale::t_static("Open File"))
                                 .primary_icon(IconName::Settings)
                                 .primary_on_click(move |window, cx| {
                                     on_click(window, cx);
@@ -2316,7 +2320,7 @@ fn show_keymap_file_json_error(
     show_app_notification(notification_id, cx, move |cx| {
         cx.new(|cx| {
             MessageNotification::new(message.clone(), cx)
-                .primary_message(locale::t("Open Keymap File"))
+                .primary_message(locale::t_static("Open Keymap File"))
                 .primary_icon(IconName::Settings)
                 .primary_on_click(|window, cx| {
                     window.dispatch_action(zed_actions::OpenKeymapFile.boxed_clone(), cx);
@@ -2393,7 +2397,7 @@ fn reload_keymaps(cx: &mut App, mut user_key_bindings: Vec<KeyBinding>) {
     // On Windows, this is set in the `update_jump_list` method of the `HistoryManager`.
     #[cfg(not(target_os = "windows"))]
     cx.set_dock_menu(vec![gpui::MenuItem::action(
-        locale::t("New Window"),
+        locale::t_static("New Window"),
         workspace::NewWindow,
     )]);
     // todo: nicer api here?

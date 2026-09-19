@@ -199,7 +199,7 @@ impl Output {
                     el.child(
                         IconButton::new(ElementId::Name("copy-output".into()), IconName::Copy)
                             .style(ButtonStyle::Transparent)
-                            .tooltip(Tooltip::text(locale::t("Copy Output")))
+                            .tooltip(Tooltip::text(locale::t_static("Copy Output")))
                             .on_click(move |_, window, cx| {
                                 let clipboard_content = v.clipboard_content(window, cx);
 
@@ -217,7 +217,7 @@ impl Output {
                             IconName::FileTextOutlined,
                         )
                         .style(ButtonStyle::Transparent)
-                        .tooltip(Tooltip::text(locale::t("Open in Buffer")))
+                        .tooltip(Tooltip::text(locale::t_static("Open in Buffer")))
                         .on_click({
                             let workspace = workspace.clone();
                             move |_, window, cx| {
@@ -323,7 +323,7 @@ impl Output {
                             let full_error = format!("{}: {}\n{}", ename, evalue, traceback_text);
 
                             CopyButton::new("copy-full-error", full_error)
-                                .tooltip_label(locale::t("Copy Full Error"))
+                                .tooltip_label(locale::t_static("Copy Full Error"))
                         })
                         .child(
                             IconButton::new(
@@ -331,7 +331,7 @@ impl Output {
                                 IconName::FileTextOutlined,
                             )
                             .style(ButtonStyle::Transparent)
-                            .tooltip(Tooltip::text(locale::t("Open Full Error in Buffer")))
+                            .tooltip(Tooltip::text(locale::t_static("Open Full Error in Buffer")))
                             .on_click({
                                 let ename = err.ename.clone();
                                 let evalue = err.evalue.clone();
@@ -403,7 +403,7 @@ impl Output {
                     content: cx.new(|_| json_view),
                     display_id,
                 },
-                Err(_) => Output::Message(locale::t("Failed to parse JSON").to_string()),
+                Err(_) => Output::Message(locale::t_static("Failed to parse JSON").to_string()),
             },
             Some(MimeType::Plain(text)) => Output::Plain {
                 content: cx.new(|cx| TerminalOutput::from(text, window, cx)),
@@ -447,7 +447,7 @@ impl Output {
                 },
             },
             // Any other media types are not supported
-            _ => Output::Message(locale::t("Unsupported media type").to_string()),
+            _ => Output::Message(locale::t_static("Unsupported media type").to_string()),
         }
     }
 }
@@ -543,7 +543,7 @@ impl ExecutionView {
             let editor = cx.new(|cx| {
                 let mut editor = Editor::single_line(window, cx);
                 editor.set_placeholder_text(
-                    locale::t("Type here and press Enter").as_str(),
+                    locale::t_static("Type here and press Enter").as_str(),
                     window,
                     cx,
                 );
@@ -763,9 +763,11 @@ impl ExecutionView {
 impl Render for ExecutionView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let status = match &self.status {
-            ExecutionStatus::ConnectingToKernel => Label::new(locale::t("Connecting to kernel..."))
-                .color(Color::Muted)
-                .into_any_element(),
+            ExecutionStatus::ConnectingToKernel => {
+                Label::new(locale::t_static("Connecting to kernel..."))
+                    .color(Color::Muted)
+                    .into_any_element()
+            }
             ExecutionStatus::Executing => h_flex()
                 .gap_2()
                 .child(
@@ -774,24 +776,26 @@ impl Render for ExecutionView {
                         .color(Color::Muted)
                         .with_rotate_animation(3),
                 )
-                .child(Label::new(locale::t("Executing...")).color(Color::Muted))
+                .child(Label::new(locale::t_static("Executing...")).color(Color::Muted))
                 .into_any_element(),
             ExecutionStatus::Finished => Icon::new(IconName::Check)
                 .size(IconSize::Small)
                 .into_any_element(),
-            ExecutionStatus::Unknown => Label::new(locale::t("Unknown status"))
+            ExecutionStatus::Unknown => Label::new(locale::t_static("Unknown status"))
                 .color(Color::Muted)
                 .into_any_element(),
-            ExecutionStatus::ShuttingDown => Label::new(locale::t("Kernel shutting down..."))
+            ExecutionStatus::ShuttingDown => {
+                Label::new(locale::t_static("Kernel shutting down..."))
+                    .color(Color::Muted)
+                    .into_any_element()
+            }
+            ExecutionStatus::Restarting => Label::new(locale::t_static("Kernel restarting..."))
                 .color(Color::Muted)
                 .into_any_element(),
-            ExecutionStatus::Restarting => Label::new(locale::t("Kernel restarting..."))
+            ExecutionStatus::Shutdown => Label::new(locale::t_static("Kernel shutdown"))
                 .color(Color::Muted)
                 .into_any_element(),
-            ExecutionStatus::Shutdown => Label::new(locale::t("Kernel shutdown"))
-                .color(Color::Muted)
-                .into_any_element(),
-            ExecutionStatus::Queued => Label::new(locale::t("Queued..."))
+            ExecutionStatus::Queued => Label::new(locale::t_static("Queued..."))
                 .color(Color::Muted)
                 .into_any_element(),
             ExecutionStatus::KernelErrored(error) => Label::new(locale::t_format(

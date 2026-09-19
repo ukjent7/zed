@@ -72,7 +72,7 @@ impl PickerDelegate for ThemePickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Search theme…").as_str().into()
+        locale::t_static("Search theme…").as_str().into()
     }
 
     fn update_matches(

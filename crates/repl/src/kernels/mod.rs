@@ -356,9 +356,9 @@ impl KernelSpecification {
                 .as_ref()
                 .map(|kind| SharedString::from(kind.clone())),
             Self::Jupyter(_) => Some("Jupyter".into()),
-            Self::JupyterServer(_) => Some(locale::t("Jupyter Server")),
-            Self::SshRemote(_) => Some(locale::t("SSH Remote")),
-            Self::WslRemote(_) => Some(locale::t("WSL Remote")),
+            Self::JupyterServer(_) => Some(locale::t_static("Jupyter Server")),
+            Self::SshRemote(_) => Some(locale::t_static("SSH Remote")),
+            Self::WslRemote(_) => Some(locale::t_static("WSL Remote")),
         }
     }
 

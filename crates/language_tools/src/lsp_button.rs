@@ -251,12 +251,12 @@ impl LanguageServerState {
                                         .size(IconSize::XSmall),
                                 )
                                 .child(
-                                    Label::new(locale::t("Project is in Restricted Mode"))
+                                    Label::new(locale::t_static("Project is in Restricted Mode"))
                                         .size(LabelSize::Small),
                                 ),
                         )
                         .child(
-                            Label::new(locale::t(
+                            Label::new(locale::t_static(
                                 "Language Servers can't run until you trust this project.",
                             ))
                             .size(LabelSize::Small)
@@ -421,7 +421,7 @@ impl LanguageServerState {
                             let workspace_for_message = workspace.clone();
                             let message_for_handler = message.clone();
                             let server_name_for_message = submenu_server_name.clone();
-                            let view_message_label = locale::t("View Message");
+                            let view_message_label = locale::t_static("View Message");
                             submenu = submenu.entry(view_message_label, None, move |window, cx| {
                                 let Some(create_buffer) = workspace_for_message
                                     .update(cx, |workspace, cx| {
@@ -482,7 +482,7 @@ impl LanguageServerState {
                             let lsp_logs_for_debug = lsp_logs.clone();
                             let workspace_for_debug = workspace.clone();
                             let server_selector_for_debug = server_selector.clone();
-                            let view_logs_label = locale::t("View Logs");
+                            let view_logs_label = locale::t_static("View Logs");
                             submenu = submenu.entry(view_logs_label, None, move |window, cx| {
                                 lsp_log_view::open(
                                     &lsp_logs_for_debug,
@@ -498,7 +498,7 @@ impl LanguageServerState {
                         let workspace_for_restart = workspace.clone();
                         let lsp_store_for_restart = lsp_store.clone();
                         let server_name_for_restart = submenu_server_name.clone();
-                        let restart_server_label = locale::t("Restart Server");
+                        let restart_server_label = locale::t_static("Restart Server");
                         submenu = submenu.entry(restart_server_label, None, move |_window, cx| {
                             let Some(workspace) = workspace_for_restart.upgrade() else {
                                 return;
@@ -589,7 +589,7 @@ impl LanguageServerState {
                             let lsp_store_for_stop = lsp_store.clone();
                             let server_selector_for_stop = server_selector.clone();
 
-                            let stop_server_label = locale::t("Stop Server");
+                            let stop_server_label = locale::t_static("Stop Server");
                             submenu = submenu.entry(stop_server_label, None, move |_window, cx| {
                                 lsp_store_for_stop
                                     .update(cx, |lsp_store, cx| {
@@ -1472,12 +1472,12 @@ impl Render for LspButton {
                         .when_some(indicator, IconButton::indicator)
                         .icon_size(IconSize::Small)
                         .tab_index(0isize)
-                        .aria_label(locale::t("Language Servers"))
+                        .aria_label(locale::t_static("Language Servers"))
                         .when(is_restricted, |s| s.icon_color(Color::Warning))
                         .indicator_border_color(Some(cx.theme().colors().status_bar_background)),
                     move |_window, cx| {
                         Tooltip::with_meta(
-                            locale::t("Language Servers"),
+                            locale::t_static("Language Servers"),
                             Some(&ToggleMenu),
                             locale::t_static(description),
                             cx,

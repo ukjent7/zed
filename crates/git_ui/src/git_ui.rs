@@ -1066,14 +1066,17 @@ mod remote_button {
                         .when_some(keybinding_target.clone(), |el, keybinding_target| {
                             el.context(keybinding_target)
                         })
-                        .action(locale::t("Fetch"), git::Fetch.boxed_clone())
-                        .action(locale::t("Fetch From"), git::FetchFrom.boxed_clone())
-                        .action(locale::t("Pull"), git::Pull.boxed_clone())
-                        .action(locale::t("Pull (Rebase)"), git::PullRebase.boxed_clone())
+                        .action(locale::t_static("Fetch"), git::Fetch.boxed_clone())
+                        .action(locale::t_static("Fetch From"), git::FetchFrom.boxed_clone())
+                        .action(locale::t_static("Pull"), git::Pull.boxed_clone())
+                        .action(
+                            locale::t_static("Pull (Rebase)"),
+                            git::PullRebase.boxed_clone(),
+                        )
                         .separator()
-                        .action(locale::t("Push"), git::Push.boxed_clone())
-                        .action(locale::t("Push To"), git::PushTo.boxed_clone())
-                        .action(locale::t("Force Push"), git::ForcePush.boxed_clone())
+                        .action(locale::t_static("Push"), git::Push.boxed_clone())
+                        .action(locale::t_static("Push To"), git::PushTo.boxed_clone())
+                        .action(locale::t_static("Force Push"), git::ForcePush.boxed_clone())
                 }))
             })
             .anchor(Anchor::TopRight)
@@ -1332,14 +1335,14 @@ impl Render for GitCloneModal {
                     .rounded_b_sm()
                     .bg(cx.theme().colors().editor_background)
                     .child(
-                        Label::new(locale::t(
+                        Label::new(locale::t_static(
                             "Clone a repository from GitHub or other sources.",
                         ))
                         .color(Color::Muted)
                         .size(LabelSize::Small),
                     )
                     .child(
-                        Button::new("learn-more", locale::t("Learn More"))
+                        Button::new("learn-more", locale::t_static("Learn More"))
                             .label_size(LabelSize::Small)
                             .end_icon(Icon::new(IconName::ArrowUpRight).size(IconSize::XSmall))
                             .on_click(|_, _, cx| {

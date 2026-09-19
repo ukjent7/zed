@@ -2515,7 +2515,7 @@ impl GitGraph {
         let context_menu = ContextMenu::build(window, cx, |mut context_menu, _window, _cx| {
             context_menu = context_menu
                 .context(focus_handle)
-                .header(locale::t("Columns"));
+                .header(locale::t_static("Columns"));
             for (col_idx, label) in columns.iter().enumerate() {
                 let is_visible = !filter.get(col_idx).copied().unwrap_or(false);
                 // Disable hiding the last remaining visible column.
@@ -2590,7 +2590,7 @@ impl GitGraph {
                             })
                             .tooltip(move |_window, cx| {
                                 Tooltip::for_action_in(
-                                    locale::t("Match Case Sensitivity"),
+                                    locale::t_static("Match Case Sensitivity"),
                                     &ToggleCaseSensitive,
                                     &focus_handle,
                                     cx,
@@ -2609,7 +2609,7 @@ impl GitGraph {
                             .icon_size(IconSize::Small)
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    locale::t("Select Previous Match"),
+                                    locale::t_static("Select Previous Match"),
                                     &SelectPreviousMatch,
                                     &focus_handle,
                                     cx,
@@ -2632,7 +2632,7 @@ impl GitGraph {
                             .icon_size(IconSize::Small)
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    locale::t("Select Next Match"),
+                                    locale::t_static("Select Next Match"),
                                     &SelectNextMatch,
                                     &focus_handle,
                                     cx,
@@ -3149,7 +3149,7 @@ impl GitGraph {
             .child(Divider::horizontal())
             .child(
                 h_flex().p_1p5().w_full().child(
-                    Button::new("view-commit", locale::t("View Commit"))
+                    Button::new("view-commit", locale::t_static("View Commit"))
                         .full_width()
                         .start_icon(
                             Icon::new(IconName::GitCommit)
@@ -3801,20 +3801,20 @@ impl Render for GitGraph {
                                     if !is_path_history {
                                         TableRow::from_vec(
                                             vec![
-                                                Label::new(locale::t("Graph"))
+                                                Label::new(locale::t_static("Graph"))
                                                     .color(Color::Muted)
                                                     .truncate()
                                                     .into_any_element(),
-                                                Label::new(locale::t("Description"))
+                                                Label::new(locale::t_static("Description"))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(locale::t("Date"))
+                                                Label::new(locale::t_static("Date"))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(locale::t("Author"))
+                                                Label::new(locale::t_static("Author"))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(locale::t("Commit"))
+                                                Label::new(locale::t_static("Commit"))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                             ],
@@ -3823,16 +3823,16 @@ impl Render for GitGraph {
                                     } else {
                                         TableRow::from_vec(
                                             vec![
-                                                Label::new(locale::t("Description"))
+                                                Label::new(locale::t_static("Description"))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(locale::t("Date"))
+                                                Label::new(locale::t_static("Date"))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(locale::t("Author"))
+                                                Label::new(locale::t_static("Author"))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(locale::t("Commit"))
+                                                Label::new(locale::t_static("Commit"))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                             ],

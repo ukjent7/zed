@@ -70,7 +70,7 @@ impl MoveToApplicationsRequest {
         workspace: WeakEntity<MultiWorkspace>,
         cx: &mut AsyncWindowContext,
     ) -> Result<()> {
-        let title = locale::t("Move Zed to Applications?");
+        let title = locale::t_static("Move Zed to Applications?");
         let detail = locale::t_static(concat!(
             "Zed is running from a temporary location. ",
             "Move it to Applications to finish installing it."
@@ -81,9 +81,9 @@ impl MoveToApplicationsRequest {
                 &title,
                 Some(detail.as_str()),
                 &[
-                    PromptButton::ok(locale::t("Yes")),
-                    PromptButton::cancel(locale::t("No")),
-                    PromptButton::new(locale::t("Don't ask me again")),
+                    PromptButton::ok(locale::t_static("Yes")),
+                    PromptButton::cancel(locale::t_static("No")),
+                    PromptButton::new(locale::t_static("Don't ask me again")),
                 ],
             )
             .await?;
@@ -106,9 +106,9 @@ impl MoveToApplicationsRequest {
                         .ok();
                     cx.prompt(
                         PromptLevel::Critical,
-                        &locale::t("Failed to move Zed to Applications"),
+                        &locale::t_static("Failed to move Zed to Applications"),
                         Some(&error.to_string()),
-                        &[PromptButton::ok(locale::t("OK"))],
+                        &[PromptButton::ok(locale::t_static("OK"))],
                     )
                     .await
                     .log_err();
@@ -181,7 +181,7 @@ impl Render for InstallingZedModal {
                     .py_3()
                     .border_b_1()
                     .border_color(theme.colors().border_variant)
-                    .child(Label::new(locale::t("Installing Zed…"))),
+                    .child(Label::new(locale::t_static("Installing Zed…"))),
             )
             .child(
                 h_flex()
@@ -199,9 +199,9 @@ impl Render for InstallingZedModal {
                     .child(
                         v_flex()
                             .gap_1()
-                            .child(Label::new(locale::t("Moving Zed to Applications")))
+                            .child(Label::new(locale::t_static("Moving Zed to Applications")))
                             .child(
-                                Label::new(locale::t(
+                                Label::new(locale::t_static(
                                     "Zed will reopen when installation is complete.",
                                 ))
                                 .size(LabelSize::Small)

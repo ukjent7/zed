@@ -74,7 +74,7 @@ impl PickerDelegate for FontPickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Search fonts…").as_str().into()
+        locale::t_static("Search fonts…").as_str().into()
     }
 
     fn update_matches(

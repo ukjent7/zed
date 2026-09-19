@@ -340,7 +340,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
     Vim::action(editor, cx, |_, _: &ArgumentRequired, window, cx| {
         let _ = window.prompt(
             gpui::PromptLevel::Critical,
-            locale::t("Argument required").as_str(),
+            locale::t_static("Argument required").as_str(),
             None,
             &[gpui::PromptButton::cancel(locale::t_static("Cancel"))],
             cx,
@@ -377,9 +377,9 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     else {
                         let _ = window.prompt(
                             gpui::PromptLevel::Warning,
-                            locale::t("No file name").as_str(),
+                            locale::t_static("No file name").as_str(),
                             Some(
-                                locale::t("Partial buffer write requires file name.").as_str(),
+                                locale::t_static("Partial buffer write requires file name.").as_str(),
                             ),
                             &[gpui::PromptButton::cancel(locale::t_static("Cancel"))],
                             cx,
@@ -401,7 +401,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                                         window,
                                         cx,
                                     )
-                                    .detach_and_prompt_err(locale::t("Failed to save").as_str(), window, cx, |_, _, _| None);
+                                    .detach_and_prompt_err(locale::t_static("Failed to save").as_str(), window, cx, |_, _, _| None);
                             });
                         }
                         return;
@@ -409,9 +409,9 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     if Some(SaveIntent::Overwrite) != action.save_intent {
                         let _ = window.prompt(
                             gpui::PromptLevel::Warning,
-                            locale::t("Use ! to write partial buffer").as_str(),
+                            locale::t_static("Use ! to write partial buffer").as_str(),
                             Some(
-                                locale::t(
+                                locale::t_static(
                                     "Overwriting the current file with selected buffer content requires '!'.",
                                 )
                                 .as_str(),
@@ -471,7 +471,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                                 };
                                 worktree
                                     .write_file(path.into_arc(), text.clone(), line_ending, encoding, has_bom, cx)
-                                    .detach_and_prompt_err(locale::t("Failed to write lines").as_str(), window, cx, |_, _, _| None);
+                                    .detach_and_prompt_err(locale::t_static("Failed to write lines").as_str(), window, cx, |_, _, _| None);
                             });
                         })
                         .detach();
@@ -490,7 +490,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                             cx,
                         )
                         .detach_and_prompt_err(
-                            locale::t("Failed to save").as_str(),
+                            locale::t_static("Failed to save").as_str(),
                             window,
                             cx,
                             |_, _, _| None,
@@ -518,7 +518,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     "Cannot save buffer with absolute path"
                 ))))
                 .detach_and_prompt_err(
-                    locale::t("Failed to save").as_str(),
+                    locale::t_static("Failed to save").as_str(),
                     window,
                     cx,
                     |_, _, _| None,
@@ -556,7 +556,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                         editor
                             .save_as(project, project_path, window, cx)
                             .detach_and_prompt_err(
-                                locale::t("Failed to :w").as_str(),
+                                locale::t_static("Failed to :w").as_str(),
                                 window,
                                 cx,
                                 |_, _, _| None,
@@ -568,7 +568,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                 editor
                     .save_as(project, project_path, window, cx)
                     .detach_and_prompt_err(
-                        locale::t("Failed to :w").as_str(),
+                        locale::t_static("Failed to :w").as_str(),
                         window,
                         cx,
                         |_, _, _| None,

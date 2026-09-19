@@ -134,7 +134,7 @@ impl DisconnectedOverlay {
             Ok(())
         })
         .detach_and_prompt_err(
-            locale::t("Failed to reconnect").as_str(),
+            locale::t_static("Failed to reconnect").as_str(),
             window,
             cx,
             |_, _, _| None,
@@ -153,14 +153,17 @@ impl Render for DisconnectedOverlay {
 
         let message = match &self.host {
             Host::CollabGuestProject => {
-                locale::t("Your connection to the remote project has been lost.").to_string()
+                locale::t_static("Your connection to the remote project has been lost.").to_string()
             }
             Host::RemoteServerProject(options, server_not_running) => {
                 let autosave = if ProjectSettings::get_global(cx)
                     .session
                     .restore_unsaved_buffers
                 {
-                    format!("\n{}", locale::t("Unsaved changes are stored locally."))
+                    format!(
+                        "\n{}",
+                        locale::t_static("Unsaved changes are stored locally.")
+                    )
                 } else {
                     String::new()
                 };
@@ -190,18 +193,16 @@ impl Render for DisconnectedOverlay {
             .max_h(rems(40.))
             .child(
                 Modal::new("disconnected", None)
-                    .header(
-                        ModalHeader::new().show_dismiss_button(true).child(
-                            Headline::new(locale::t("Disconnected")).size(HeadlineSize::Small),
-                        ),
-                    )
+                    .header(ModalHeader::new().show_dismiss_button(true).child(
+                        Headline::new(locale::t_static("Disconnected")).size(HeadlineSize::Small),
+                    ))
                     .section(Section::new().child(Label::new(message)))
                     .footer(
                         ModalFooter::new().end_slot(
                             h_flex()
                                 .gap_2()
                                 .child(
-                                    Button::new("close-window", locale::t("Close Window"))
+                                    Button::new("close-window", locale::t_static("Close Window"))
                                         .style(ButtonStyle::Filled)
                                         .layer(ElevationIndex::ModalSurface)
                                         .on_click(cx.listener(move |_, _, window, _| {
@@ -210,7 +211,7 @@ impl Render for DisconnectedOverlay {
                                 )
                                 .when(can_reconnect, |el| {
                                     el.child(
-                                        Button::new("reconnect", locale::t("Reconnect"))
+                                        Button::new("reconnect", locale::t_static("Reconnect"))
                                             .style(ButtonStyle::Filled)
                                             .layer(ElevationIndex::ModalSurface)
                                             .start_icon(Icon::new(IconName::ArrowCircle))

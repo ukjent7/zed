@@ -1068,7 +1068,7 @@ impl Render for ProjectSearchView {
             let page_content: Option<AnyElement> = match model.search_state {
                 SearchState::Idle => Some(self.landing_text_minor(cx).into_any_element()),
                 _ if model.search_state.no_results_so_far() => Some(
-                    Label::new(locale::t(
+                    Label::new(locale::t_static(
                         "No results found in this project for the provided query",
                     ))
                     .size(LabelSize::Small)
@@ -1115,7 +1115,7 @@ impl Item for ProjectSearchView {
             .is_empty()
             .not()
             .then(|| query_text.into())
-            .or_else(|| Some(locale::t("Project Search")))
+            .or_else(|| Some(locale::t_static("Project Search")))
     }
 
     fn act_as_type<'a>(
@@ -1159,7 +1159,7 @@ impl Item for ProjectSearchView {
 
         last_query
             .filter(|query| !query.is_empty())
-            .unwrap_or_else(|| locale::t("Project Search"))
+            .unwrap_or_else(|| locale::t_static("Project Search"))
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -1487,7 +1487,7 @@ impl ProjectSearchView {
 
         let query_editor = cx.new(|cx| {
             let mut editor = Editor::auto_height(1, 4, window, cx);
-            editor.set_placeholder_text(locale::t("Search all files…").as_str(), window, cx);
+            editor.set_placeholder_text(locale::t_static("Search all files…").as_str(), window, cx);
             editor.set_use_autoclose(false);
             editor.set_use_selection_highlight(false);
             editor.set_text(query_text, window, cx);
@@ -1902,9 +1902,9 @@ impl ProjectSearchView {
             let should_prompt_to_save = !skip_save_on_close && !will_autosave && is_dirty;
 
             let should_search = if should_prompt_to_save {
-                let save = locale::t("Save");
-                let do_not_save = locale::t("Don't Save");
-                let cancel = locale::t("Cancel");
+                let save = locale::t_static("Save");
+                let do_not_save = locale::t_static("Don't Save");
+                let cancel = locale::t_static("Cancel");
                 let options = [
                     gpui::PromptButton::new(save.clone()),
                     gpui::PromptButton::new(do_not_save.clone()),
@@ -1913,7 +1913,7 @@ impl ProjectSearchView {
                 let result_channel = this.update_in(cx, |_, window, cx| {
                     window.prompt(
                         gpui::PromptLevel::Warning,
-                        locale::t(
+                        locale::t_static(
                             "Project search buffer contains unsaved edits. Do you want to save it?",
                         )
                         .as_str(),
@@ -2493,23 +2493,26 @@ impl ProjectSearchView {
             .gap_1()
             .child(
                 Label::new(if EditorSettings::get_global(cx).search.search_on_type {
-                    locale::t("Start typing to search. For more options:")
+                    locale::t_static("Start typing to search. For more options:")
                 } else {
-                    locale::t("Hit enter to search. For more options:")
+                    locale::t_static("Hit enter to search. For more options:")
                 })
                 .color(Color::Muted)
                 .mb_2(),
             )
             .child(
-                Button::new("filter-paths", locale::t("Include/exclude specific paths"))
-                    .start_icon(Icon::new(IconName::Filter).size(IconSize::Small))
-                    .key_binding(KeyBinding::for_action_in(&ToggleFilters, &focus_handle, cx))
-                    .on_click(|_event, window, cx| {
-                        window.dispatch_action(ToggleFilters.boxed_clone(), cx)
-                    }),
+                Button::new(
+                    "filter-paths",
+                    locale::t_static("Include/exclude specific paths"),
+                )
+                .start_icon(Icon::new(IconName::Filter).size(IconSize::Small))
+                .key_binding(KeyBinding::for_action_in(&ToggleFilters, &focus_handle, cx))
+                .on_click(|_event, window, cx| {
+                    window.dispatch_action(ToggleFilters.boxed_clone(), cx)
+                }),
             )
             .child(
-                Button::new("find-replace", locale::t("Find and replace"))
+                Button::new("find-replace", locale::t_static("Find and replace"))
                     .start_icon(Icon::new(IconName::Replace).size(IconSize::Small))
                     .key_binding(KeyBinding::for_action_in(&ToggleReplace, &focus_handle, cx))
                     .on_click(|_event, window, cx| {
@@ -2517,7 +2520,7 @@ impl ProjectSearchView {
                     }),
             )
             .child(
-                Button::new("regex", locale::t("Match with regex"))
+                Button::new("regex", locale::t_static("Match with regex"))
                     .start_icon(Icon::new(IconName::Regex).size(IconSize::Small))
                     .key_binding(KeyBinding::for_action_in(&ToggleRegex, &focus_handle, cx))
                     .on_click(|_event, window, cx| {
@@ -2525,7 +2528,7 @@ impl ProjectSearchView {
                     }),
             )
             .child(
-                Button::new("match-case", locale::t("Match case"))
+                Button::new("match-case", locale::t_static("Match case"))
                     .start_icon(Icon::new(IconName::CaseSensitive).size(IconSize::Small))
                     .key_binding(KeyBinding::for_action_in(
                         &ToggleCaseSensitive,
@@ -2537,7 +2540,7 @@ impl ProjectSearchView {
                     }),
             )
             .child(
-                Button::new("match-whole-words", locale::t("Match whole words"))
+                Button::new("match-whole-words", locale::t_static("Match whole words"))
                     .start_icon(Icon::new(IconName::WholeWord).size(IconSize::Small))
                     .key_binding(KeyBinding::for_action_in(
                         &ToggleWholeWord,
@@ -3098,7 +3101,7 @@ impl Render for ProjectSearchBar {
                     .active_match_index
                     .is_none()
                     .then_some(ActionButtonState::Disabled),
-                locale::t("Select Previous Match"),
+                locale::t_static("Select Previous Match"),
                 &SelectPreviousMatch,
                 query_focus.clone(),
             ))
@@ -3109,7 +3112,7 @@ impl Render for ProjectSearchBar {
                     .active_match_index
                     .is_none()
                     .then_some(ActionButtonState::Disabled),
-                locale::t("Select Next Match"),
+                locale::t_static("Select Next Match"),
                 &SelectNextMatch,
                 query_focus.clone(),
             ))
@@ -3139,7 +3142,7 @@ impl Render for ProjectSearchBar {
                             }),
                     )
                     .when(limit_reached, |this| {
-                        this.tooltip(Tooltip::text(locale::t(
+                        this.tooltip(Tooltip::text(locale::t_static(
                             "Search Limits Reached\nTry narrowing your search",
                         )))
                     }),
@@ -3152,7 +3155,7 @@ impl Render for ProjectSearchBar {
                 IconButton::new("project-search-filter-button", IconName::Filter)
                     .shape(IconButtonShape::Square)
                     .tooltip(|_window, cx| {
-                        Tooltip::for_action(locale::t("Toggle Filters"), &ToggleFilters, cx)
+                        Tooltip::for_action(locale::t_static("Toggle Filters"), &ToggleFilters, cx)
                     })
                     .on_click(cx.listener(|this, _, window, cx| {
                         this.toggle_filters(window, cx);
@@ -3167,7 +3170,7 @@ impl Render for ProjectSearchBar {
                         let focus_handle = focus_handle.clone();
                         move |_window, cx| {
                             Tooltip::for_action_in(
-                                locale::t("Toggle Filters"),
+                                locale::t_static("Toggle Filters"),
                                 &ToggleFilters,
                                 &focus_handle,
                                 cx,
@@ -3182,7 +3185,7 @@ impl Render for ProjectSearchBar {
                     .as_ref()
                     .map(|search| search.read(cx).replace_enabled)
                     .and_then(|enabled| enabled.then_some(ActionButtonState::Toggled)),
-                locale::t("Toggle Replace"),
+                locale::t_static("Toggle Replace"),
                 &ToggleReplace,
                 focus_handle.clone(),
             ))
@@ -3239,7 +3242,7 @@ impl Render for ProjectSearchBar {
                     "project-search-replace-button",
                     IconName::ReplaceNext,
                     is_search_underway.then_some(ActionButtonState::Disabled),
-                    locale::t("Replace Next Match"),
+                    locale::t_static("Replace Next Match"),
                     &ReplaceNext,
                     focus_handle.clone(),
                 ))
@@ -3247,7 +3250,7 @@ impl Render for ProjectSearchBar {
                     "project-search-replace-button",
                     IconName::ReplaceAll,
                     Default::default(),
-                    locale::t("Replace All Matches"),
+                    locale::t_static("Replace All Matches"),
                     &ReplaceAll,
                     focus_handle,
                 ));
@@ -3284,7 +3287,7 @@ impl Render for ProjectSearchBar {
                     IconButton::new("project-search-opened-only", IconName::FolderSearch)
                         .shape(IconButtonShape::Square)
                         .toggle_state(self.is_opened_only_enabled(cx))
-                        .tooltip(Tooltip::text(locale::t("Only Search Open Files")))
+                        .tooltip(Tooltip::text(locale::t_static("Only Search Open Files")))
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.toggle_opened_only(window, cx);
                         })),

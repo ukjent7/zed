@@ -452,7 +452,7 @@ impl PaneLeaderDecorator for PaneRenderContext<'_> {
                                             cx,
                                         )
                                         .detach_and_prompt_err(
-                                            locale::t("Failed to join project").as_str(),
+                                            locale::t_static("Failed to join project").as_str(),
                                             window,
                                             cx,
                                             |error, _, _| Some(format!("{error:#}")),

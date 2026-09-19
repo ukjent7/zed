@@ -68,8 +68,8 @@ pub fn clone_and_open(
                 .ok()?;
 
             let prompt_answer = if has_worktrees {
-                let add_to_project = locale::t("Add repo to project");
-                let open_new_project = locale::t("Open repo in new project");
+                let add_to_project = locale::t_static("Add repo to project");
+                let open_new_project = locale::t_static("Open repo in new project");
                 cx.update(|window, cx| {
                     window.prompt(
                         gpui::PromptLevel::Info,

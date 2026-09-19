@@ -140,7 +140,7 @@ impl PickerDelegate for SidebarRecentProjectsDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Search projects…").as_str().into()
+        locale::t_static("Search projects…").as_str().into()
     }
 
     fn match_count(&self) -> usize {
@@ -268,7 +268,7 @@ impl PickerDelegate for SidebarRecentProjectsDelegate {
                             .await
                     })
                     .detach_and_prompt_err(
-                        locale::t("Failed to open project").as_str(),
+                        locale::t_static("Failed to open project").as_str(),
                         window,
                         cx,
                         |_, _, _| None,
@@ -283,9 +283,9 @@ impl PickerDelegate for SidebarRecentProjectsDelegate {
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
         let text = if self.workspaces.is_empty() {
-            locale::t("Recently opened projects will show up here")
+            locale::t_static("Recently opened projects will show up here")
         } else {
-            locale::t("No matches")
+            locale::t_static("No matches")
         };
         Some(text.into())
     }
@@ -368,7 +368,7 @@ impl PickerDelegate for SidebarRecentProjectsDelegate {
                 )
                 .tooltip(move |_, cx| {
                     Tooltip::with_meta(
-                        locale::t("Open Project in This Window"),
+                        locale::t_static("Open Project in This Window"),
                         None,
                         tooltip_path.clone(),
                         cx,
@@ -399,7 +399,7 @@ impl PickerDelegate for SidebarRecentProjectsDelegate {
                                 .w_full()
                                 .gap_1()
                                 .justify_between()
-                                .child(Label::new(locale::t("Open Local Folders")))
+                                .child(Label::new(locale::t_static("Open Local Folders")))
                                 .child(KeyBinding::for_action_in(&open_action, &focus_handle, cx)),
                         )
                         .on_click(cx.listener(move |_, _, window, cx| {
@@ -414,7 +414,7 @@ impl PickerDelegate for SidebarRecentProjectsDelegate {
                                 .w_full()
                                 .gap_1()
                                 .justify_between()
-                                .child(Label::new(locale::t("Open Remote Folder")))
+                                .child(Label::new(locale::t_static("Open Remote Folder")))
                                 .child(KeyBinding::for_action(
                                     &OpenRemote {
                                         from_existing_connection: false,

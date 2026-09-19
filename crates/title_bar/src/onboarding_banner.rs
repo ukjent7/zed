@@ -164,9 +164,9 @@ impl Render for OnboardingBanner {
                         }))
                         .tooltip(|_window, cx| {
                             Tooltip::with_meta(
-                                locale::t("Close Announcement Banner"),
+                                locale::t_static("Close Announcement Banner"),
                                 None,
-                                locale::t("It won't show again for this feature"),
+                                locale::t_static("It won't show again for this feature"),
                                 cx,
                             )
                         }),

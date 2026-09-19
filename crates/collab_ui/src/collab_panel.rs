@@ -165,7 +165,7 @@ pub fn init(cx: &mut App) {
                         workspace.show_toast(
                             workspace::Toast::new(
                                 NotificationId::unique::<RoomIdCopiedToast>(),
-                                locale::t("Room ID copied to clipboard").to_string(),
+                                locale::t_static("Room ID copied to clipboard").to_string(),
                             )
                             .autohide(),
                             cx,
@@ -369,7 +369,11 @@ impl CollabPanel {
         cx.new(|cx| {
             let filter_editor = cx.new(|cx| {
                 let mut editor = Editor::single_line(window, cx);
-                editor.set_placeholder_text(locale::t("Search channels…").as_str(), window, cx);
+                editor.set_placeholder_text(
+                    locale::t_static("Search channels…").as_str(),
+                    window,
+                    cx,
+                );
                 editor
             });
 
@@ -1194,21 +1198,21 @@ impl CollabPanel {
         });
 
         let end_slot = if is_pending {
-            Label::new(locale::t("Calling"))
+            Label::new(locale::t_static("Calling"))
                 .color(Color::Muted)
                 .into_any_element()
         } else if is_current_user {
             IconButton::new("leave-call", IconName::Exit)
                 .icon_size(IconSize::Small)
-                .tooltip(Tooltip::text(locale::t("Leave Call")))
+                .tooltip(Tooltip::text(locale::t_static("Leave Call")))
                 .on_click(move |_, window, cx| Self::leave_call(window, cx))
                 .into_any_element()
         } else if role == proto::ChannelRole::Guest {
-            Label::new(locale::t("Guest"))
+            Label::new(locale::t_static("Guest"))
                 .color(Color::Muted)
                 .into_any_element()
         } else if role == proto::ChannelRole::Talker {
-            Label::new(locale::t("Mic only"))
+            Label::new(locale::t_static("Mic only"))
                 .color(Color::Muted)
                 .into_any_element()
         } else {
@@ -1221,7 +1225,7 @@ impl CollabPanel {
             .focused(is_selected)
             .dock(self.dock_side(cx))
             .end_slot(end_slot)
-            .tooltip(Tooltip::text(locale::t("Click to Follow")))
+            .tooltip(Tooltip::text(locale::t_static("Click to Follow")))
             .when_some(peer_id, |el, peer_id| {
                 if role == proto::ChannelRole::Guest {
                     return el;
@@ -1275,7 +1279,7 @@ impl CollabPanel {
                         let app_state = workspace.app_state().clone();
                         workspace::join_in_room_project(project_id, host_user_id, app_state, cx)
                             .detach_and_prompt_err(
-                                locale::t("Failed to join project").as_str(),
+                                locale::t_static("Failed to join project").as_str(),
                                 window,
                                 cx,
                                 |error, _, _| Some(format!("{error:#}")),
@@ -1324,7 +1328,7 @@ impl CollabPanel {
                             .color(Color::Muted),
                     ),
             )
-            .child(Label::new(locale::t("Screen")))
+            .child(Label::new(locale::t_static("Screen")))
             .when_some(peer_id, |this, _| {
                 this.on_click(cx.listener(move |this, _, window, cx| {
                     this.workspace
@@ -1333,7 +1337,7 @@ impl CollabPanel {
                         })
                         .ok();
                 }))
-                .tooltip(Tooltip::text(locale::t("Open Shared Screen")))
+                .tooltip(Tooltip::text(locale::t_static("Open Shared Screen")))
             })
     }
 
@@ -1388,8 +1392,8 @@ impl CollabPanel {
                             }),
                     ),
             )
-            .child(Label::new(locale::t("notes")))
-            .tooltip(Tooltip::text(locale::t("Open Channel Notes")))
+            .child(Label::new(locale::t_static("notes")))
+            .tooltip(Tooltip::text(locale::t_static("Open Channel Notes")))
     }
 
     fn has_subchannels(&self, ix: usize) -> bool {
@@ -1421,7 +1425,7 @@ impl CollabPanel {
         let context_menu = ContextMenu::build(window, cx, |mut context_menu, window, _| {
             if role == proto::ChannelRole::Guest {
                 context_menu = context_menu.entry(
-                    locale::t("Grant Mic Access"),
+                    locale::t_static("Grant Mic Access"),
                     None,
                     window.handler_for(&this, move |_, window, cx| {
                         ActiveCall::global(cx)
@@ -1438,7 +1442,7 @@ impl CollabPanel {
                                 })
                             })
                             .detach_and_prompt_err(
-                                locale::t("Failed to grant mic access").as_str(),
+                                locale::t_static("Failed to grant mic access").as_str(),
                                 window,
                                 cx,
                                 |_, _, _| None,
@@ -1448,7 +1452,7 @@ impl CollabPanel {
             }
             if role == proto::ChannelRole::Guest || role == proto::ChannelRole::Talker {
                 context_menu = context_menu.entry(
-                    locale::t("Grant Write Access"),
+                    locale::t_static("Grant Write Access"),
                     None,
                     window.handler_for(&this, move |_, window, cx| {
                         ActiveCall::global(cx)
@@ -1464,10 +1468,10 @@ impl CollabPanel {
                                     )
                                 })
                             })
-                            .detach_and_prompt_err(locale::t("Failed to grant write access").as_str(), window, cx, |e, _, _| {
+                            .detach_and_prompt_err(locale::t_static("Failed to grant write access").as_str(), window, cx, |e, _, _| {
                                 match e.error_code() {
                                     ErrorCode::NeedsCla => Some(
-                                        locale::t(
+                                        locale::t_static(
                                             "This user has not yet signed the CLA at https://zed.dev/cla.",
                                         )
                                         .to_string(),
@@ -1502,7 +1506,7 @@ impl CollabPanel {
                                 })
                             })
                             .detach_and_prompt_err(
-                                locale::t("Failed to revoke access").as_str(),
+                                locale::t_static("Failed to revoke access").as_str(),
                                 window,
                                 cx,
                                 |_, _, _| None,
@@ -1565,21 +1569,21 @@ impl CollabPanel {
 
             context_menu = context_menu
                 .entry(
-                    locale::t("Open Notes"),
+                    locale::t_static("Open Notes"),
                     None,
                     window.handler_for(&this, move |this, window, cx| {
                         this.open_channel_notes(channel_id, window, cx)
                     }),
                 )
                 .entry(
-                    locale::t("Copy Channel Link"),
+                    locale::t_static("Copy Channel Link"),
                     None,
                     window.handler_for(&this, move |this, _, cx| {
                         this.copy_channel_link(channel_id, cx)
                     }),
                 )
                 .entry(
-                    locale::t("Copy Channel Notes Link"),
+                    locale::t_static("Copy Channel Notes Link"),
                     None,
                     window.handler_for(&this, move |this, _, cx| {
                         this.copy_channel_notes_link(channel_id, cx)
@@ -1588,9 +1592,9 @@ impl CollabPanel {
                 .separator()
                 .entry(
                     if self.is_channel_favorited(channel_id, cx) {
-                        locale::t("Remove from Favorites")
+                        locale::t_static("Remove from Favorites")
                     } else {
-                        locale::t("Add to Favorites")
+                        locale::t_static("Add to Favorites")
                     },
                     None,
                     window.handler_for(&this, move |this, _window, cx| {
@@ -1604,14 +1608,14 @@ impl CollabPanel {
                 context_menu = context_menu
                     .separator()
                     .entry(
-                        locale::t("New Subchannel"),
+                        locale::t_static("New Subchannel"),
                         None,
                         window.handler_for(&this, move |this, window, cx| {
                             this.new_subchannel(channel_id, window, cx)
                         }),
                     )
                     .entry(
-                        locale::t("Rename"),
+                        locale::t_static("Rename"),
                         Some(Box::new(SecondaryConfirm)),
                         window.handler_for(&this, move |this, window, cx| {
                             this.rename_channel(channel_id, window, cx)
@@ -1630,7 +1634,7 @@ impl CollabPanel {
 
                 if self.channel_store.read(cx).is_root_channel(channel_id) {
                     context_menu = context_menu.separator().entry(
-                        locale::t("Manage Members"),
+                        locale::t_static("Manage Members"),
                         None,
                         window.handler_for(&this, move |this, window, cx| {
                             this.manage_members(channel_id, window, cx)
@@ -1638,7 +1642,7 @@ impl CollabPanel {
                     )
                 } else {
                     context_menu = context_menu.entry(
-                        locale::t("Move this channel"),
+                        locale::t_static("Move this channel"),
                         None,
                         window.handler_for(&this, move |this, window, cx| {
                             this.start_move_channel(channel_id, window, cx)
@@ -1646,7 +1650,7 @@ impl CollabPanel {
                     );
                     if self.channel_store.read(cx).is_public_channel(channel_id) {
                         context_menu = context_menu.separator().entry(
-                            locale::t("Make Channel Private"),
+                            locale::t_static("Make Channel Private"),
                             None,
                             window.handler_for(&this, move |this, window, cx| {
                                 this.set_channel_visibility(
@@ -1659,7 +1663,7 @@ impl CollabPanel {
                         )
                     } else {
                         context_menu = context_menu.separator().entry(
-                            locale::t("Make Channel Public"),
+                            locale::t_static("Make Channel Public"),
                             None,
                             window.handler_for(&this, move |this, window, cx| {
                                 this.set_channel_visibility(
@@ -1674,7 +1678,7 @@ impl CollabPanel {
                 }
 
                 context_menu = context_menu.entry(
-                    locale::t("Delete"),
+                    locale::t_static("Delete"),
                     None,
                     window.handler_for(&this, move |this, window, cx| {
                         this.remove_channel(channel_id, window, cx)
@@ -1687,7 +1691,7 @@ impl CollabPanel {
                     context_menu = context_menu.separator()
                 }
                 context_menu = context_menu.entry(
-                    locale::t("Leave Channel"),
+                    locale::t_static("Leave Channel"),
                     None,
                     window.handler_for(&this, move |this, window, cx| {
                         this.leave_channel(channel_id, window, cx)
@@ -1754,7 +1758,7 @@ impl CollabPanel {
                 });
             }
 
-            context_menu.entry(locale::t("Remove Contact"), None, {
+            context_menu.entry(locale::t_static("Remove Contact"), None, {
                 let this = this.clone();
                 move |window, cx| {
                     this.update(cx, |this, cx| {
@@ -1876,7 +1880,7 @@ impl CollabPanel {
                         let app_state = workspace.read(cx).app_state().clone();
                         workspace::join_in_room_project(*project_id, *host_user_id, app_state, cx)
                             .detach_and_prompt_err(
-                                locale::t("Failed to join project").as_str(),
+                                locale::t_static("Failed to join project").as_str(),
                                 window,
                                 cx,
                                 |error, _, _| Some(format!("{error:#}")),
@@ -1978,14 +1982,14 @@ impl CollabPanel {
                             })
                         })
                         .detach_and_prompt_err(
-                            locale::t("Failed to create channel").as_str(),
+                            locale::t_static("Failed to create channel").as_str(),
                             window,
                             cx,
                             |_, _, _| None,
                         );
                     } else {
                         create.detach_and_prompt_err(
-                            locale::t("Failed to create channel").as_str(),
+                            locale::t_static("Failed to create channel").as_str(),
                             window,
                             cx,
                             |_, _, _| None,
@@ -2141,7 +2145,7 @@ impl CollabPanel {
         ActiveCall::global(cx)
             .update(cx, |call, cx| call.hang_up(cx))
             .detach_and_prompt_err(
-                locale::t("Failed to hang up").as_str(),
+                locale::t_static("Failed to hang up").as_str(),
                 window,
                 cx,
                 |_, _, _| None,
@@ -2278,12 +2282,12 @@ impl CollabPanel {
             .update(cx, |channel_store, cx| {
                 channel_store.set_channel_visibility(channel_id, visibility, cx)
             })
-            .detach_and_prompt_err(locale::t("Failed to set channel visibility").as_str(), window, cx, |e, _, _| match e.error_code() {
+            .detach_and_prompt_err(locale::t_static("Failed to set channel visibility").as_str(), window, cx, |e, _, _| match e.error_code() {
                 ErrorCode::BadPublicNesting =>
                     if e.error_tag("direction") == Some("parent") {
-                        Some(locale::t("To make a channel public, its parent channel must be public.").to_string())
+                        Some(locale::t_static("To make a channel public, its parent channel must be public.").to_string())
                     } else {
-                        Some(locale::t("To make a channel private, all of its subchannels must be private.").to_string())
+                        Some(locale::t_static("To make a channel private, all of its subchannels must be private.").to_string())
                     },
                 _ => None
             });
@@ -2332,18 +2336,19 @@ impl CollabPanel {
                 channel_store.move_channel(channel_id, to, cx)
             })
             .detach_and_prompt_err(
-                locale::t("Failed to move channel").as_str(),
+                locale::t_static("Failed to move channel").as_str(),
                 window,
                 cx,
                 |e, _, _| match e.error_code() {
                     ErrorCode::BadPublicNesting => {
-                        Some(locale::t("Public channels must have public parents").into())
+                        Some(locale::t_static("Public channels must have public parents").into())
                     }
                     ErrorCode::CircularNesting => {
-                        Some(locale::t("You cannot move a channel into itself").into())
+                        Some(locale::t_static("You cannot move a channel into itself").into())
                     }
                     ErrorCode::WrongMoveTarget => Some(
-                        locale::t("You cannot move a channel into a different root channel").into(),
+                        locale::t_static("You cannot move a channel into a different root channel")
+                            .into(),
                     ),
                     _ => None,
                 },
@@ -2384,8 +2389,8 @@ impl CollabPanel {
                 // Bound first: `detach_and_prompt_err` borrows the message, so
                 // the translated `SharedString` has to outlive the call.
                 let message = match direction {
-                    Direction::Up => locale::t("Failed to move channel up"),
-                    Direction::Down => locale::t("Failed to move channel down"),
+                    Direction::Up => locale::t_static("Failed to move channel up"),
+                    Direction::Down => locale::t_static("Failed to move channel down"),
                 };
                 store
                     .reorder_channel(channel.id, direction, cx)
@@ -2548,8 +2553,8 @@ impl CollabPanel {
             "Are you sure you want to leave \"#{channel}\"?",
             &[("{channel}", &channel.name)],
         );
-        let leave = locale::t("Leave");
-        let cancel = locale::t("Cancel");
+        let leave = locale::t_static("Leave");
+        let cancel = locale::t_static("Cancel");
         let answer = window.prompt(
             PromptLevel::Warning,
             &prompt_message,
@@ -2572,7 +2577,7 @@ impl CollabPanel {
             .await
         })
         .detach_and_prompt_err(
-            locale::t("Failed to leave channel").as_str(),
+            locale::t_static("Failed to leave channel").as_str(),
             window,
             cx,
             |_, _, _| None,
@@ -2591,8 +2596,8 @@ impl CollabPanel {
                 "Are you sure you want to remove the channel \"{channel}\"?",
                 &[("{channel}", &channel.name)],
             );
-            let remove = locale::t("Remove");
-            let cancel = locale::t("Cancel");
+            let remove = locale::t_static("Remove");
+            let cancel = locale::t_static("Cancel");
             let answer = window.prompt(
                 PromptLevel::Warning,
                 &prompt_message,
@@ -2633,8 +2638,8 @@ impl CollabPanel {
             "Are you sure you want to remove \"{user}\" from your contacts?",
             &[("{user}", github_login)],
         );
-        let remove = locale::t("Remove");
-        let cancel = locale::t("Cancel");
+        let remove = locale::t_static("Remove");
+        let cancel = locale::t_static("Cancel");
         let answer = window.prompt(
             PromptLevel::Warning,
             &prompt_message,
@@ -2656,7 +2661,7 @@ impl CollabPanel {
             anyhow::Ok(())
         })
         .detach_and_prompt_err(
-            locale::t("Failed to remove contact").as_str(),
+            locale::t_static("Failed to remove contact").as_str(),
             window,
             cx,
             |_, _, _| None,
@@ -2675,7 +2680,7 @@ impl CollabPanel {
                 store.respond_to_contact_request(user_id, accept, cx)
             })
             .detach_and_prompt_err(
-                locale::t("Failed to respond to contact request").as_str(),
+                locale::t_static("Failed to respond to contact request").as_str(),
                 window,
                 cx,
                 |_, _, _| None,
@@ -2700,9 +2705,12 @@ impl CollabPanel {
             .update(cx, |call, cx| {
                 call.invite(recipient_user_id, Some(self.project.clone()), cx)
             })
-            .detach_and_prompt_err(locale::t("Call failed").as_str(), window, cx, |_, _, _| {
-                None
-            });
+            .detach_and_prompt_err(
+                locale::t_static("Call failed").as_str(),
+                window,
+                cx,
+                |_, _, _| None,
+            );
     }
 
     fn join_channel(&self, channel_id: ChannelId, window: &mut Window, cx: &mut Context<Self>) {
@@ -2721,7 +2729,7 @@ impl CollabPanel {
             cx,
         )
         .detach_and_prompt_err(
-            locale::t("Failed to join channel").as_str(),
+            locale::t_static("Failed to join channel").as_str(),
             window,
             cx,
             |_, _, _| None,
@@ -2753,13 +2761,13 @@ impl CollabPanel {
             .size_full()
             .text_center()
             .justify_center()
-            .child(Label::new(locale::t(
+            .child(Label::new(locale::t_static(
                 "Collaboration is disabled for this organization.",
             )))
     }
 
     fn render_signed_out(&mut self, cx: &mut Context<Self>) -> Div {
-        let collab_blurb = locale::t(
+        let collab_blurb = locale::t_static(
             "Work with your team in realtime with collaborative editing, voice, shared notes and more.",
         );
 
@@ -2931,7 +2939,7 @@ impl CollabPanel {
                         this.pr_2p5().child(
                             IconButton::new("clear_filter", IconName::Close)
                                 .shape(IconButtonShape::Square)
-                                .tooltip(Tooltip::text(locale::t("Clear Filter")))
+                                .tooltip(Tooltip::text(locale::t_static("Clear Filter")))
                                 .on_click(cx.listener(|this, _, window, cx| {
                                     this.reset_filter_editor_text(window, cx);
                                     cx.notify();
@@ -3043,16 +3051,16 @@ impl CollabPanel {
                 if let Some(name) = channel_name {
                     name
                 } else {
-                    locale::t("Current Call")
+                    locale::t_static("Current Call")
                 }
             }
-            Section::FavoriteChannels => locale::t("Favorites"),
-            Section::ContactRequests => locale::t("Requests"),
-            Section::Contacts => locale::t("Contacts"),
-            Section::Channels => locale::t("Channels"),
-            Section::ChannelInvites => locale::t("Invites"),
-            Section::Online => locale::t("Online"),
-            Section::Offline => locale::t("Offline"),
+            Section::FavoriteChannels => locale::t_static("Favorites"),
+            Section::ContactRequests => locale::t_static("Requests"),
+            Section::Contacts => locale::t_static("Contacts"),
+            Section::Channels => locale::t_static("Channels"),
+            Section::ChannelInvites => locale::t_static("Invites"),
+            Section::Online => locale::t_static("Online"),
+            Section::Offline => locale::t_static("Offline"),
         };
 
         let auto_watch_state = self
@@ -3070,7 +3078,7 @@ impl CollabPanel {
                         this.child(
                             CopyButton::new("copy-channel-link", channel_link)
                                 .visible_on_hover("section-header")
-                                .tooltip_label(locale::t("Copy Channel Link")),
+                                .tooltip_label(locale::t_static("Copy Channel Link")),
                         )
                     })
                     .child(
@@ -3093,10 +3101,12 @@ impl CollabPanel {
                         })
                         .tooltip(Tooltip::text(match auto_watch_state {
                             AutoWatch::Paused => {
-                                locale::t("Auto Watch Screens (paused while sharing)")
+                                locale::t_static("Auto Watch Screens (paused while sharing)")
                             }
-                            AutoWatch::Active { .. } => locale::t("Stop Auto Watching Screens"),
-                            AutoWatch::Off => locale::t("Auto Watch Screens"),
+                            AutoWatch::Active { .. } => {
+                                locale::t_static("Stop Auto Watching Screens")
+                            }
+                            AutoWatch::Off => locale::t_static("Auto Watch Screens"),
                         }))
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.workspace
@@ -3112,7 +3122,7 @@ impl CollabPanel {
                     .on_click(
                         cx.listener(|this, _, window, cx| this.toggle_contact_finder(window, cx)),
                     )
-                    .tooltip(Tooltip::text(locale::t("Search for New Contact")))
+                    .tooltip(Tooltip::text(locale::t_static("Search for New Contact")))
                     .into_any_element(),
             ),
             Section::Channels => {
@@ -3129,9 +3139,9 @@ impl CollabPanel {
                                     this.persist_filter_occupied_channels(cx);
                                 }))
                                 .tooltip(Tooltip::text(if self.filter_occupied_channels {
-                                    locale::t("Show All Channels")
+                                    locale::t_static("Show All Channels")
                                 } else {
-                                    locale::t("Show Occupied Channels")
+                                    locale::t_static("Show Occupied Channels")
                                 })),
                         )
                         .child(
@@ -3140,7 +3150,7 @@ impl CollabPanel {
                                 .on_click(cx.listener(|this, _, window, cx| {
                                     this.new_root_channel(window, cx)
                                 }))
-                                .tooltip(Tooltip::text(locale::t("Create Channel"))),
+                                .tooltip(Tooltip::text(locale::t_static("Create Channel"))),
                         )
                         .into_any_element(),
                 )
@@ -3234,7 +3244,7 @@ impl CollabPanel {
                             .child(render_participant_name_and_handle(&contact.user)),
                     )
                     .when(calling, |el| {
-                        el.child(Label::new(locale::t("Calling…")).color(Color::Muted))
+                        el.child(Label::new(locale::t_static("Calling…")).color(Color::Muted))
                     })
                     .when(!calling, |el| {
                         el.child(
@@ -3321,13 +3331,13 @@ impl CollabPanel {
                         this.respond_to_contact_request(user_id, false, window, cx);
                     }))
                     .icon_color(color)
-                    .tooltip(Tooltip::text(locale::t("Decline invite"))),
+                    .tooltip(Tooltip::text(locale::t_static("Decline invite"))),
                 IconButton::new("accept-contact", IconName::Check)
                     .on_click(cx.listener(move |this, _, window, cx| {
                         this.respond_to_contact_request(user_id, true, window, cx);
                     }))
                     .icon_color(color)
-                    .tooltip(Tooltip::text(locale::t("Accept invite"))),
+                    .tooltip(Tooltip::text(locale::t_static("Accept invite"))),
             ]
         } else {
             let github_login = username.clone();
@@ -3337,7 +3347,7 @@ impl CollabPanel {
                         this.remove_contact(user_id, &github_login, window, cx);
                     }))
                     .icon_color(color)
-                    .tooltip(Tooltip::text(locale::t("Cancel invite"))),
+                    .tooltip(Tooltip::text(locale::t_static("Cancel invite"))),
             ]
         };
 
@@ -3379,13 +3389,13 @@ impl CollabPanel {
                     this.respond_to_channel_invite(channel_id, false, cx);
                 }))
                 .icon_color(color)
-                .tooltip(Tooltip::text(locale::t("Decline invite"))),
+                .tooltip(Tooltip::text(locale::t_static("Decline invite"))),
             IconButton::new("accept-invite", IconName::Check)
                 .on_click(cx.listener(move |this, _, _, cx| {
                     this.respond_to_channel_invite(channel_id, true, cx);
                 }))
                 .icon_color(color)
-                .tooltip(Tooltip::text(locale::t("Accept invite"))),
+                .tooltip(Tooltip::text(locale::t_static("Accept invite"))),
         ];
 
         ListItem::new(("channel-invite", channel.id.0 as usize))
@@ -3408,7 +3418,7 @@ impl CollabPanel {
     fn render_contact_placeholder(&self, is_selected: bool, cx: &mut Context<Self>) -> ListItem {
         ListItem::new("contact-placeholder")
             .child(Icon::new(IconName::Plus))
-            .child(Label::new(locale::t("Add a Contact")))
+            .child(Label::new(locale::t_static("Add a Contact")))
             .focused(is_selected)
             .dock(self.dock_side(cx))
             .on_click(cx.listener(|this, _, window, cx| this.toggle_contact_finder(window, cx)))
@@ -3490,13 +3500,13 @@ impl CollabPanel {
             (
                 IconName::StarFilled,
                 Color::Accent,
-                locale::t("Remove from Favorites"),
+                locale::t_static("Remove from Favorites"),
             )
         } else {
             (
                 IconName::Star,
                 Color::Default,
-                locale::t("Add to Favorites"),
+                locale::t_static("Add to Favorites"),
             )
         };
 
@@ -3696,7 +3706,7 @@ impl CollabPanel {
                             }))
                             .tooltip(move |_window, cx| {
                                 Tooltip::for_action_in(
-                                    locale::t("Open Channel Notes"),
+                                    locale::t_static("Open Channel Notes"),
                                     &OpenSelectedChannelNotes,
                                     &focus_handle,
                                     cx,
@@ -4247,7 +4257,7 @@ impl Render for JoinChannelTooltip {
                 .channel_participants(self.channel_id);
 
             container
-                .child(Label::new(locale::t("Join Channel")))
+                .child(Label::new(locale::t_static("Join Channel")))
                 .children(participants.iter().map(|participant| {
                     h_flex()
                         .gap_2()
@@ -4310,27 +4320,29 @@ impl Render for CollabNotificationToast {
         let needs_response = self.notification.is_some();
 
         let accept_button = if needs_response {
-            Button::new("accept", locale::t("Accept")).on_click(cx.listener(
+            Button::new("accept", locale::t_static("Accept")).on_click(cx.listener(
                 |this, _, window, cx| {
                     this.respond(true, window, cx);
                     cx.stop_propagation();
                 },
             ))
         } else {
-            Button::new("dismiss", locale::t("Dismiss")).on_click(cx.listener(|_, _, _, cx| {
-                cx.emit(DismissEvent);
-            }))
+            Button::new("dismiss", locale::t_static("Dismiss")).on_click(cx.listener(
+                |_, _, _, cx| {
+                    cx.emit(DismissEvent);
+                },
+            ))
         };
 
         let decline_button = if needs_response {
-            Button::new("decline", locale::t("Decline")).on_click(cx.listener(
+            Button::new("decline", locale::t_static("Decline")).on_click(cx.listener(
                 |this, _, window, cx| {
                     this.respond(false, window, cx);
                     cx.stop_propagation();
                 },
             ))
         } else {
-            Button::new("close", locale::t("Close")).on_click(cx.listener(|_, _, _, cx| {
+            Button::new("close", locale::t_static("Close")).on_click(cx.listener(|_, _, _, cx| {
                 cx.emit(DismissEvent);
             }))
         };

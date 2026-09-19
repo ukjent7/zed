@@ -165,7 +165,7 @@ impl Addon for CommitDiffAddon {
         menu.when_some(file_to_open, |menu, file| {
             let commit_view = self.commit_view.clone();
             menu.entry(
-                locale::t("Open File in Project"),
+                locale::t_static("Open File in Project"),
                 Some(Box::new(OpenFileAtHead)),
                 move |window, cx| {
                     commit_view
@@ -547,12 +547,12 @@ impl CommitView {
             .justify_center()
             .gap_2()
             .child(
-                Label::new(locale::t("This commit is at the boundary of a shallow clone."))
+                Label::new(locale::t_static("This commit is at the boundary of a shallow clone."))
                     .color(Color::Muted),
             )
             .child(
                 Label::new(
-                    locale::t("Its parent history was not fetched, so the changes it introduced cannot be shown."),
+                    locale::t_static("Its parent history was not fetched, so the changes it introduced cannot be shown."),
                 )
                 .color(Color::Muted),
             )
@@ -576,7 +576,7 @@ impl CommitView {
                                 .style(ButtonStyle::Filled)
                                 .disabled(fetch_in_flight)
                                 .tooltip(Tooltip::text(
-                                    locale::t("Run `git fetch --unshallow` to download the full history, then show this commit's changes."),
+                                    locale::t_static("Run `git fetch --unshallow` to download the full history, then show this commit's changes."),
                                 ))
                                 .on_click(move |_, window, cx| {
                                     let fetch = crate::commit_tooltip::fetch_unshallow(
@@ -830,7 +830,7 @@ impl CommitView {
                     )
                     .when(self.stash.is_none(), |this| {
                         this.child(
-                            Button::new("sha", locale::t("Commit SHA"))
+                            Button::new("sha", locale::t_static("Commit SHA"))
                                 .start_icon(
                                     Icon::new(copy_icon)
                                         .size(IconSize::Small)
@@ -1469,7 +1469,7 @@ impl Render for CommitViewToolbar {
                     .icon_size(IconSize::Small)
                     .tooltip(move |_, cx| {
                         Tooltip::for_action(
-                            locale::t("Buffer Search"),
+                            locale::t_static("Buffer Search"),
                             &zed_actions::buffer_search::Deploy::find(),
                             cx,
                         )
@@ -1485,7 +1485,7 @@ impl Render for CommitViewToolbar {
                 this.child(
                     IconButton::new("show-in-git-graph", IconName::GitGraph)
                         .icon_size(IconSize::Small)
-                        .tooltip(Tooltip::text(locale::t("Show in Git Graph")))
+                        .tooltip(Tooltip::text(locale::t_static("Show in Git Graph")))
                         .on_click(move |_, window, cx| {
                             window.dispatch_action(
                                 Box::new(crate::git_graph::OpenAtCommit {

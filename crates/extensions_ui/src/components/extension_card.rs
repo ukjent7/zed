@@ -196,7 +196,7 @@ impl ExtensionCard {
     ) -> Button {
         Button::new(
             Self::button_id(extension_id, ExtensionOperation::Remove),
-            locale::t("Uninstall"),
+            locale::t_static("Uninstall"),
         )
         .when(ENABLE_HANDLERS, |button| {
             button.on_click({
@@ -221,7 +221,7 @@ impl ExtensionCard {
     ) -> Button {
         Button::new(
             SharedString::from(format!("configure-{extension_id}")),
-            locale::t("Configure"),
+            locale::t_static("Configure"),
         )
         .when(ENABLE_HANDLERS, |button| {
             button.on_click({
@@ -251,7 +251,7 @@ impl ExtensionCard {
     ) -> ExtensionCardActions {
         let rebuild = Button::new(
             SharedString::from(format!("rebuild-{}", extension.id)),
-            locale::t("Rebuild"),
+            locale::t_static("Rebuild"),
         )
         .color(Color::Accent)
         .disabled(status.disables_actions())
@@ -280,7 +280,7 @@ impl ExtensionCard {
     fn install_button<const ENABLE_HANDLERS: bool>(extension_id: &Arc<str>) -> Button {
         Button::new(
             Self::button_id(extension_id, ExtensionOperation::Install),
-            locale::t("Install"),
+            locale::t_static("Install"),
         )
         .style(ButtonStyle::Tinted(ui::TintColor::Accent))
         .start_icon(
@@ -329,7 +329,7 @@ impl ExtensionCard {
                 let upgrade = matches!(status, ExtensionStatus::Upgrading).then(|| {
                     Button::new(
                         Self::button_id(&extension.id, ExtensionOperation::Upgrade),
-                        locale::t("Upgrade"),
+                        locale::t_static("Upgrade"),
                     )
                     .disabled(status.disables_actions())
                 });
@@ -350,7 +350,7 @@ impl ExtensionCard {
                     );
                     Button::new(
                         Self::button_id(&extension.id, ExtensionOperation::Upgrade),
-                        locale::t("Upgrade"),
+                        locale::t_static("Upgrade"),
                     )
                     .style(ButtonStyle::Tinted(ui::TintColor::Accent))
                     .when(!is_compatible, |button| {
@@ -778,7 +778,7 @@ impl RenderOnce for ExtensionCard {
                             .size_full()
                             .justify_center()
                             .bg(cx.theme().colors().elevated_surface_background.alpha(0.8))
-                            .child(Label::new(locale::t("Overridden by dev extension."))),
+                            .child(Label::new(locale::t_static("Overridden by dev extension."))),
                     )
                 }),
         )

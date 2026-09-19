@@ -877,7 +877,7 @@ impl Render for DeleteBranchTooltip {
             .unwrap_or(false);
         if force_delete {
             Tooltip::for_action_in(
-                locale::t("Force Delete Branch"),
+                locale::t_static("Force Delete Branch"),
                 &branch_picker::ForceDeleteBranch,
                 &self.focus_handle,
                 cx,
@@ -1041,7 +1041,7 @@ impl BranchListDelegate {
         let focus_handle = self.focus_handle.clone();
         move |_, cx| {
             Tooltip::for_action_in(
-                locale::t("Filter Branches"),
+                locale::t_static("Filter Branches"),
                 &branch_picker::ToggleFilterMenu,
                 &focus_handle,
                 cx,
@@ -1153,8 +1153,8 @@ impl BranchListDelegate {
                         .flatten();
 
                     if let Some(prompt_message) = force_delete_prompt {
-                        let force_delete = locale::t("Force Delete");
-                        let cancel = locale::t("Cancel");
+                        let force_delete = locale::t_static("Force Delete");
+                        let cancel = locale::t_static("Cancel");
                         let answer = cx.update(|window, cx| {
                             window.prompt(
                                 PromptLevel::Warning,
@@ -1703,7 +1703,7 @@ impl PickerDelegate for BranchListDelegate {
         };
 
         let entry_title = match entry {
-            Entry::NewUrl { .. } => Label::new(locale::t("Create Remote Repository"))
+            Entry::NewUrl { .. } => Label::new(locale::t_static("Create Remote Repository"))
                 .single_line()
                 .truncate()
                 .into_any_element(),
@@ -1882,7 +1882,7 @@ impl PickerDelegate for BranchListDelegate {
                                         })
                                         .when(!has_commit, |this| {
                                             this.child(
-                                                Label::new(locale::t("No commits found"))
+                                                Label::new(locale::t_static("No commits found"))
                                                     .color(Color::Muted)
                                                     .size(LabelSize::Small),
                                             )
@@ -1909,16 +1909,20 @@ impl PickerDelegate for BranchListDelegate {
                                                 .child(Label::new(branch_name.clone()))
                                                 .when(is_select_only && is_checked, |this| {
                                                     this.child(
-                                                        Label::new(locale::t("Selected Branch"))
-                                                            .size(LabelSize::Small)
-                                                            .color(Color::Muted),
+                                                        Label::new(locale::t_static(
+                                                            "Selected Branch",
+                                                        ))
+                                                        .size(LabelSize::Small)
+                                                        .color(Color::Muted),
                                                     )
                                                 })
                                                 .when(is_head, |this| {
                                                     this.child(
-                                                        Label::new(locale::t("Current Branch"))
-                                                            .size(LabelSize::Small)
-                                                            .color(Color::Muted),
+                                                        Label::new(locale::t_static(
+                                                            "Current Branch",
+                                                        ))
+                                                        .size(LabelSize::Small)
+                                                        .color(Color::Muted),
                                                     )
                                                 })
                                                 .when_some(absolute_time.clone(), |this, time| {
@@ -2040,7 +2044,7 @@ impl PickerDelegate for BranchListDelegate {
                             .is_some_and(|branch| branch.is_head),
                         |this| {
                             this.child(
-                                Button::new("delete-branch", locale::t("Delete"))
+                                Button::new("delete-branch", locale::t_static("Delete"))
                                     .key_binding(
                                         KeyBinding::for_action_in(
                                             &branch_picker::DeleteBranch,
@@ -2059,7 +2063,7 @@ impl PickerDelegate for BranchListDelegate {
                         },
                     )
                     .child(
-                        Button::new("switch_branch", locale::t("Switch"))
+                        Button::new("switch_branch", locale::t_static("Switch"))
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -2074,7 +2078,7 @@ impl PickerDelegate for BranchListDelegate {
                         .justify_end()
                         .map(|this| match branch_from_default_button {
                             Some(button) => this.child(button).child(
-                                Button::new("create", locale::t("Create"))
+                                Button::new("create", locale::t_static("Create"))
                                     .key_binding(
                                         KeyBinding::for_action_in(
                                             &menu::Confirm,
@@ -2119,7 +2123,7 @@ impl PickerDelegate for BranchListDelegate {
                             this.child(button)
                         })
                         .child(
-                            Button::new("create-new-branch", locale::t("Create"))
+                            Button::new("create-new-branch", locale::t_static("Create"))
                                 .key_binding(
                                     KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                         .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -2135,7 +2139,7 @@ impl PickerDelegate for BranchListDelegate {
                 footer_container()
                     .justify_end()
                     .child(
-                        Button::new("confirm-create-remote", locale::t("Confirm"))
+                        Button::new("confirm-create-remote", locale::t_static("Confirm"))
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12_f32))),

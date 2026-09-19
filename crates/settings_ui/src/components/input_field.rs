@@ -295,8 +295,8 @@ impl RenderOnce for SettingsInputField {
                                 IconButton::new("clear-button", IconName::Close)
                                     .icon_size(IconSize::Small)
                                     .icon_color(Color::Muted)
-                                    .aria_label(locale::t("Clear"))
-                                    .tooltip(Tooltip::text(locale::t("Clear")))
+                                    .aria_label(locale::t_static("Clear"))
+                                    .tooltip(Tooltip::text(locale::t_static("Clear")))
                                     .on_click(move |_, window, cx| {
                                         let Some(editor) = weak_editor_for_clear.upgrade() else {
                                             return;
@@ -315,8 +315,8 @@ impl RenderOnce for SettingsInputField {
                                 IconButton::new("confirm-button", IconName::Check)
                                     .icon_size(IconSize::Small)
                                     .icon_color(Color::Success)
-                                    .aria_label(locale::t("Confirm"))
-                                    .tooltip(Tooltip::text(locale::t("Enter to Confirm")))
+                                    .aria_label(locale::t_static("Confirm"))
+                                    .tooltip(Tooltip::text(locale::t_static("Enter to Confirm")))
                                     .on_click(move |_, window, cx| {
                                         let Some(confirm) = confirm_for_button.as_ref() else {
                                             return;

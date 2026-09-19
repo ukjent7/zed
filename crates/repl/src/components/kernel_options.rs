@@ -92,13 +92,15 @@ fn build_grouped_entries(store: &ReplStore, worktree_id: WorktreeId) -> Vec<Kern
 
     // Recommended section
     if let Some(rec) = recommended_entry {
-        entries.push(KernelPickerEntry::SectionHeader(locale::t("Recommended")));
+        entries.push(KernelPickerEntry::SectionHeader(locale::t_static(
+            "Recommended",
+        )));
         entries.push(rec);
     }
 
     // Python Environments section
     if !python_envs.is_empty() {
-        entries.push(KernelPickerEntry::SectionHeader(locale::t(
+        entries.push(KernelPickerEntry::SectionHeader(locale::t_static(
             "Python Environments",
         )));
         entries.extend(python_envs);
@@ -106,7 +108,7 @@ fn build_grouped_entries(store: &ReplStore, worktree_id: WorktreeId) -> Vec<Kern
 
     // Jupyter Kernels section
     if !jupyter_kernels.is_empty() {
-        entries.push(KernelPickerEntry::SectionHeader(locale::t(
+        entries.push(KernelPickerEntry::SectionHeader(locale::t_static(
             "Jupyter Kernels",
         )));
         entries.extend(jupyter_kernels);
@@ -114,13 +116,15 @@ fn build_grouped_entries(store: &ReplStore, worktree_id: WorktreeId) -> Vec<Kern
 
     // WSL Kernels section
     if !wsl_kernels.is_empty() {
-        entries.push(KernelPickerEntry::SectionHeader(locale::t("WSL Kernels")));
+        entries.push(KernelPickerEntry::SectionHeader(locale::t_static(
+            "WSL Kernels",
+        )));
         entries.extend(wsl_kernels);
     }
 
     // Remote section
     if !remote_kernels.is_empty() {
-        entries.push(KernelPickerEntry::SectionHeader(locale::t(
+        entries.push(KernelPickerEntry::SectionHeader(locale::t_static(
             "Remote Servers",
         )));
         entries.extend(remote_kernels);
@@ -246,7 +250,7 @@ impl PickerDelegate for KernelPickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Select a kernel...").as_str().into()
+        locale::t_static("Select a kernel...").as_str().into()
     }
 
     fn update_matches(
@@ -389,14 +393,14 @@ impl PickerDelegate for KernelPickerDelegate {
                                                 )
                                                 .when(*is_recommended, |flex| {
                                                     flex.child(
-                                                        Label::new(locale::t("Recommended"))
+                                                        Label::new(locale::t_static("Recommended"))
                                                             .size(LabelSize::XSmall)
                                                             .color(Color::Accent),
                                                     )
                                                 })
                                                 .when(!has_ipykernel, |flex| {
                                                     flex.child(
-                                                        Label::new(locale::t(
+                                                        Label::new(locale::t_static(
                                                             "ipykernel not installed",
                                                         ))
                                                         .size(LabelSize::XSmall)
@@ -440,7 +444,7 @@ impl PickerDelegate for KernelPickerDelegate {
                 .p_1()
                 .gap_4()
                 .child(
-                    Button::new("kernel-docs", locale::t("Kernel Docs"))
+                    Button::new("kernel-docs", locale::t_static("Kernel Docs"))
                         .end_icon(
                             Icon::new(IconName::ArrowUpRight)
                                 .size(IconSize::Small)

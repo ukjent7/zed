@@ -88,14 +88,14 @@ pub fn toggle_screen_sharing(
         Err(e) => Task::ready(Err(e)),
     };
     toggle_screen_sharing.detach_and_prompt_err(
-        locale::t("Sharing Screen Failed").as_str(),
+        locale::t_static("Sharing Screen Failed").as_str(),
         window,
         cx,
         |e, _, _| {
             Some(format!(
                 "{:?}\n\n{}",
                 e,
-                locale::t(
+                locale::t_static(
                     "Please check that you have given Zed permissions to record your screen in Settings."
                 )
             ))
@@ -394,15 +394,19 @@ impl TitleBar {
             ConnectionQuality::Excellent => (
                 IconName::SignalHigh,
                 Some(Color::Success),
-                locale::t("Excellent"),
+                locale::t_static("Excellent"),
             ),
-            ConnectionQuality::Good => (IconName::SignalHigh, None, locale::t("Good")),
+            ConnectionQuality::Good => (IconName::SignalHigh, None, locale::t_static("Good")),
             ConnectionQuality::Poor => (
                 IconName::SignalMedium,
                 Some(Color::Warning),
-                locale::t("Poor"),
+                locale::t_static("Poor"),
             ),
-            ConnectionQuality::Lost => (IconName::SignalLow, Some(Color::Error), locale::t("Lost")),
+            ConnectionQuality::Lost => (
+                IconName::SignalLow,
+                Some(Color::Error),
+                locale::t_static("Lost"),
+            ),
         };
 
         h_flex()
@@ -413,7 +417,7 @@ impl TitleBar {
                     .gap_1()
                     .child(
                         IconButton::new("leave-call", IconName::Exit)
-                            .tooltip(Tooltip::text(locale::t("Leave Call")))
+                            .tooltip(Tooltip::text(locale::t_static("Leave Call")))
                             .icon_size(IconSize::Small)
                             .on_click(move |_, _window, cx| {
                                 ActiveCall::global(cx)
@@ -456,17 +460,17 @@ impl TitleBar {
                                     .justify_between()
                                     .child(Label::new(format!(
                                         "{}: {quality_label}",
-                                        locale::t("Connection")
+                                        locale::t_static("Connection")
                                     )))
                                     .when(has_key_binding, |this| this.child(key_binding)),
                             )
                             .child(
                                 v_flex()
                                     .gap_0p5()
-                                    .child(stat_row(locale::t("Latency"), latency))
-                                    .child(stat_row(locale::t("Jitter"), jitter))
-                                    .child(stat_row(locale::t("Packet loss"), packet_loss))
-                                    .child(stat_row(locale::t("Input lag"), input_lag)),
+                                    .child(stat_row(locale::t_static("Latency"), latency))
+                                    .child(stat_row(locale::t_static("Jitter"), jitter))
+                                    .child(stat_row(locale::t_static("Packet loss"), packet_loss))
+                                    .child(stat_row(locale::t_static("Input lag"), input_lag)),
                             )
                             .into_any_element()
                     }))
@@ -488,16 +492,16 @@ impl TitleBar {
                         if is_muted {
                             if is_deafened {
                                 Tooltip::with_meta(
-                                    locale::t("Unmute Microphone"),
+                                    locale::t_static("Unmute Microphone"),
                                     None,
-                                    locale::t("Audio will be unmuted"),
+                                    locale::t_static("Audio will be unmuted"),
                                     cx,
                                 )
                             } else {
-                                Tooltip::simple(locale::t("Unmute Microphone"), cx)
+                                Tooltip::simple(locale::t_static("Unmute Microphone"), cx)
                             }
                         } else {
-                            Tooltip::simple(locale::t("Mute Microphone"), cx)
+                            Tooltip::simple(locale::t_static("Mute Microphone"), cx)
                         }
                     })
                     .icon_size(IconSize::Small)
@@ -520,26 +524,26 @@ impl TitleBar {
                 .toggle_state(is_deafened)
                 .tooltip(move |_window, cx| {
                     if is_deafened {
-                        let label = locale::t("Unmute Audio");
+                        let label = locale::t_static("Unmute Audio");
 
                         if !muted_by_user {
                             Tooltip::with_meta(
                                 label,
                                 None,
-                                locale::t("Microphone will be unmuted"),
+                                locale::t_static("Microphone will be unmuted"),
                                 cx,
                             )
                         } else {
                             Tooltip::simple(label, cx)
                         }
                     } else {
-                        let label = locale::t("Mute Audio");
+                        let label = locale::t_static("Mute Audio");
 
                         if !muted_by_user {
                             Tooltip::with_meta(
                                 label,
                                 None,
-                                locale::t("Microphone will be muted"),
+                                locale::t_static("Microphone will be muted"),
                                 cx,
                             )
                         } else {
@@ -589,7 +593,7 @@ impl TitleBar {
                     let folder_list = folder_names.join(", ");
 
                     let unshare_meta: SharedString = if folder_list.is_empty() {
-                        locale::t("Stop sharing project with call participants")
+                        locale::t_static("Stop sharing project with call participants")
                     } else {
                         locale::t_format(
                             "Stop sharing {folders} with call participants",
@@ -597,7 +601,7 @@ impl TitleBar {
                         )
                     };
                     let share_meta: SharedString = if folder_list.is_empty() {
-                        locale::t("Share active project with call participants")
+                        locale::t_static("Share active project with call participants")
                     } else {
                         locale::t_format(
                             "Share {folders} with call participants",
@@ -614,7 +618,7 @@ impl TitleBar {
                                 if is_shared {
                                     this.tooltip(move |_, cx| {
                                         Tooltip::with_meta(
-                                            locale::t("Unshare Project"),
+                                            locale::t_static("Unshare Project"),
                                             None,
                                             unshare_meta.clone(),
                                             cx,
@@ -626,13 +630,13 @@ impl TitleBar {
                                         },
                                     ))
                                 } else if is_sharing_disabled {
-                                    this.disabled(true).tooltip(Tooltip::text(locale::t(
+                                    this.disabled(true).tooltip(Tooltip::text(locale::t_static(
                                         "This project may not be shared in a public channel.",
                                     )))
                                 } else {
                                     this.tooltip(move |_, cx| {
                                         Tooltip::with_meta(
-                                            locale::t("Share Project"),
+                                            locale::t_static("Share Project"),
                                             None,
                                             share_meta.clone(),
                                             cx,
@@ -660,9 +664,9 @@ impl TitleBar {
                     .toggle_state(is_screen_sharing)
                     .selected_style(ButtonStyle::Tinted(TintColor::Accent))
                     .tooltip(Tooltip::text(if is_screen_sharing {
-                        locale::t("Stop Sharing Screen")
+                        locale::t_static("Stop Sharing Screen")
                     } else {
-                        locale::t("Share Screen")
+                        locale::t_static("Share Screen")
                     }))
                     .on_click(move |_, window, cx| {
                         let should_share = ActiveCall::global(cx)
@@ -685,7 +689,7 @@ impl TitleBar {
                                     }
                                 });
                                 task.detach_and_prompt_err(
-                                    locale::t("Sharing Screen Failed").as_str(),
+                                    locale::t_static("Sharing Screen Failed").as_str(),
                                     window,
                                     cx,
                                     |e, _, _| Some(format!("{e:?}")),
@@ -757,7 +761,7 @@ impl TitleBar {
                                 let label = meta
                                     .label
                                     .clone()
-                                    .unwrap_or_else(|| locale::t("Unknown screen"));
+                                    .unwrap_or_else(|| locale::t_static("Unknown screen"));
                                 let resolution = SharedString::from(format!(
                                     "{} × {}",
                                     meta.resolution.width.0, meta.resolution.height.0

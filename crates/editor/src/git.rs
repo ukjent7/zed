@@ -626,7 +626,11 @@ impl Editor {
         // Create the prompt editor for the review input
         let prompt_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text(locale::t("Add a review comment...").as_str(), window, cx);
+            editor.set_placeholder_text(
+                locale::t_static("Add a review comment...").as_str(),
+                window,
+                cx,
+            );
             editor
         });
 
@@ -1046,7 +1050,7 @@ impl Editor {
                     .border_color(icon_color.opacity(0.5))
             })
             .child(Icon::new(IconName::Plus).size(IconSize::Small))
-            .tooltip(Tooltip::text(locale::t(
+            .tooltip(Tooltip::text(locale::t_static(
                 "Add Review (drag to select multiple lines)",
             )))
             .on_mouse_down(
@@ -2655,7 +2659,7 @@ impl Editor {
                                 IconButton::new("diff-review-add", IconName::Return)
                                     .icon_color(ui::Color::Muted)
                                     .icon_size(action_icon_size)
-                                    .tooltip(Tooltip::text(locale::t("Add comment")))
+                                    .tooltip(Tooltip::text(locale::t_static("Add comment")))
                                     .on_click(|_, window, cx| {
                                         window.dispatch_action(
                                             Box::new(crate::actions::SubmitDiffReviewComment),

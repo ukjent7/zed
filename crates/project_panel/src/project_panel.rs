@@ -952,15 +952,15 @@ impl ProjectPanel {
                                     window, cx,
                                 )
                                 .detach_and_prompt_err(
-                                    locale::t("Failed to open file").as_str(),
+                                    locale::t_static("Failed to open file").as_str(),
                                     window,
                                     cx,
                                     move |e, _, _| {
                                     match e.error_code() {
                                         ErrorCode::Disconnected => if is_via_ssh {
-                                            Some(locale::t("Disconnected from SSH host").into())
+                                            Some(locale::t_static("Disconnected from SSH host").into())
                                         } else {
-                                            Some(locale::t("Disconnected from remote project").into())
+                                            Some(locale::t_static("Disconnected from remote project").into())
                                         },
                                         ErrorCode::UnsharedItem => Some(
                                             locale::t_format(
@@ -1188,16 +1188,19 @@ impl ProjectPanel {
                     if is_read_only {
                         menu.when(is_markdown, |menu| {
                             menu.action(
-                                locale::t("Open Markdown Preview"),
+                                locale::t_static("Open Markdown Preview"),
                                 Box::new(OpenMarkdownPreview),
                             )
                         })
                         .when(is_dir, |menu| {
-                            menu.action(locale::t("Search Inside"), Box::new(NewSearchInDirectory))
+                            menu.action(
+                                locale::t_static("Search Inside"),
+                                Box::new(NewSearchInDirectory),
+                            )
                         })
                     } else {
-                        menu.action(locale::t("New File"), Box::new(NewFile))
-                            .action(locale::t("New Folder"), Box::new(NewDirectory))
+                        menu.action(locale::t_static("New File"), Box::new(NewFile))
+                            .action(locale::t_static("New Folder"), Box::new(NewDirectory))
                             .separator()
                             .when(is_local, |menu| {
                                 menu.action(
@@ -1207,45 +1210,51 @@ impl ProjectPanel {
                             })
                             .when(is_local, |menu| {
                                 menu.action(
-                                    locale::t("Open in Default App"),
+                                    locale::t_static("Open in Default App"),
                                     Box::new(OpenWithSystem),
                                 )
                             })
-                            .action(locale::t("Open in Terminal"), Box::new(OpenInTerminal))
+                            .action(
+                                locale::t_static("Open in Terminal"),
+                                Box::new(OpenInTerminal),
+                            )
                             .when(is_markdown, |menu| {
                                 menu.action(
-                                    locale::t("Open Markdown Preview"),
+                                    locale::t_static("Open Markdown Preview"),
                                     Box::new(OpenMarkdownPreview),
                                 )
                             })
                             .when(is_dir, |menu| {
                                 menu.separator().action(
-                                    locale::t("Find in Folder…"),
+                                    locale::t_static("Find in Folder…"),
                                     Box::new(NewSearchInDirectory),
                                 )
                             })
                             .when(is_unfoldable, |menu| {
                                 menu.action(
-                                    locale::t("Unfold Directory"),
+                                    locale::t_static("Unfold Directory"),
                                     Box::new(UnfoldDirectory),
                                 )
                             })
                             .when(is_foldable, |menu| {
-                                menu.action(locale::t("Fold Directory"), Box::new(FoldDirectory))
+                                menu.action(
+                                    locale::t_static("Fold Directory"),
+                                    Box::new(FoldDirectory),
+                                )
                             })
                             .when(should_show_compare, |menu| {
                                 menu.separator().action(
-                                    locale::t("Compare Marked Files"),
+                                    locale::t_static("Compare Marked Files"),
                                     Box::new(CompareMarkedFiles),
                                 )
                             })
                             .separator()
-                            .action(locale::t("Cut"), Box::new(Cut))
-                            .action(locale::t("Copy"), Box::new(Copy))
-                            .action(locale::t("Duplicate"), Box::new(Duplicate))
+                            .action(locale::t_static("Cut"), Box::new(Cut))
+                            .action(locale::t_static("Copy"), Box::new(Copy))
+                            .action(locale::t_static("Duplicate"), Box::new(Duplicate))
                             .action_disabled_when(
                                 !has_pasteable_content,
-                                locale::t("Paste"),
+                                locale::t_static("Paste"),
                                 Box::new(Paste),
                             )
                             .when(!is_collab, |menu| {
@@ -1254,103 +1263,111 @@ impl ProjectPanel {
 
                                 menu.action_disabled_when(
                                     !can_undo,
-                                    locale::t("Undo"),
+                                    locale::t_static("Undo"),
                                     Box::new(Undo),
                                 )
                                 .action_disabled_when(
                                     !can_redo,
-                                    locale::t("Redo"),
+                                    locale::t_static("Redo"),
                                     Box::new(Redo),
                                 )
                             })
                             .when(is_remote, |menu| {
-                                menu.separator()
-                                    .action(locale::t("Download..."), Box::new(DownloadFromRemote))
+                                menu.separator().action(
+                                    locale::t_static("Download..."),
+                                    Box::new(DownloadFromRemote),
+                                )
                             })
                             .separator()
                             .action(
-                                locale::t("Copy Path"),
+                                locale::t_static("Copy Path"),
                                 Box::new(zed_actions::workspace::CopyPath),
                             )
                             .action(
-                                locale::t("Copy Relative Path"),
+                                locale::t_static("Copy Relative Path"),
                                 Box::new(zed_actions::workspace::CopyRelativePath),
                             )
                             .when(has_git_repo, |menu| {
                                 menu.separator()
                                     .when(!is_dir && self.has_git_changes(entry_id), |menu| {
                                         menu.action(
-                                            locale::t("Restore File"),
+                                            locale::t_static("Restore File"),
                                             Box::new(git::RestoreFile { skip_prompt: false }),
                                         )
                                     })
                                     .action(
-                                        locale::t("Add to .gitignore"),
+                                        locale::t_static("Add to .gitignore"),
                                         Box::new(git::AddToGitignore),
                                     )
                                     .action(
-                                        locale::t("Add to .git/info/exclude"),
+                                        locale::t_static("Add to .git/info/exclude"),
                                         Box::new(git::AddToGitInfoExclude),
                                     )
                                     .when(has_history, |menu| {
                                         menu.action(
-                                            locale::t("View History"),
+                                            locale::t_static("View History"),
                                             Box::new(git::FileHistory),
                                         )
                                     })
                                     .when(!is_dir, |menu| {
                                         menu.action(
-                                            locale::t("Open File Permalink"),
+                                            locale::t_static("Open File Permalink"),
                                             git::OpenFilePermalink.boxed_clone(),
                                         )
                                         .action(
-                                            locale::t("Copy File Permalink"),
+                                            locale::t_static("Copy File Permalink"),
                                             git::CopyFilePermalink.boxed_clone(),
                                         )
                                     })
                             })
                             .when(!should_hide_rename, |menu| {
                                 menu.separator()
-                                    .action(locale::t("Rename"), Box::new(Rename))
+                                    .action(locale::t_static("Rename"), Box::new(Rename))
                             })
                             .when(!is_root && !is_collab, |menu| {
                                 menu.action(
-                                    locale::t("Trash"),
+                                    locale::t_static("Trash"),
                                     Box::new(Trash { skip_prompt: false }),
                                 )
                             })
                             .when(!is_root, |menu| {
                                 menu.action(
-                                    locale::t("Delete"),
+                                    locale::t_static("Delete"),
                                     Box::new(Delete { skip_prompt: false }),
                                 )
                             })
                             .when(!is_collab && is_root, |menu| {
                                 menu.separator()
                                     .action(
-                                        locale::t("Add Folders to Project…"),
+                                        locale::t_static("Add Folders to Project…"),
                                         Box::new(workspace::AddFolderToProject),
                                     )
                                     .action(
-                                        locale::t("Remove from Project"),
+                                        locale::t_static("Remove from Project"),
                                         Box::new(RemoveFromProject),
                                     )
                             })
                             .when(is_dir && !is_root, |menu| {
                                 menu.separator()
                                     .action(
-                                        locale::t("Expand All"),
+                                        locale::t_static("Expand All"),
                                         Box::new(ExpandSelectedEntryAndChildren),
                                     )
                                     .action(
-                                        locale::t("Collapse All"),
+                                        locale::t_static("Collapse All"),
                                         Box::new(CollapseSelectedEntryAndChildren),
                                     )
                             })
                             .when(is_dir && is_root, |menu| {
                                 menu.separator()
-                                    .action(locale::t("Expand All"), Box::new(ExpandAllEntries))
-                                    .action(locale::t("Collapse All"), Box::new(CollapseAllEntries))
+                                    .action(
+                                        locale::t_static("Expand All"),
+                                        Box::new(ExpandAllEntries),
+                                    )
+                                    .action(
+                                        locale::t_static("Collapse All"),
+                                        Box::new(CollapseAllEntries),
+                                    )
                             })
                     }
                 })
@@ -2671,8 +2688,8 @@ impl ProjectPanel {
                     &[("{file}", &MarkdownInlineCode(&file_name).to_string())],
                 )
                 .to_string();
-                let restore = locale::t("Restore");
-                let cancel = locale::t("Cancel");
+                let restore = locale::t_static("Restore");
+                let cancel = locale::t_static("Cancel");
                 Some(window.prompt(
                     PromptLevel::Info,
                     &prompt,
@@ -2871,14 +2888,14 @@ impl ProjectPanel {
             RemovalKind::Trash => (
                 "Do you want to trash {name}?",
                 "Do you want to trash the following {count} files?\n{list}",
-                locale::t("Trash"),
+                locale::t_static("Trash"),
                 None,
             ),
             RemovalKind::Delete => (
                 "Are you sure you want to permanently delete {name}?",
                 "Are you sure you want to permanently delete the following {count} files?\n{list}",
-                locale::t("Delete"),
-                Some(locale::t("This cannot be undone.")),
+                locale::t_static("Delete"),
+                Some(locale::t_static("This cannot be undone.")),
             ),
         };
 
@@ -2897,7 +2914,7 @@ impl ProjectPanel {
                     .collect::<Vec<_>>();
                 let omitted_count = names.len().saturating_sub(CUTOFF_POINT);
                 if omitted_count == 1 {
-                    listed_names.push(locale::t(".. 1 file not shown").into());
+                    listed_names.push(locale::t_static(".. 1 file not shown").into());
                 } else if omitted_count > 1 {
                     listed_names.push(
                         locale::t_format(
@@ -2923,13 +2940,14 @@ impl ProjectPanel {
             1 if names.len() == 1 => {
                 message.push_str("\n\n");
                 message.push_str(
-                    &locale::t("It has unsaved changes, which will be lost.").to_string(),
+                    &locale::t_static("It has unsaved changes, which will be lost.").to_string(),
                 );
             }
             1 => {
                 message.push_str("\n\n");
                 message.push_str(
-                    &locale::t("1 of these has unsaved changes, which will be lost.").to_string(),
+                    &locale::t_static("1 of these has unsaved changes, which will be lost.")
+                        .to_string(),
                 );
             }
             dirty_buffers => {
@@ -3002,7 +3020,7 @@ impl ProjectPanel {
 
                 let prompt = Self::build_removal_prompt(removal_kind, &names, dirty_buffers);
 
-                let cancel = locale::t("Cancel");
+                let cancel = locale::t_static("Cancel");
                 Some(window.prompt(
                     PromptLevel::Info,
                     &prompt.message,
@@ -3970,7 +3988,7 @@ impl ProjectPanel {
             files: false,
             directories: true,
             multiple: false,
-            prompt: Some(locale::t("Download")),
+            prompt: Some(locale::t_static("Download")),
         });
 
         let fs = self.fs.clone();
@@ -5052,8 +5070,8 @@ impl ProjectPanel {
                         &[("{name}", &MarkdownInlineCode(filename).to_string())],
                     )
                     .to_string();
-                    let replace = locale::t("Replace");
-                    let cancel = locale::t("Cancel");
+                    let replace = locale::t_static("Replace");
+                    let cancel = locale::t_static("Cancel");
                     let answer = cx
                         .update(|window, cx| {
                             window.prompt(
@@ -6579,7 +6597,7 @@ impl ProjectPanel {
                                         Tooltip::with_meta(
                                             path.to_string_lossy().into_owned(),
                                             None,
-                                            locale::t("Symbolic Link"),
+                                            locale::t_static("Symbolic Link"),
                                             cx,
                                         )
                                     })

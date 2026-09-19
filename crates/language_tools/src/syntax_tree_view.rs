@@ -531,7 +531,7 @@ impl Render for SyntaxTreeView {
                         .max_w_3_5()
                         .map(|this| {
                             if editor_state.is_some_and(|state| !state.has_language()) {
-                                this.child(Label::new(locale::t(
+                                this.child(Label::new(locale::t_static(
                                     "Current editor has no associated language",
                                 )))
                                 .child(
@@ -542,13 +542,15 @@ impl Render for SyntaxTreeView {
                                     .size(LabelSize::Small),
                                 )
                             } else {
-                                this.child(Label::new(locale::t("Not attached to an editor")))
-                                    .child(
-                                        Label::new(locale::t(
-                                            "Focus an editor to show a new tree view",
-                                        ))
-                                        .size(LabelSize::Small),
-                                    )
+                                this.child(Label::new(locale::t_static(
+                                    "Not attached to an editor",
+                                )))
+                                .child(
+                                    Label::new(locale::t_static(
+                                        "Focus an editor to show a new tree view",
+                                    ))
+                                    .size(LabelSize::Small),
+                                )
                             }
                         });
 
@@ -576,7 +578,7 @@ impl Item for SyntaxTreeView {
     fn to_item_events(_: &Self::Event, _: &mut dyn FnMut(workspace::item::ItemEvent)) {}
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        locale::t("Syntax Tree")
+        locale::t_static("Syntax Tree")
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {

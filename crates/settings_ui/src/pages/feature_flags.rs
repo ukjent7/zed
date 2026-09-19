@@ -59,7 +59,7 @@ fn render_flag_row(
                     ))
                     .when(forced_on, |this| {
                         this.child(
-                            Label::new(locale::t("enabled for all"))
+                            Label::new(locale::t_static("enabled for all"))
                                 .size(LabelSize::Small)
                                 .color(Color::Muted),
                         )

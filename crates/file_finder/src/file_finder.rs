@@ -1333,7 +1333,7 @@ impl FileFinderDelegate {
                 } => (
                     channel_name.to_string(),
                     string_match.positions.clone(),
-                    locale::t("Channel Notes").to_string(),
+                    locale::t_static("Channel Notes").to_string(),
                     vec![],
                 ),
                 Match::CreateNew(project_path) => (
@@ -1792,7 +1792,7 @@ impl PickerDelegate for FileFinderDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Search project files...").as_str().into()
+        locale::t_static("Search project files...").as_str().into()
     }
 
     fn searchbar_trailer(
@@ -1805,9 +1805,9 @@ impl PickerDelegate for FileFinderDelegate {
         // Clicking includes ignored files unless they're already included, in
         // which case it excludes them again (see `handle_toggle_ignored`).
         let tooltip_label = if including_ignored {
-            locale::t("Exclude Ignored Files")
+            locale::t_static("Exclude Ignored Files")
         } else {
-            locale::t("Include Ignored Files")
+            locale::t_static("Include Ignored Files")
         };
 
         let filter_button = IconButton::new("filter-ignored", IconName::FileIgnored)
@@ -2070,9 +2070,9 @@ impl PickerDelegate for FileFinderDelegate {
                     ..Default::default()
                 };
                 let mut message = picker::HighlightedTextBuilder::default();
-                message.push_plain(locale::t("Create file ").as_str());
+                message.push_plain(locale::t_static("Create file ").as_str());
                 message.push_styled(project_path.path.display(path_style), path_highlight);
-                message.push_plain(locale::t("?").as_str());
+                message.push_plain(locale::t_static("?").as_str());
                 Some(picker::PreviewUpdate::message(message.build()))
             }
             _ => Some(picker::PreviewUpdate::from_path(
@@ -2108,23 +2108,26 @@ impl PickerDelegate for FileFinderDelegate {
         _cx: &mut Context<Picker<Self>>,
     ) -> Vec<picker::PickerAction> {
         let open_label: SharedString = if self.selected_matches.len() > 1 {
-            locale::t("Open multiple")
+            locale::t_static("Open multiple")
         } else {
-            locale::t("Open File")
+            locale::t_static("Open File")
         };
         vec![
-            picker::PickerAction::header(locale::t("Split…")),
+            picker::PickerAction::header(locale::t_static("Split…")),
             picker::PickerAction::button(
-                locale::t("Left"),
+                locale::t_static("Left"),
                 pane::SplitLeft::default().boxed_clone(),
             ),
             picker::PickerAction::button(
-                locale::t("Right"),
+                locale::t_static("Right"),
                 pane::SplitRight::default().boxed_clone(),
             ),
-            picker::PickerAction::button(locale::t("Up"), pane::SplitUp::default().boxed_clone()),
             picker::PickerAction::button(
-                locale::t("Down"),
+                locale::t_static("Up"),
+                pane::SplitUp::default().boxed_clone(),
+            ),
+            picker::PickerAction::button(
+                locale::t_static("Down"),
                 pane::SplitDown::default().boxed_clone(),
             ),
             picker::PickerAction::separator(),

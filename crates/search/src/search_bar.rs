@@ -91,7 +91,7 @@ pub(crate) fn filter_search_results_input(
             .border_r_1()
             .border_color(cx.theme().colors().border)
             .bg(cx.theme().colors().text_accent.opacity(0.05))
-            .child(Label::new(locale::t("Find in Results")).color(Color::Muted)),
+            .child(Label::new(locale::t_static("Find in Results")).color(Color::Muted)),
     )
 }
 

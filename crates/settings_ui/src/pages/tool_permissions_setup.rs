@@ -560,7 +560,7 @@ fn render_verification_section(
                 .border_color(color.border_variant)
                 .rounded_sm()
                 .child(
-                    Label::new(locale::t("Test Your Rules"))
+                    Label::new(locale::t_static("Test Your Rules"))
                         .color(Color::Muted)
                         .size(LabelSize::Small),
                 )
@@ -580,7 +580,7 @@ fn render_verification_section(
                     this.when(patterns_agree, |this| {
                         if matched_patterns.is_empty() {
                             this.child(
-                                Label::new(locale::t("No regex matches, using the default action."))
+                                Label::new(locale::t_static("No regex matches, using the default action."))
                                     .size(LabelSize::Small)
                                     .color(Color::Muted),
                             )
@@ -606,7 +606,7 @@ fn render_verification_section(
                         } else {
                             this.child(
                                 Label::new(
-                                    locale::t("Pattern preview differs from engine — showing authoritative result."),
+                                    locale::t_static("Pattern preview differs from engine — showing authoritative result."),
                                 )
                                 .size(LabelSize::XSmall)
                                 .color(Color::Warning),
@@ -824,7 +824,7 @@ fn render_verdict_label(mode: ToolPermissionMode) -> AnyElement {
     h_flex()
         .gap_1()
         .child(
-            Label::new(locale::t("Result:"))
+            Label::new(locale::t_static("Result:"))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
         )
@@ -854,7 +854,7 @@ fn render_invalid_patterns_section(
                         .size(IconSize::Small)
                         .color(Color::Error),
                 )
-                .child(Label::new(locale::t("Invalid Patterns")).color(Color::Error)),
+                .child(Label::new(locale::t_static("Invalid Patterns")).color(Color::Error)),
         )
         .child(
             Label::new(
@@ -917,7 +917,9 @@ fn render_invalid_patterns_section(
                                     IconButton::new(delete_id, IconName::Trash)
                                         .icon_size(IconSize::Small)
                                         .icon_color(Color::Muted)
-                                        .tooltip(Tooltip::text(locale::t("Delete Invalid Pattern")))
+                                        .tooltip(Tooltip::text(locale::t_static(
+                                            "Delete Invalid Pattern",
+                                        )))
                                         .on_click(cx.listener(move |_, _, _, cx| {
                                             delete_pattern(
                                                 &tool_id_for_delete,
@@ -998,7 +1000,7 @@ fn render_pattern_empty_state(cx: &mut Context<SettingsWindow>) -> AnyElement {
         .border_dashed()
         .border_color(cx.theme().colors().border_variant)
         .child(
-            Label::new(locale::t("No patterns configured"))
+            Label::new(locale::t_static("No patterns configured"))
                 .size(LabelSize::Small)
                 .color(Color::Disabled),
         )
@@ -1029,7 +1031,7 @@ fn render_user_pattern_row(
             IconButton::new(delete_id, IconName::Trash)
                 .icon_size(IconSize::Small)
                 .icon_color(Color::Muted)
-                .tooltip(Tooltip::text(locale::t("Delete Pattern")))
+                .tooltip(Tooltip::text(locale::t_static("Delete Pattern")))
                 .on_click(cx.listener(move |_, _, _, cx| {
                     delete_pattern(&tool_id_for_delete, rule_type, &pattern_for_delete, cx);
                 })),
@@ -1128,10 +1130,10 @@ fn render_global_default_mode_section(current_mode: ToolPermissionMode) -> AnyEl
             v_flex()
                 .w_full()
                 .min_w_0()
-                .child(Label::new(locale::t("Default Permission")))
+                .child(Label::new(locale::t_static("Default Permission")))
                 .child(
                     Label::new(
-                        locale::t("Controls the default behavior for all tool actions. Per-tool rules and patterns can override this."),
+                        locale::t_static("Controls the default behavior for all tool actions. Per-tool rules and patterns can override this."),
                     )
                     .size(LabelSize::Small)
                     .color(Color::Muted),
@@ -1184,9 +1186,9 @@ fn render_default_mode_section(
             v_flex()
                 .w_full()
                 .min_w_0()
-                .child(Label::new(locale::t("Default Action")))
+                .child(Label::new(locale::t_static("Default Action")))
                 .child(
-                    Label::new(locale::t("Action to take when no patterns match."))
+                    Label::new(locale::t_static("Action to take when no patterns match."))
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 ),

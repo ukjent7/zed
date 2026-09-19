@@ -56,9 +56,9 @@ pub(crate) fn render_mcp_servers_page(
                 .gap_2()
                 .child(
                     v_flex()
-                        .child(Label::new(locale::t("Configured Servers")))
+                        .child(Label::new(locale::t_static("Configured Servers")))
                         .child(
-                            Label::new(locale::t(
+                            Label::new(locale::t_static(
                                 "Manage servers connected directly or via extensions.",
                             ))
                             .size(LabelSize::Small)
@@ -112,7 +112,7 @@ fn render_empty_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new(locale::t(
+            Label::new(locale::t_static(
                 "No MCP servers added yet. Click \"Add Server\" to get started.",
             ))
             .color(Color::Muted)
@@ -130,7 +130,7 @@ fn render_no_project_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new(locale::t(
+            Label::new(locale::t_static(
                 "No active project found. Open a workspace to manage MCP servers.",
             ))
             .color(Color::Muted)
@@ -289,7 +289,7 @@ fn render_configure_button(
     )
     .icon_size(IconSize::Small)
     .tab_index(0isize)
-    .tooltip(Tooltip::text(locale::t("Configure MCP Server")))
+    .tooltip(Tooltip::text(locale::t_static("Configure MCP Server")))
     .on_click(move |_event, window, cx| {
         let transport = match &server_settings {
             Some(ContextServerSettings::Http { .. }) => McpTransport::Http,
@@ -318,7 +318,7 @@ fn render_uninstall_button(
     )
     .icon_size(IconSize::Small)
     .tab_index(0isize)
-    .tooltip(Tooltip::text(locale::t("Uninstall MCP Server")))
+    .tooltip(Tooltip::text(locale::t_static("Uninstall MCP Server")))
     .on_click(move |_event, _window, cx| {
         uninstall_server(&context_server_id, provided_by_extension, cx);
     })
@@ -449,7 +449,7 @@ fn render_status_details(
                                     .color(Color::Muted),
                             )
                             .child(
-                                Label::new(locale::t("Authenticate to connect this server"))
+                                Label::new(locale::t_static("Authenticate to connect this server"))
                                     .color(Color::Muted)
                                     .size(LabelSize::Small),
                             ),
@@ -482,7 +482,7 @@ fn render_status_details(
                                 .color(Color::Muted),
                         )
                         .child(
-                            Label::new(locale::t(
+                            Label::new(locale::t_static(
                                 "A client secret is required to connect this server",
                             ))
                             .color(Color::Muted)
@@ -499,7 +499,7 @@ fn render_status_details(
                 .gap_2()
                 .child(div().size_3().flex_shrink_0())
                 .child(
-                    Label::new(locale::t("Authenticating…"))
+                    Label::new(locale::t_static("Authenticating…"))
                         .color(Color::Muted)
                         .size(LabelSize::Small),
                 )

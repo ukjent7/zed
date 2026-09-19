@@ -845,7 +845,7 @@ impl Render for ProjectDiffToolbar {
                             .icon_size(IconSize::Small)
                             .disabled(!button_states.prev_next)
                             .tooltip(Tooltip::for_action_title_in(
-                                locale::t("Go to Previous Hunk"),
+                                locale::t_static("Go to Previous Hunk"),
                                 &GoToPreviousHunk,
                                 &focus_handle,
                             ))
@@ -858,7 +858,7 @@ impl Render for ProjectDiffToolbar {
                             .icon_size(IconSize::Small)
                             .disabled(!button_states.prev_next)
                             .tooltip(Tooltip::for_action_title_in(
-                                locale::t("Go to Next Hunk"),
+                                locale::t_static("Go to Next Hunk"),
                                 &GoToHunk,
                                 &focus_handle,
                             ))
@@ -872,9 +872,9 @@ impl Render for ProjectDiffToolbar {
                 h_group_sm()
                     .when(button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", locale::t("Toggle Staged"))
+                            Button::new("stage", locale::t_static("Toggle Staged"))
                                 .tooltip(Tooltip::for_action_title_in(
-                                    locale::t("Toggle Staged"),
+                                    locale::t_static("Toggle Staged"),
                                     &ToggleStaged,
                                     &focus_handle,
                                 ))
@@ -886,10 +886,10 @@ impl Render for ProjectDiffToolbar {
                     })
                     .when(!button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", locale::t("Stage"))
+                            Button::new("stage", locale::t_static("Stage"))
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::for_action_title_in(
-                                    locale::t("Stage and Go to Next Hunk"),
+                                    locale::t_static("Stage and Go to Next Hunk"),
                                     &StageAndNext,
                                     &focus_handle,
                                 ))
@@ -898,10 +898,10 @@ impl Render for ProjectDiffToolbar {
                                 })),
                         )
                         .child(
-                            Button::new("unstage", locale::t("Unstage"))
+                            Button::new("unstage", locale::t_static("Unstage"))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
-                                    locale::t("Unstage and Go to Next Hunk"),
+                                    locale::t_static("Unstage and Go to Next Hunk"),
                                     &UnstageAndNext,
                                     &focus_handle,
                                 ))
@@ -916,10 +916,10 @@ impl Render for ProjectDiffToolbar {
                 button_states.unstage_all && !button_states.stage_all,
                 |this| {
                     this.child(
-                        Button::new("unstage-all", locale::t("Unstage All"))
+                        Button::new("unstage-all", locale::t_static("Unstage All"))
                             .width(stage_all_button_width)
                             .tooltip(Tooltip::for_action_title_in(
-                                locale::t("Unstage All Changes"),
+                                locale::t_static("Unstage All Changes"),
                                 &UnstageAll,
                                 &focus_handle,
                             ))
@@ -933,11 +933,11 @@ impl Render for ProjectDiffToolbar {
                 !button_states.unstage_all || button_states.stage_all,
                 |this| {
                     this.child(
-                        Button::new("stage-all", locale::t("Stage All"))
+                        Button::new("stage-all", locale::t_static("Stage All"))
                             .width(stage_all_button_width)
                             .disabled(!button_states.stage_all)
                             .tooltip(Tooltip::for_action_title_in(
-                                locale::t("Stage All Changes"),
+                                locale::t_static("Stage All Changes"),
                                 &StageAll,
                                 &focus_handle,
                             ))
@@ -949,9 +949,9 @@ impl Render for ProjectDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("commit", locale::t("Commit"))
+                Button::new("commit", locale::t_static("Commit"))
                     .tooltip(Tooltip::for_action_title_in(
-                        locale::t("Commit"),
+                        locale::t_static("Commit"),
                         &Commit,
                         &focus_handle,
                     ))
@@ -988,7 +988,7 @@ pub(crate) fn render_send_review_to_agent_button(
             .color(Color::Muted),
     )
     .tooltip(Tooltip::for_action_title_in(
-        locale::t("Send all review comments to the Agent panel"),
+        locale::t_static("Send all review comments to the Agent panel"),
         &SendReviewToAgent,
         focus_handle,
     ))

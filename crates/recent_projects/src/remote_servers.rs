@@ -223,7 +223,7 @@ impl PickerDelegate for DevContainerPickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Select Dev Container Configuration")
+        locale::t_static("Select Dev Container Configuration")
             .as_str()
             .into()
     }
@@ -329,7 +329,7 @@ impl PickerDelegate for DevContainerPickerDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("run-action", locale::t("Start Dev Container"))
+                    Button::new("run-action", locale::t_static("Start Dev Container"))
                         .key_binding(
                             KeyBinding::for_action(&menu::Confirm, cx)
                                 .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -339,14 +339,17 @@ impl PickerDelegate for DevContainerPickerDelegate {
                         }),
                 )
                 .child(
-                    Button::new("run-action-secondary", locale::t("Open devcontainer.json"))
-                        .key_binding(
-                            KeyBinding::for_action(&menu::SecondaryConfirm, cx)
-                                .map(|kb| kb.size(rems_from_px(12_f32))),
-                        )
-                        .on_click(|_, window, cx| {
-                            window.dispatch_action(menu::SecondaryConfirm.boxed_clone(), cx)
-                        }),
+                    Button::new(
+                        "run-action-secondary",
+                        locale::t_static("Open devcontainer.json"),
+                    )
+                    .key_binding(
+                        KeyBinding::for_action(&menu::SecondaryConfirm, cx)
+                            .map(|kb| kb.size(rems_from_px(12_f32))),
+                    )
+                    .on_click(|_, window, cx| {
+                        window.dispatch_action(menu::SecondaryConfirm.boxed_clone(), cx)
+                    }),
                 )
                 .into_any_element(),
         )
@@ -366,7 +369,7 @@ impl EditNicknameState {
             .filter(|text| !text.is_empty());
         this.editor.update(cx, |this, cx| {
             this.set_placeholder_text(
-                locale::t("Add a nickname for this server").as_str(),
+                locale::t_static("Add a nickname for this server").as_str(),
                 window,
                 cx,
             );
@@ -1099,11 +1102,11 @@ impl PickerDelegate for RemoteServerPickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Search remote projects…").as_str().into()
+        locale::t_static("Search remote projects…").as_str().into()
     }
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
-        Some(locale::t("No matching remote projects."))
+        Some(locale::t_static("No matching remote projects."))
     }
 
     fn update_matches(
@@ -1271,31 +1274,31 @@ impl PickerDelegate for RemoteServerPickerDelegate {
             RemoteMatch::AddServer => Some(self.render_action_item(
                 ix,
                 IconName::Plus,
-                locale::t("Connect SSH Server"),
+                locale::t_static("Connect SSH Server"),
                 selected,
             )),
             RemoteMatch::AddDevContainer => Some(self.render_action_item(
                 ix,
                 IconName::Plus,
-                locale::t("Connect Dev Container"),
+                locale::t_static("Connect Dev Container"),
                 selected,
             )),
             RemoteMatch::AddWsl => Some(self.render_action_item(
                 ix,
                 IconName::Plus,
-                locale::t("Add WSL Distro"),
+                locale::t_static("Add WSL Distro"),
                 selected,
             )),
             RemoteMatch::OpenFolder { .. } => Some(self.render_action_item(
                 ix,
                 IconName::Plus,
-                locale::t("Open Folder"),
+                locale::t_static("Open Folder"),
                 selected,
             )),
             RemoteMatch::ViewServerOptions { .. } => Some(self.render_action_item(
                 ix,
                 IconName::Settings,
-                locale::t("View Server Options"),
+                locale::t_static("View Server Options"),
                 selected,
             )),
             RemoteMatch::Project {
@@ -1337,7 +1340,9 @@ impl PickerDelegate for RemoteServerPickerDelegate {
                                     .icon_size(IconSize::Small)
                                     .shape(IconButtonShape::Square)
                                     .size(ButtonSize::Large)
-                                    .tooltip(Tooltip::text(locale::t("Delete Remote Project")))
+                                    .tooltip(Tooltip::text(locale::t_static(
+                                        "Delete Remote Project",
+                                    )))
                                     .on_click(cx.listener(move |_, _, _, cx| {
                                         let remote_project = remote_project.clone();
                                         remote_server_projects
@@ -1379,16 +1384,16 @@ impl PickerDelegate for RemoteServerPickerDelegate {
             h_flex()
                 .gap_1()
                 .child(
-                    Button::new("open_new_window", locale::t("New Window"))
+                    Button::new("open_new_window", locale::t_static("New Window"))
                         .key_binding(KeyBinding::for_action(&menu::SecondaryConfirm, cx))
                         .on_click(|_, window, cx| {
                             window.dispatch_action(menu::SecondaryConfirm.boxed_clone(), cx)
                         }),
                 )
-                .child(confirm_button(locale::t("Open")))
+                .child(confirm_button(locale::t_static("Open")))
                 .into_any_element()
         } else {
-            confirm_button(locale::t("Select")).into_any_element()
+            confirm_button(locale::t_static("Select")).into_any_element()
         };
 
         Some(
@@ -1634,7 +1639,7 @@ impl RemoteServerProjects {
             cx,
         )
         .prompt_err(
-            locale::t("Failed to connect").as_str(),
+            locale::t_static("Failed to connect").as_str(),
             window,
             cx,
             |_, _, _| None,
@@ -1714,7 +1719,7 @@ impl RemoteServerProjects {
             cx,
         )
         .prompt_err(
-            locale::t("Failed to connect").as_str(),
+            locale::t_static("Failed to connect").as_str(),
             window,
             cx,
             |_, _, _| None,
@@ -1833,7 +1838,7 @@ impl RemoteServerProjects {
                     cx,
                 )
                 .prompt_err(
-                    locale::t("Failed to connect").as_str(),
+                    locale::t_static("Failed to connect").as_str(),
                     window,
                     cx,
                     |_, _, _| None,
@@ -2053,7 +2058,7 @@ impl RemoteServerProjects {
                 log::error!("Failed to connect: {e:#}");
                 cx.prompt(
                     gpui::PromptLevel::Critical,
-                    locale::t("Failed to connect").as_str(),
+                    locale::t_static("Failed to connect").as_str(),
                     Some(&e.to_string()),
                     &[gpui::PromptButton::ok(locale::t_static("OK"))],
                 )
@@ -2286,7 +2291,7 @@ impl RemoteServerProjects {
                         log::error!("Failed to start dev container: {:?}", e);
                         cx.prompt(
                             gpui::PromptLevel::Critical,
-                            locale::t("Failed to start Dev Container. See logs for details")
+                            locale::t_static("Failed to start Dev Container. See logs for details")
                                 .as_str(),
                             Some(&format!("{e}")),
                             &[gpui::PromptButton::ok(locale::t_static("OK"))],
@@ -2342,7 +2347,7 @@ impl RemoteServerProjects {
                 log::error!("Failed to connect: {e:#}");
                 cx.prompt(
                     gpui::PromptLevel::Critical,
-                    locale::t("Failed to connect").as_str(),
+                    locale::t_static("Failed to connect").as_str(),
                     Some(&e.to_string()),
                     &[gpui::PromptButton::ok(locale::t_static("OK"))],
                 )
@@ -2376,7 +2381,7 @@ impl RemoteServerProjects {
                                         .start_slot(
                                             Icon::new(IconName::XCircle).color(Color::Error),
                                         )
-                                        .child(Label::new(locale::t(
+                                        .child(Label::new(locale::t_static(
                                             "Error Creating Dev Container:",
                                         )))
                                         .child(Label::new(message).buffer_font(cx)),
@@ -2408,7 +2413,7 @@ impl RemoteServerProjects {
                                                 .color(Color::Muted)
                                                 .size(IconSize::Small),
                                         )
-                                        .child(Label::new(locale::t("Open Zed Log")))
+                                        .child(Label::new(locale::t_static("Open Zed Log")))
                                         .on_click(cx.listener(|_, _, window, cx| {
                                             window.dispatch_action(Box::new(OpenLog), cx);
                                             cx.emit(DismissEvent);
@@ -2439,7 +2444,7 @@ impl RemoteServerProjects {
                                                 .color(Color::Muted)
                                                 .size(IconSize::Small),
                                         )
-                                        .child(Label::new(locale::t("Exit")))
+                                        .child(Label::new(locale::t_static("Exit")))
                                         .on_click(cx.listener(|this, _, window, cx| {
                                             this.cancel(&menu::Cancel, window, cx);
                                             cx.notify();
@@ -2465,7 +2470,7 @@ impl RemoteServerProjects {
                             .pb_1()
                             .child(
                                 ModalHeader::new().child(
-                                    Headline::new(locale::t("Dev Containers"))
+                                    Headline::new(locale::t_static("Dev Containers"))
                                         .size(HeadlineSize::XSmall),
                                 ),
                             )
@@ -2484,7 +2489,9 @@ impl RemoteServerProjects {
                                         h_flex()
                                             .opacity(0.6)
                                             .gap_1()
-                                            .child(Label::new(locale::t("Creating Dev Container")))
+                                            .child(Label::new(locale::t_static(
+                                                "Creating Dev Container",
+                                            )))
                                             .child(LoadingLabel::new("")),
                                     ),
                             ),
@@ -2562,14 +2569,14 @@ impl RemoteServerProjects {
                                     .w_full()
                                     .gap_1()
                                     .child(
-                                        Label::new(locale::t(
+                                        Label::new(locale::t_static(
                                             "Enter the command you use to SSH into this server.",
                                         ))
                                         .color(Color::Muted)
                                         .size(LabelSize::Small),
                                     )
                                     .child(
-                                        Button::new("learn-more", locale::t("Learn More"))
+                                        Button::new("learn-more", locale::t_static("Learn More"))
                                             .label_size(LabelSize::Small)
                                             .end_icon(
                                                 Icon::new(IconName::ArrowUpRight)
@@ -2694,7 +2701,7 @@ impl RemoteServerProjects {
                                         .start_slot(
                                             Icon::new(IconName::ArrowLeft).color(Color::Muted),
                                         )
-                                        .child(Label::new(locale::t("Go Back")))
+                                        .child(Label::new(locale::t_static("Go Back")))
                                         .on_click(cx.listener(|this, _, window, cx| {
                                             this.mode =
                                                 Mode::default_mode(&this.ssh_config_servers, cx);
@@ -2738,8 +2745,8 @@ impl RemoteServerProjects {
                 )
                 .to_string();
 
-                let yes = locale::t("Yes, remove it");
-                let no = locale::t("No, keep it");
+                let yes = locale::t_static("Yes, remove it");
+                let no = locale::t_static("No, keep it");
                 let confirmation = window.prompt(
                     PromptLevel::Warning,
                     &prompt_message,
@@ -2777,7 +2784,7 @@ impl RemoteServerProjects {
                         .inset(true)
                         .spacing(ui::ListItemSpacing::Sparse)
                         .start_slot(Icon::new(IconName::Trash).color(Color::Error))
-                        .child(Label::new(locale::t("Remove Distro")).color(Color::Error))
+                        .child(Label::new(locale::t_static("Remove Distro")).color(Color::Error))
                         .on_click(cx.listener(move |_, _, window, cx| {
                             remove_wsl_distro(cx.entity(), index, distro_name.clone(), window, cx);
                         })),
@@ -2869,7 +2876,7 @@ impl RemoteServerProjects {
                             .inset(true)
                             .spacing(ui::ListItemSpacing::Sparse)
                             .start_slot(Icon::new(IconName::Copy).color(Color::Muted))
-                            .child(Label::new(locale::t("Copy Server Address")))
+                            .child(Label::new(locale::t_static("Copy Server Address")))
                             .end_slot(Label::new(connection_string.clone()).color(Color::Muted))
                             .show_end_slot_on_hover()
                             .on_click({
@@ -2894,8 +2901,8 @@ impl RemoteServerProjects {
                     )
                     .to_string();
 
-                    let yes = locale::t("Yes, remove it");
-                    let no = locale::t("No, keep it");
+                    let yes = locale::t_static("Yes, remove it");
+                    let no = locale::t_static("No, keep it");
                     let confirmation = window.prompt(
                         PromptLevel::Warning,
                         &prompt_message,
@@ -2939,7 +2946,9 @@ impl RemoteServerProjects {
                             .inset(true)
                             .spacing(ui::ListItemSpacing::Sparse)
                             .start_slot(Icon::new(IconName::Trash).color(Color::Error))
-                            .child(Label::new(locale::t("Remove Server")).color(Color::Error))
+                            .child(
+                                Label::new(locale::t_static("Remove Server")).color(Color::Error),
+                            )
                             .on_click(cx.listener(move |_, _, window, cx| {
                                 remove_ssh_server(
                                     cx.entity(),

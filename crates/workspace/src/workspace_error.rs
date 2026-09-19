@@ -197,7 +197,7 @@ impl WorkspaceError for PortalError {
 
     fn primary_action(&self) -> ErrorAction {
         ErrorAction::link(
-            locale::t("See docs"),
+            locale::t_static("See docs"),
             "https://zed.dev/docs/linux#i-cant-open-any-files",
         )
     }

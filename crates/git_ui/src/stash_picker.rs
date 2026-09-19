@@ -310,7 +310,7 @@ impl StashListDelegate {
             Ok(())
         })
         .detach_and_prompt_err(
-            locale::t("Failed to drop stash").as_str(),
+            locale::t_static("Failed to drop stash").as_str(),
             window,
             cx,
             |e, _, _| Some(e.to_string()),
@@ -348,7 +348,7 @@ impl StashListDelegate {
             Ok(())
         })
         .detach_and_prompt_err(
-            locale::t("Failed to pop stash").as_str(),
+            locale::t_static("Failed to pop stash").as_str(),
             window,
             cx,
             |e, _, _| Some(e.to_string()),
@@ -367,7 +367,7 @@ impl StashListDelegate {
             Ok(())
         })
         .detach_and_prompt_err(
-            locale::t("Failed to apply stash").as_str(),
+            locale::t_static("Failed to apply stash").as_str(),
             window,
             cx,
             |e, _, _| Some(e.to_string()),
@@ -384,7 +384,7 @@ impl PickerDelegate for StashListDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Select a stash…").as_str().into()
+        locale::t_static("Select a stash…").as_str().into()
     }
 
     fn match_count(&self) -> usize {
@@ -547,7 +547,7 @@ impl PickerDelegate for StashListDelegate {
                 .icon_size(IconSize::Small)
                 .tooltip(move |_, cx| {
                     Tooltip::for_action_in(
-                        locale::t("View Stash"),
+                        locale::t_static("View Stash"),
                         &ShowStashItem,
                         &focus_handle,
                         cx,
@@ -564,7 +564,7 @@ impl PickerDelegate for StashListDelegate {
                 .icon_size(IconSize::Small)
                 .tooltip(move |_, cx| {
                     Tooltip::for_action_in(
-                        locale::t("Pop Stash"),
+                        locale::t_static("Pop Stash"),
                         &menu::SecondaryConfirm,
                         &focus_handle,
                         cx,
@@ -581,7 +581,7 @@ impl PickerDelegate for StashListDelegate {
                 .icon_size(IconSize::Small)
                 .tooltip(move |_, cx| {
                     Tooltip::for_action_in(
-                        locale::t("Drop Stash"),
+                        locale::t_static("Drop Stash"),
                         &DropStashItem,
                         &focus_handle,
                         cx,
@@ -647,7 +647,7 @@ impl PickerDelegate for StashListDelegate {
     }
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
-        Some(locale::t("No stashes found"))
+        Some(locale::t_static("No stashes found"))
     }
 
     fn render_footer(&self, _: &mut Window, cx: &mut Context<Picker<Self>>) -> Option<AnyElement> {
@@ -667,7 +667,7 @@ impl PickerDelegate for StashListDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("drop-stash", locale::t("Drop"))
+                    Button::new("drop-stash", locale::t_static("Drop"))
                         .key_binding(
                             KeyBinding::for_action_in(
                                 &stash_picker::DropStashItem,
@@ -703,7 +703,7 @@ impl PickerDelegate for StashListDelegate {
                         })),
                 )
                 .child(
-                    Button::new("pop-stash", locale::t("Pop"))
+                    Button::new("pop-stash", locale::t_static("Pop"))
                         .key_binding(
                             KeyBinding::for_action_in(&menu::SecondaryConfirm, &focus_handle, cx)
                                 .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -713,7 +713,7 @@ impl PickerDelegate for StashListDelegate {
                         }),
                 )
                 .child(
-                    Button::new("apply-stash", locale::t("Apply"))
+                    Button::new("apply-stash", locale::t_static("Apply"))
                         .key_binding(
                             KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                 .map(|kb| kb.size(rems_from_px(12_f32))),

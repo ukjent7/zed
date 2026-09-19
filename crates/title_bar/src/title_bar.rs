@@ -391,7 +391,7 @@ impl Render for TitleBar {
                 )
                 .when(is_signing_in, |this| {
                     this.child(
-                        Label::new(locale::t("Signing in…"))
+                        Label::new(locale::t_static("Signing in…"))
                             .size(LabelSize::Small)
                             .color(Color::Muted)
                             .with_animation(
@@ -722,32 +722,35 @@ impl TitleBar {
             return None;
         }
 
-        let button = Button::new("restricted_mode_trigger", locale::t("Restricted Mode"))
-            .style(ButtonStyle::Tinted(TintColor::Warning))
-            .label_size(LabelSize::Small)
-            .color(Color::Warning)
-            .start_icon(
-                Icon::new(IconName::Warning)
-                    .size(IconSize::Small)
-                    .color(Color::Warning),
+        let button = Button::new(
+            "restricted_mode_trigger",
+            locale::t_static("Restricted Mode"),
+        )
+        .style(ButtonStyle::Tinted(TintColor::Warning))
+        .label_size(LabelSize::Small)
+        .color(Color::Warning)
+        .start_icon(
+            Icon::new(IconName::Warning)
+                .size(IconSize::Small)
+                .color(Color::Warning),
+        )
+        .tooltip(|_, cx| {
+            Tooltip::with_meta(
+                locale::t_static("You're in Restricted Mode"),
+                Some(&ToggleWorktreeSecurity),
+                locale::t_static("Mark this project as trusted and unlock all features"),
+                cx,
             )
-            .tooltip(|_, cx| {
-                Tooltip::with_meta(
-                    locale::t("You're in Restricted Mode"),
-                    Some(&ToggleWorktreeSecurity),
-                    locale::t("Mark this project as trusted and unlock all features"),
-                    cx,
-                )
+        })
+        .on_click({
+            cx.listener(move |this, _, window, cx| {
+                this.workspace
+                    .update(cx, |workspace, cx| {
+                        workspace.show_worktree_trust_security_modal(true, window, cx)
+                    })
+                    .log_err();
             })
-            .on_click({
-                cx.listener(move |this, _, window, cx| {
-                    this.workspace
-                        .update(cx, |workspace, cx| {
-                            workspace.show_worktree_trust_security_modal(true, window, cx)
-                        })
-                        .log_err();
-                })
-            });
+        });
 
         if ui::utils::MACOS_SDK_26_OR_LATER {
             // Make up for Tahoe's traffic light buttons having less spacing around them
@@ -764,7 +767,7 @@ impl TitleBar {
 
         if self.project.read(cx).is_disconnected(cx) {
             return Some(
-                Button::new("disconnected", locale::t("Disconnected"))
+                Button::new("disconnected", locale::t_static("Disconnected"))
                     .disabled(true)
                     .color(Color::Disabled)
                     .label_size(LabelSize::Small)
@@ -791,7 +794,7 @@ impl TitleBar {
                         host_user.username
                     );
 
-                    Tooltip::with_meta(tooltip_title, None, locale::t("Click to Follow"), cx)
+                    Tooltip::with_meta(tooltip_title, None, locale::t_static("Click to Follow"), cx)
                 })
                 .on_click({
                     let host_peer_id = host.peer_id;
@@ -820,7 +823,7 @@ impl TitleBar {
         let display_name = if let Some(ref name) = name {
             util::truncate_and_trailoff(name, MAX_PROJECT_NAME_LENGTH)
         } else {
-            locale::t("Open Recent Project").into()
+            locale::t_static("Open Recent Project").into()
         };
 
         let is_sidebar_open = self
@@ -882,7 +885,7 @@ impl TitleBar {
                     .when(!is_project_selected, |s| s.color(Color::Muted)),
                 move |_window, cx| {
                     Tooltip::for_action(
-                        locale::t("Recent Projects"),
+                        locale::t_static("Recent Projects"),
                         &zed_actions::OpenRecent::default(),
                         cx,
                     )
@@ -938,7 +941,7 @@ impl TitleBar {
                     .when(!is_project_selected, |s| s.color(Color::Muted)),
                 move |_window, cx| {
                     Tooltip::for_action(
-                        locale::t("Recent Projects"),
+                        locale::t_static("Recent Projects"),
                         &zed_actions::OpenRecent::default(),
                         cx,
                     )
@@ -1043,7 +1046,7 @@ impl TitleBar {
                         ),
                     move |_window, cx| {
                         Tooltip::with_meta(
-                            locale::t("Worktree"),
+                            locale::t_static("Worktree"),
                             Some(&zed_actions::git::Worktree),
                             locale::t_format(
                                 "Currently In Use: {name}",
@@ -1066,7 +1069,7 @@ impl TitleBar {
                 };
 
                 let trigger = if is_detached_head {
-                    Button::new("project_branch_trigger", locale::t("Create Branch"))
+                    Button::new("project_branch_trigger", locale::t_static("Create Branch"))
                         .selected_style(ButtonStyle::Tinted(TintColor::Accent))
                         .label_size(LabelSize::Small)
                         .tab_index(0isize)
@@ -1110,7 +1113,7 @@ impl TitleBar {
                             )
                         };
                         Tooltip::with_meta(
-                            locale::t("Branch & Stash"),
+                            locale::t_static("Branch & Stash"),
                             Some(&zed_actions::git::Branch),
                             meta,
                             cx,
@@ -1191,21 +1194,21 @@ impl TitleBar {
                 div()
                     .id("disconnected")
                     .child(Icon::new(IconName::Disconnected).size(IconSize::Small))
-                    .tooltip(Tooltip::text(locale::t("Disconnected")))
+                    .tooltip(Tooltip::text(locale::t_static("Disconnected")))
                     .into_any_element(),
             ),
             client::Status::UpgradeRequired => {
                 let auto_updater = auto_update::AutoUpdater::get(cx);
                 let label = match auto_updater.map(|auto_update| auto_update.read(cx).status()) {
                     Some(AutoUpdateStatus::Updated { .. }) => {
-                        locale::t("Please restart Zed to Collaborate")
+                        locale::t_static("Please restart Zed to Collaborate")
                     }
                     Some(AutoUpdateStatus::Installing { .. })
                     | Some(AutoUpdateStatus::Downloading { .. })
-                    | Some(AutoUpdateStatus::Checking) => locale::t("Updating..."),
+                    | Some(AutoUpdateStatus::Checking) => locale::t_static("Updating..."),
                     Some(AutoUpdateStatus::Idle)
                     | Some(AutoUpdateStatus::Errored { .. })
-                    | None => locale::t("Please update Zed to Collaborate"),
+                    | None => locale::t_static("Please update Zed to Collaborate"),
                 };
 
                 Some(
@@ -1230,7 +1233,7 @@ impl TitleBar {
     pub fn render_sign_in_button(&mut self, _: &mut Context<Self>) -> Button {
         let client = self.client.clone();
         let workspace = self.workspace.clone();
-        Button::new("sign_in", locale::t("Sign In"))
+        Button::new("sign_in", locale::t_static("Sign In"))
             .label_size(LabelSize::Small)
             .tab_index(0isize)
             .on_click(move |_, window, cx| {
@@ -1291,7 +1294,7 @@ impl TitleBar {
             });
 
             ButtonLike::new("user-menu")
-                .aria_label(locale::t("User menu"))
+                .aria_label(locale::t_static("User menu"))
                 .tab_index(0isize)
                 .child(
                     h_flex()
@@ -1303,7 +1306,7 @@ impl TitleBar {
                 )
         } else {
             ButtonLike::new("user-menu")
-                .aria_label(locale::t("User menu"))
+                .aria_label(locale::t_static("User menu"))
                 .tab_index(0isize)
                 .child(Icon::new(IconName::ChevronDown).size(IconSize::Small))
         };

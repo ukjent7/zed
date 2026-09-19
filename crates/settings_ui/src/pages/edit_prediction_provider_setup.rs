@@ -168,9 +168,9 @@ fn render_provider_dropdown(window: &mut Window, cx: &mut App) -> AnyElement {
                         .w_full()
                         .min_w_0()
                         .max_w_1_2()
-                        .child(Label::new(locale::t("Provider")))
+                        .child(Label::new(locale::t_static("Provider")))
                         .child(
-                            Label::new(locale::t(
+                            Label::new(locale::t_static(
                                 "Select which provider to use for edit predictions.",
                             ))
                             .size(LabelSize::Small)
@@ -264,7 +264,7 @@ fn render_api_key_provider(
             .flex_wrap()
             .gap_0p5()
             .child(
-                Label::new(locale::t("Visit the"))
+                Label::new(locale::t_static("Visit the"))
                     .size(LabelSize::Small)
                     .color(Color::Muted),
             )
@@ -275,7 +275,7 @@ fn render_api_key_provider(
                     .label_color(Color::Muted),
             )
             .child(
-                Label::new(locale::t("to generate an API key."))
+                Label::new(locale::t_static("to generate an API key."))
                     .size(LabelSize::Small)
                     .color(Color::Muted),
             ),
@@ -321,7 +321,7 @@ fn render_api_key_provider(
                         .min_w_0()
                         .max_w_1_2()
                         .gap_0p5()
-                        .child(Label::new(locale::t("API Key")))
+                        .child(Label::new(locale::t_static("API Key")))
                         .child(description)
                         .when_some(env_var_name, |this, env_var_name| {
                             this.child({

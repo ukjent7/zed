@@ -76,7 +76,7 @@ impl RenderOnce for ProjectEmptyState {
                             .child(Label::new(label).size(LabelSize::Small).color(Color::Muted)),
                     )
                     .child(
-                        Button::new("open_project", locale::t("Open Project"))
+                        Button::new("open_project", locale::t_static("Open Project"))
                             .full_width()
                             .key_binding(self.open_project_key_binding)
                             .when_some(self.on_open_project, |button, handler| {
@@ -88,14 +88,14 @@ impl RenderOnce for ProjectEmptyState {
                             .gap_2()
                             .child(Divider::horizontal().color(DividerColor::Border))
                             .child(
-                                Label::new(locale::t("or"))
+                                Label::new(locale::t_static("or"))
                                     .size(LabelSize::XSmall)
                                     .color(Color::Muted),
                             )
                             .child(Divider::horizontal().color(DividerColor::Border)),
                     )
                     .child(
-                        Button::new("clone_repo", locale::t("Clone Repository"))
+                        Button::new("clone_repo", locale::t_static("Clone Repository"))
                             .full_width()
                             .when_some(self.on_clone_repo, |button, handler| {
                                 button.on_click(handler)

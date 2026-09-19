@@ -209,7 +209,7 @@ impl ChannelView {
                 let this = this.clone();
                 Some(ui::ContextMenu::build(window, cx, move |menu, _, _| {
                     menu.entry(
-                        locale::t("Copy Link to Section"),
+                        locale::t_static("Copy Link to Section"),
                         None,
                         move |window, cx| {
                             this.update(cx, |this, cx| {
@@ -337,7 +337,7 @@ impl ChannelView {
                 workspace.show_toast(
                     Toast::new(
                         NotificationId::unique::<CopyLinkForPositionToast>(),
-                        locale::t("Link copied to clipboard").to_string(),
+                        locale::t_static("Link copied to clipboard").to_string(),
                     ),
                     cx,
                 );
@@ -412,13 +412,13 @@ impl ChannelView {
                 self.channel_buffer.read(cx).is_connected(),
             ) {
                 (false, true) => None,
-                (true, true) => Some(locale::t("read-only")),
-                (_, false) => Some(locale::t("disconnected")),
+                (true, true) => Some(locale::t_static("read-only")),
+                (_, false) => Some(locale::t_static("disconnected")),
             };
 
             (channel.name.clone(), status)
         } else {
-            ("<unknown>".into(), Some(locale::t("disconnected")))
+            ("<unknown>".into(), Some(locale::t_static("disconnected")))
         }
     }
 }

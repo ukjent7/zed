@@ -650,9 +650,9 @@ impl Render for KeystrokeInput {
                                 .shape(IconButtonShape::Square)
                                 .tooltip(move |_, cx| {
                                     Tooltip::with_meta(
-                                        locale::t("Clear Keystrokes"),
+                                        locale::t_static("Clear Keystrokes"),
                                         Some(&ClearKeystrokes),
-                                        locale::t("Hit it three times to execute"),
+                                        locale::t_static("Hit it three times to execute"),
                                         cx,
                                     )
                                 })

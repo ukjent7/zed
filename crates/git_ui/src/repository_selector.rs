@@ -171,7 +171,7 @@ impl PickerDelegate for RepositorySelectorDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Select a repository...").as_str().into()
+        locale::t_static("Select a repository...").as_str().into()
     }
 
     fn editor_position(&self) -> PickerEditorPosition {

@@ -351,11 +351,13 @@ impl Render for Onboarding {
                                             .child(
                                                 v_flex()
                                                     .child(
-                                                        Headline::new(locale::t("Welcome to Zed"))
-                                                            .size(HeadlineSize::Small),
+                                                        Headline::new(locale::t_static(
+                                                            "Welcome to Zed",
+                                                        ))
+                                                        .size(HeadlineSize::Small),
                                                     )
                                                     .child(
-                                                        Label::new(locale::t(
+                                                        Label::new(locale::t_static(
                                                             "The editor for what's next",
                                                         ))
                                                         .color(Color::Muted)
@@ -365,18 +367,23 @@ impl Render for Onboarding {
                                             ),
                                     )
                                     .child({
-                                        Button::new("finish_setup", locale::t("Finish Setup"))
-                                            .style(ButtonStyle::Filled)
-                                            .size(ButtonSize::Medium)
-                                            .width(rems_from_px(200_f32))
-                                            .key_binding(KeyBinding::for_action_in(
-                                                &Finish,
-                                                &self.focus_handle,
-                                                cx,
-                                            ))
-                                            .on_click(|_, window, cx| {
+                                        Button::new(
+                                            "finish_setup",
+                                            locale::t_static("Finish Setup"),
+                                        )
+                                        .style(ButtonStyle::Filled)
+                                        .size(ButtonSize::Medium)
+                                        .width(rems_from_px(200_f32))
+                                        .key_binding(KeyBinding::for_action_in(
+                                            &Finish,
+                                            &self.focus_handle,
+                                            cx,
+                                        ))
+                                        .on_click(
+                                            |_, window, cx| {
                                                 window.dispatch_action(Finish.boxed_clone(), cx);
-                                            })
+                                            },
+                                        )
                                     }),
                             )
                             .child(Divider::horizontal().color(ui::DividerColor::BorderVariant))
@@ -399,7 +406,7 @@ impl Item for Onboarding {
     type Event = ItemEvent;
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        locale::t("Onboarding")
+        locale::t_static("Onboarding")
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -573,7 +580,7 @@ pub async fn handle_import_vscode_settings(
             }
             Err(_) => {
                 let error_toast = StatusToast::new(
-                    locale::t("Failed to import settings. See log for details"),
+                    locale::t_static("Failed to import settings. See log for details"),
                     cx,
                     |this, _| {
                         this.icon(
@@ -581,7 +588,7 @@ pub async fn handle_import_vscode_settings(
                                 .size(IconSize::Small)
                                 .color(Color::Error),
                         )
-                        .action(locale::t("Open Log"), |window, cx| {
+                        .action(locale::t_static("Open Log"), |window, cx| {
                             window.dispatch_action(workspace::OpenLog.boxed_clone(), cx)
                         })
                         .dismiss_button(true)

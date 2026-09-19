@@ -60,7 +60,7 @@ pub(crate) fn commit_context_menu(
             .context(focus_handle)
             .header(header)
             .entry(
-                locale::t("View Diff"),
+                locale::t_static("View Diff"),
                 Some(OpenCommitView.boxed_clone()),
                 {
                     let repository = repository.clone();
@@ -82,16 +82,20 @@ pub(crate) fn commit_context_menu(
                 },
             )
             .entry(
-                locale::t("Copy SHA"),
+                locale::t_static("Copy SHA"),
                 Some(CopyCommitSha.boxed_clone()),
                 move |_window, cx| {
                     cx.write_to_clipboard(ClipboardItem::new_string(sha.to_string()));
                 },
             )
             .when_some(ref_name.clone(), |menu, ref_name| {
-                menu.entry(locale::t("Copy Ref Name"), None, move |_window, cx| {
-                    cx.write_to_clipboard(ClipboardItem::new_string(ref_name.to_string()));
-                })
+                menu.entry(
+                    locale::t_static("Copy Ref Name"),
+                    None,
+                    move |_window, cx| {
+                        cx.write_to_clipboard(ClipboardItem::new_string(ref_name.to_string()));
+                    },
+                )
             })
             .when(ref_name.is_none(), |menu| {
                 menu.map(|menu| {
@@ -134,21 +138,25 @@ pub(crate) fn commit_context_menu(
                 })
             })
             .when(source == CommitContextMenuSource::GitPanel, |menu| {
-                menu.entry(locale::t("Show in Git Graph"), None, move |window, cx| {
-                    window.dispatch_action(
-                        Box::new(crate::git_graph::OpenAtCommit {
-                            sha: sha.to_string(),
-                        }),
-                        cx,
-                    );
-                })
+                menu.entry(
+                    locale::t_static("Show in Git Graph"),
+                    None,
+                    move |window, cx| {
+                        window.dispatch_action(
+                            Box::new(crate::git_graph::OpenAtCommit {
+                                sha: sha.to_string(),
+                            }),
+                            cx,
+                        );
+                    },
+                )
             })
             .map(|mut menu| {
-                menu = menu.separator().header(locale::t("Custom Commands"));
+                menu = menu.separator().header(locale::t_static("Custom Commands"));
 
                 if git_tasks.is_empty() {
                     return menu.item(
-                        ContextMenuEntry::new(locale::t("Learn More"))
+                        ContextMenuEntry::new(locale::t_static("Learn More"))
                             .icon(IconName::ArrowUpRight)
                             .icon_color(Color::Muted)
                             .icon_position(IconPosition::End)

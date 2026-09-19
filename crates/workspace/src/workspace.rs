@@ -3676,9 +3676,9 @@ impl Workspace {
                 if close_intent == CloseIntent::CloseWindow {
                     this.update(cx, |_, cx| cx.emit(Event::Activate))?;
                     let answer = cx.update(|window, cx| {
-                        let message = locale::t("Do you want to leave the current call?");
-                        let hang_up = locale::t("Close window and hang up");
-                        let cancel = locale::t("Cancel");
+                        let message = locale::t_static("Do you want to leave the current call?");
+                        let hang_up = locale::t_static("Close window and hang up");
+                        let cancel = locale::t_static("Cancel");
                         window.prompt(
                             PromptLevel::Warning,
                             &message,
@@ -3930,11 +3930,12 @@ impl Workspace {
                             &mut remaining_dirty_items.iter().map(|(_, handle)| handle),
                             cx,
                         );
-                        let message =
-                            locale::t("Do you want to save all changes in the following files?");
-                        let save_all = locale::t("Save all");
-                        let discard_all = locale::t("Discard all");
-                        let cancel = locale::t("Cancel");
+                        let message = locale::t_static(
+                            "Do you want to save all changes in the following files?",
+                        );
+                        let save_all = locale::t_static("Save all");
+                        let discard_all = locale::t_static("Discard all");
+                        let cancel = locale::t_static("Cancel");
                         window.prompt(
                             PromptLevel::Warning,
                             &message,
@@ -6569,7 +6570,7 @@ impl Workspace {
                     cx,
                 )
                 .detach_and_prompt_err(
-                    locale::t("Failed to join project").as_str(),
+                    locale::t_static("Failed to join project").as_str(),
                     window,
                     cx,
                     |error, _, _| Some(format!("{error:#}")),
@@ -8099,7 +8100,7 @@ impl Workspace {
                             cx,
                         )
                         .detach_and_prompt_err(
-                            locale::t("Failed to save").as_str(),
+                            locale::t_static("Failed to save").as_str(),
                             window,
                             cx,
                             |_, _, _| None,
@@ -8109,7 +8110,7 @@ impl Workspace {
                     workspace
                         .save_active_item(SaveIntent::FormatAndSave, window, cx)
                         .detach_and_prompt_err(
-                            locale::t("Failed to save").as_str(),
+                            locale::t_static("Failed to save").as_str(),
                             window,
                             cx,
                             |_, _, _| None,
@@ -8120,7 +8121,7 @@ impl Workspace {
                         workspace
                             .save_active_item(SaveIntent::SaveWithoutFormat, window, cx)
                             .detach_and_prompt_err(
-                                locale::t("Failed to save").as_str(),
+                                locale::t_static("Failed to save").as_str(),
                                 window,
                                 cx,
                                 |_, _, _| None,
@@ -8132,7 +8133,7 @@ impl Workspace {
                 workspace
                     .save_active_item(SaveIntent::SaveAs, window, cx)
                     .detach_and_prompt_err(
-                        locale::t("Failed to save").as_str(),
+                        locale::t_static("Failed to save").as_str(),
                         window,
                         cx,
                         |_, _, _| None,
@@ -8907,7 +8908,7 @@ impl Workspace {
         div()
             .id("editor-region")
             .role(gpui::Role::Main)
-            .aria_label(locale::t("Editor"))
+            .aria_label(locale::t_static("Editor"))
             .when(window.is_a11y_active(), |this| {
                 this.track_focus(&self.region_focus_handles.editor)
             })
@@ -9493,10 +9494,10 @@ fn notify_if_database_failed(window: WindowHandle<MultiWorkspace>, cx: &mut Asyn
                         |cx| {
                             cx.new(|cx| {
                                 MessageNotification::new(
-                                    locale::t("Failed to load the database file."),
+                                    locale::t_static("Failed to load the database file."),
                                     cx,
                                 )
-                                .primary_message(locale::t("File an Issue"))
+                                .primary_message(locale::t_static("File an Issue"))
                                 .primary_icon(IconName::Plus)
                                 .primary_on_click(|window, cx| {
                                     window.dispatch_action(Box::new(FileBugReport), cx)
@@ -9655,7 +9656,7 @@ impl Render for Workspace {
                         .track_focus(&self.titlebar_focus_handle)
                         .tab_group()
                         .role(gpui::Role::Toolbar)
-                        .aria_label(locale::t("Title bar"))
+                        .aria_label(locale::t_static("Title bar"))
                         .on_key_down(cx.listener(
                             |workspace, event: &gpui::KeyDownEvent, window, cx| {
                                 if event.keystroke.modifiers.modified() {
@@ -10505,10 +10506,11 @@ async fn join_channel_internal(
         if let Some(multi_workspace) = requesting_window {
             let answer = multi_workspace
                 .update(cx, |_, window, cx| {
-                    let message = locale::t("Do you want to switch channels?");
-                    let detail = locale::t("Leaving this call will unshare your current project.");
-                    let join = locale::t("Yes, Join Channel");
-                    let cancel = locale::t("Cancel");
+                    let message = locale::t_static("Do you want to switch channels?");
+                    let detail =
+                        locale::t_static("Leaving this call will unshare your current project.");
+                    let join = locale::t_static("Yes, Join Channel");
+                    let cancel = locale::t_static("Cancel");
                     window.prompt(
                         PromptLevel::Warning,
                         &message,
@@ -10721,7 +10723,7 @@ pub fn join_channel(
                 active_window
                     .update(cx, |_, window, cx| {
                         let detail: SharedString = match err.error_code() {
-                            ErrorCode::SignedOut => locale::t("Please sign in to continue."),
+                            ErrorCode::SignedOut => locale::t_static("Please sign in to continue."),
                             ErrorCode::UpgradeRequired => locale::t_static(concat!(
                                 "Your are running an unsupported version of Zed. ",
                                 "Please update to continue."
@@ -10734,9 +10736,9 @@ pub fn join_channel(
                                 "This channel is private, and you do not have access. ",
                                 "Please ask someone to add you and try again."
                             )),
-                            ErrorCode::Disconnected => {
-                                locale::t("Please check your internet connection and try again.")
-                            }
+                            ErrorCode::Disconnected => locale::t_static(
+                                "Please check your internet connection and try again.",
+                            ),
                             _ => locale::t_format(
                                 "{error}\n\nPlease try again.",
                                 &[("{error}", &err.to_string())],
@@ -10744,9 +10746,9 @@ pub fn join_channel(
                         };
                         window.prompt(
                             PromptLevel::Critical,
-                            &locale::t("Failed to join channel"),
+                            &locale::t_static("Failed to join channel"),
                             Some(&detail),
-                            &[gpui::PromptButton::ok(locale::t("OK"))],
+                            &[gpui::PromptButton::ok(locale::t_static("OK"))],
                             cx,
                         )
                     })?
@@ -11315,7 +11317,7 @@ pub fn open_paths(
                             );
                             cx.new(move |cx| {
                                 MessageNotification::new(msg, cx)
-                                    .primary_message(locale::t("Open in WSL"))
+                                    .primary_message(locale::t_static("Open in WSL"))
                                     .primary_icon(IconName::FolderOpen)
                                     .primary_on_click(move |window, cx| {
                                         window.dispatch_action(Box::new(remote::OpenWslPath {
@@ -11750,9 +11752,9 @@ pub fn reload(cx: &mut App) {
     if let (true, Some(window)) = (should_confirm, workspace_windows.first()) {
         prompt = window
             .update(cx, |_, window, cx| {
-                let message = locale::t("Are you sure you want to restart?");
-                let restart = locale::t("Restart");
-                let cancel = locale::t("Cancel");
+                let message = locale::t_static("Are you sure you want to restart?");
+                let restart = locale::t_static("Restart");
+                let cancel = locale::t_static("Cancel");
                 window.prompt(
                     PromptLevel::Info,
                     &message,

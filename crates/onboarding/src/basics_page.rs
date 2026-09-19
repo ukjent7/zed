@@ -59,7 +59,7 @@ fn render_theme_section(tab_index: &mut isize, cx: &mut App) -> impl IntoElement
         .child(
             h_flex()
                 .justify_between()
-                .child(Label::new(locale::t("Theme")))
+                .child(Label::new(locale::t_static("Theme")))
                 .child(
                     ToggleButtonGroup::single_row(
                         "theme-selector-onboarding-dark-light",
@@ -69,8 +69,11 @@ fn render_theme_section(tab_index: &mut isize, cx: &mut App) -> impl IntoElement
                             ThemeAppearanceMode::System,
                         ]
                         .map(|mode| {
-                            let mode_names: [SharedString; 3] =
-                                [locale::t("Light"), locale::t("Dark"), locale::t("System")];
+                            let mode_names: [SharedString; 3] = [
+                                locale::t_static("Light"),
+                                locale::t_static("Dark"),
+                                locale::t_static("System"),
+                            ];
                             ToggleButtonSimple::new(
                                 mode_names[mode as usize].clone(),
                                 move |_, _, cx| {
@@ -250,7 +253,7 @@ fn render_telemetry_section(tab_index: &mut isize, cx: &App) -> impl IntoElement
             SwitchField::new(
                 "onboarding-telemetry-metrics",
                 None::<&str>,
-                Some(locale::t(
+                Some(locale::t_static(
                     "Help improve Zed by sending anonymous usage data",
                 )),
                 if TelemetrySettings::get_global(cx).metrics {
@@ -291,7 +294,7 @@ fn render_telemetry_section(tab_index: &mut isize, cx: &App) -> impl IntoElement
             SwitchField::new(
                 "onboarding-telemetry-crash-reports",
                 None::<&str>,
-                Some(locale::t(
+                Some(locale::t_static(
                     "Help fix Zed by sending crash reports so we can fix critical issues fast",
                 )),
                 if TelemetrySettings::get_global(cx).diagnostics {
@@ -345,7 +348,7 @@ fn render_base_keymap_section(tab_index: &mut isize, cx: &mut App) -> impl IntoE
 
     return v_flex()
         .gap_2()
-        .child(Label::new(locale::t("Base Keymap")))
+        .child(Label::new(locale::t_static("Base Keymap")))
         .child(
             ToggleButtonGroup::two_rows(
                 "base_keymap_selection",
@@ -414,8 +417,8 @@ fn render_vim_mode_switch(tab_index: &mut isize, cx: &mut App) -> impl IntoEleme
     };
     SwitchField::new(
         "onboarding-vim-mode",
-        Some(locale::t("Vim Mode")),
-        Some(locale::t(
+        Some(locale::t_static("Vim Mode")),
+        Some(locale::t_static(
             "Coming from Neovim? Use our first-class implementation of Vim Mode",
         )),
         toggle_state,
@@ -453,14 +456,14 @@ fn render_worktree_auto_trust_switch(tab_index: &mut isize, cx: &mut App) -> imp
         ui::ToggleState::Unselected
     };
 
-    let tooltip_description = locale::t(
+    let tooltip_description = locale::t_static(
         "Zed can only allow services like language servers, project settings, and MCP servers to run after you mark a new project as trusted.",
     );
 
     SwitchField::new(
         "onboarding-auto-trust-worktrees",
-        Some(locale::t("Trust All Projects By Default")),
-        Some(locale::t(
+        Some(locale::t_static("Trust All Projects By Default")),
+        Some(locale::t_static(
             "Automatically mark all new projects as trusted to unlock all Zed's features",
         )),
         toggle_state,
@@ -545,9 +548,9 @@ fn render_import_settings_section(tab_index: &mut isize, cx: &mut App) -> impl I
             v_flex()
                 .gap_0p5()
                 .max_w_5_6()
-                .child(Label::new(locale::t("Import Settings")))
+                .child(Label::new(locale::t_static("Import Settings")))
                 .child(
-                    Label::new(locale::t(
+                    Label::new(locale::t_static(
                         "Automatically pull your settings from other editors",
                     ))
                     .color(Color::Muted),
@@ -582,7 +585,7 @@ fn render_registry_agent_button(
             .color(Color::Success)
             .into_any_element()
     } else {
-        Label::new(locale::t("Install"))
+        Label::new(locale::t_static("Install"))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .into_any_element()
@@ -636,12 +639,12 @@ fn render_zed_agent_button(user_store: &Entity<UserStore>, cx: &mut App) -> impl
     let is_signed_in = !is_signed_out;
 
     let state_element = if is_signed_out {
-        Label::new(locale::t("Sign In"))
+        Label::new(locale::t_static("Sign In"))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .into_any_element()
     } else if is_signing_in {
-        Label::new(locale::t("Signing In…"))
+        Label::new(locale::t_static("Signing In…"))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .with_animation(
@@ -653,7 +656,7 @@ fn render_zed_agent_button(user_store: &Entity<UserStore>, cx: &mut App) -> impl
             )
             .into_any_element()
     } else if is_signed_in && is_free {
-        Label::new(locale::t("Start Free Trial"))
+        Label::new(locale::t_static("Start Free Trial"))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .into_any_element()
@@ -724,9 +727,9 @@ fn render_ai_section(user_store: &Entity<UserStore>, cx: &mut App) -> impl IntoE
 
     v_flex()
         .gap_0p5()
-        .child(Label::new(locale::t("Agent Setup")))
+        .child(Label::new(locale::t_static("Agent Setup")))
         .child(
-            Label::new(locale::t(
+            Label::new(locale::t_static(
                 "Install your favorite agents and start your first thread.",
             ))
             .color(Color::Muted),

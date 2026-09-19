@@ -585,7 +585,7 @@ impl<T: NumberFieldType> RenderOnce for NumberField<T> {
                 this.child(
                     IconButton::new("reset", IconName::RotateCcw)
                         .icon_size(IconSize::Small)
-                        .aria_label(locale::t("Reset to Default"))
+                        .aria_label(locale::t_static("Reset to Default"))
                         .when_some(self.tab_index, |this, _| this.tab_index(0isize))
                         .on_click(on_reset),
                 )
@@ -610,7 +610,7 @@ impl<T: NumberFieldType> RenderOnce for NumberField<T> {
                             base_button(IconName::Dash)
                                 .id((self.id.clone(), "decrement_button"))
                                 .role(Role::Button)
-                                .aria_label(locale::t("Decrement"))
+                                .aria_label(locale::t_static("Decrement"))
                                 .rounded_tl_sm()
                                 .rounded_bl_sm()
                                 .when_some(self.tab_index, |this, _| this.tab_index(0isize))
@@ -826,7 +826,7 @@ impl<T: NumberFieldType> RenderOnce for NumberField<T> {
                             base_button(IconName::Plus)
                                 .id((self.id.clone(), "increment_button"))
                                 .role(Role::Button)
-                                .aria_label(locale::t("Increment"))
+                                .aria_label(locale::t_static("Increment"))
                                 .rounded_tr_sm()
                                 .rounded_br_sm()
                                 .when_some(self.tab_index, |this, _| this.tab_index(0isize))

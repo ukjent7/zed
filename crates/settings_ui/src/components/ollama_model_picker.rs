@@ -128,14 +128,14 @@ impl PickerDelegate for OllamaModelPickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Search models…").as_str().into()
+        locale::t_static("Search models…").as_str().into()
     }
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
         Some(if self.loading {
-            locale::t("Loading models…").as_str().into()
+            locale::t_static("Loading models…").as_str().into()
         } else {
-            locale::t("No models found. Check your Ollama server URL.")
+            locale::t_static("No models found. Check your Ollama server URL.")
         })
     }
 
@@ -227,7 +227,7 @@ pub fn render_ollama_model_picker(
         .unwrap_or_else(|| DEFAULT_OLLAMA_API_URL.into());
 
     let trigger_value: SharedString = if current_value.is_empty() {
-        locale::t("Select a model…").as_str().into()
+        locale::t_static("Select a model…").as_str().into()
     } else {
         current_value.clone()
     };

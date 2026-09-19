@@ -1110,7 +1110,11 @@ impl NotebookEditor {
                                     cx,
                                 )
                                 .tooltip(move |window, cx| {
-                                    Tooltip::for_action(locale::t("Execute all cells"), &RunAll, cx)
+                                    Tooltip::for_action(
+                                        locale::t_static("Execute all cells"),
+                                        &RunAll,
+                                        cx,
+                                    )
                                 })
                                 .on_click(|_, window, cx| {
                                     window.dispatch_action(Box::new(RunAll), cx);
@@ -1126,7 +1130,7 @@ impl NotebookEditor {
                                 .disabled(!has_outputs)
                                 .tooltip(move |window, cx| {
                                     Tooltip::for_action(
-                                        locale::t("Clear all outputs"),
+                                        locale::t_static("Clear all outputs"),
                                         &ClearOutputs,
                                         cx,
                                     )
@@ -1146,7 +1150,11 @@ impl NotebookEditor {
                                     cx,
                                 )
                                 .tooltip(move |window, cx| {
-                                    Tooltip::for_action(locale::t("Move cell up"), &MoveCellUp, cx)
+                                    Tooltip::for_action(
+                                        locale::t_static("Move cell up"),
+                                        &MoveCellUp,
+                                        cx,
+                                    )
                                 })
                                 .on_click(|_, window, cx| {
                                     window.dispatch_action(Box::new(MoveCellUp), cx);
@@ -1161,7 +1169,7 @@ impl NotebookEditor {
                                 )
                                 .tooltip(move |window, cx| {
                                     Tooltip::for_action(
-                                        locale::t("Move cell down"),
+                                        locale::t_static("Move cell down"),
                                         &MoveCellDown,
                                         cx,
                                     )
@@ -1182,7 +1190,7 @@ impl NotebookEditor {
                                 )
                                 .tooltip(move |window, cx| {
                                     Tooltip::for_action(
-                                        locale::t("Add markdown block"),
+                                        locale::t_static("Add markdown block"),
                                         &AddMarkdownBlock,
                                         cx,
                                     )
@@ -1200,7 +1208,7 @@ impl NotebookEditor {
                                 )
                                 .tooltip(move |window, cx| {
                                     Tooltip::for_action(
-                                        locale::t("Add code block"),
+                                        locale::t_static("Add code block"),
                                         &AddCodeBlock,
                                         cx,
                                     )
@@ -1220,7 +1228,11 @@ impl NotebookEditor {
                             )
                             .disabled(self.cell_order.is_empty())
                             .tooltip(move |window, cx| {
-                                Tooltip::for_action(locale::t("Delete cell"), &DeleteCell, cx)
+                                Tooltip::for_action(
+                                    locale::t_static("Delete cell"),
+                                    &DeleteCell,
+                                    cx,
+                                )
                             })
                             .on_click(|_, window, cx| {
                                 window.dispatch_action(Box::new(DeleteCell), cx);
@@ -1235,7 +1247,7 @@ impl NotebookEditor {
                     .child(
                         Self::render_notebook_control("more-menu", IconName::Ellipsis, window, cx)
                             .tooltip(move |window, cx| {
-                                (Tooltip::text(locale::t("More options")))(window, cx)
+                                (Tooltip::text(locale::t_static("More options")))(window, cx)
                             }),
                     )
                     .child(Self::button_group(window, cx).child({
@@ -1253,7 +1265,7 @@ impl NotebookEditor {
                             .kernel_specification
                             .as_ref()
                             .map(|spec| spec.name().to_string())
-                            .unwrap_or_else(|| locale::t("Select Kernel").to_string());
+                            .unwrap_or_else(|| locale::t_static("Select Kernel").to_string());
                         IconButton::new("repl", icon)
                             .icon_color(icon_color)
                             .tooltip(move |window, cx| {
@@ -1283,7 +1295,7 @@ impl NotebookEditor {
             .kernel_specification
             .as_ref()
             .map(|spec| spec.name().to_string())
-            .unwrap_or_else(|| locale::t("Select Kernel").to_string());
+            .unwrap_or_else(|| locale::t_static("Select Kernel").to_string());
 
         let (status_icon, status_color) = match &kernel_status {
             KernelStatus::Idle => (IconName::Circle, Color::Success),
@@ -1362,7 +1374,11 @@ impl NotebookEditor {
                         IconButton::new("restart-kernel", IconName::RotateCw)
                             .icon_size(IconSize::Small)
                             .tooltip(|window, cx| {
-                                Tooltip::for_action(locale::t("Restart Kernel"), &RestartKernel, cx)
+                                Tooltip::for_action(
+                                    locale::t_static("Restart Kernel"),
+                                    &RestartKernel,
+                                    cx,
+                                )
                             })
                             .on_click(cx.listener(|this, _, window, cx| {
                                 this.restart_kernel(&RestartKernel, window, cx);
@@ -1374,7 +1390,7 @@ impl NotebookEditor {
                             .disabled(!matches!(kernel_status, KernelStatus::Busy))
                             .tooltip(|window, cx| {
                                 Tooltip::for_action(
-                                    locale::t("Interrupt Kernel"),
+                                    locale::t_static("Interrupt Kernel"),
                                     &InterruptKernel,
                                     cx,
                                 )
@@ -1404,12 +1420,12 @@ impl NotebookEditor {
             .items_center()
             .justify_center()
             .gap_3()
-            .child(Label::new(locale::t("This notebook is empty.")).color(Color::Muted))
+            .child(Label::new(locale::t_static("This notebook is empty.")).color(Color::Muted))
             .child(
                 h_flex()
                     .gap_2()
                     .child(
-                        Button::new("empty-state-add-code", locale::t("Add code cell"))
+                        Button::new("empty-state-add-code", locale::t_static("Add code cell"))
                             .start_icon(Icon::new(IconName::Code))
                             .key_binding(KeyBinding::for_action_in(
                                 &AddCodeBlock,
@@ -1421,17 +1437,20 @@ impl NotebookEditor {
                             ),
                     )
                     .child(
-                        Button::new("empty-state-add-markdown", locale::t("Add markdown cell"))
-                            .style(ButtonStyle::Subtle)
-                            .start_icon(Icon::new(IconName::FileMarkdown))
-                            .key_binding(KeyBinding::for_action_in(
-                                &AddMarkdownBlock,
-                                &self.focus_handle,
-                                cx,
-                            ))
-                            .on_click(cx.listener(|this, _, window, cx| {
-                                this.add_markdown_block(window, cx)
-                            })),
+                        Button::new(
+                            "empty-state-add-markdown",
+                            locale::t_static("Add markdown cell"),
+                        )
+                        .style(ButtonStyle::Subtle)
+                        .start_icon(Icon::new(IconName::FileMarkdown))
+                        .key_binding(KeyBinding::for_action_in(
+                            &AddMarkdownBlock,
+                            &self.focus_handle,
+                            cx,
+                        ))
+                        .on_click(
+                            cx.listener(|this, _, window, cx| this.add_markdown_block(window, cx)),
+                        ),
                     ),
             )
     }

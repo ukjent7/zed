@@ -52,7 +52,7 @@ const REMOTE_SERVER_CACHE_LIMIT: usize = 5;
 fn linux_rsync_install_hint() -> gpui::SharedString {
     let os_release = match std::fs::read_to_string("/etc/os-release") {
         Ok(os_release) => os_release,
-        Err(_) => return locale::t("Please install rsync using your package manager"),
+        Err(_) => return locale::t_static("Please install rsync using your package manager"),
     };
 
     let mut distribution_ids = Vec::new();
@@ -71,12 +71,12 @@ fn linux_rsync_install_hint() -> gpui::SharedString {
         .iter()
         .any(|distribution_id| distribution_id == "arch")
     {
-        Some(locale::t("Install it with: sudo pacman -S rsync"))
+        Some(locale::t_static("Install it with: sudo pacman -S rsync"))
     } else if distribution_ids
         .iter()
         .any(|distribution_id| distribution_id == "debian" || distribution_id == "ubuntu")
     {
-        Some(locale::t("Install it with: sudo apt install rsync"))
+        Some(locale::t_static("Install it with: sudo apt install rsync"))
     } else if distribution_ids.iter().any(|distribution_id| {
         distribution_id == "fedora"
             || distribution_id == "rhel"
@@ -84,18 +84,18 @@ fn linux_rsync_install_hint() -> gpui::SharedString {
             || distribution_id == "rocky"
             || distribution_id == "almalinux"
     }) {
-        Some(locale::t("Install it with: sudo dnf install rsync"))
+        Some(locale::t_static("Install it with: sudo dnf install rsync"))
     } else if distribution_ids
         .iter()
         .any(|distribution_id| distribution_id == "nixos")
     {
-        Some(locale::t("Install pkgs.rsync from nixpkgs"))
+        Some(locale::t_static("Install pkgs.rsync from nixpkgs"))
     } else {
         None
     };
 
     package_manager_hint
-        .unwrap_or_else(|| locale::t("Please install rsync using your package manager"))
+        .unwrap_or_else(|| locale::t_static("Please install rsync using your package manager"))
 }
 
 actions!(
@@ -350,7 +350,7 @@ pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
     {
         drop(window.prompt(
             gpui::PromptLevel::Info,
-            locale::t("Zed was installed via a package manager.").as_str(),
+            locale::t_static("Zed was installed via a package manager.").as_str(),
             Some(&message),
             &[gpui::PromptButton::ok(locale::t_static("OK"))],
             cx,
@@ -373,8 +373,8 @@ pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
     } else {
         drop(window.prompt(
             gpui::PromptLevel::Info,
-            locale::t("Could not check for updates").as_str(),
-            Some(locale::t("Auto-updates disabled for non-bundled app.").as_str()),
+            locale::t_static("Could not check for updates").as_str(),
+            Some(locale::t_static("Auto-updates disabled for non-bundled app.").as_str()),
             &[gpui::PromptButton::ok(locale::t_static("OK"))],
             cx,
         ));
@@ -650,7 +650,10 @@ impl AutoUpdater {
                 .context("auto-update not initialized")
         })?;
 
-        set_status(locale::t("Fetching remote server release").as_str(), cx);
+        set_status(
+            locale::t_static("Fetching remote server release").as_str(),
+            cx,
+        );
         let release = Self::get_release_asset(
             &this,
             release_channel,
@@ -675,7 +678,7 @@ impl AutoUpdater {
                 "downloading zed-remote-server {os} {arch} version {}",
                 release.version
             );
-            set_status(locale::t("Downloading remote server").as_str(), cx);
+            set_status(locale::t_static("Downloading remote server").as_str(), cx);
             download_remote_server_binary(&version_path, release, client).await?;
         }
 
@@ -1009,7 +1012,9 @@ impl AutoUpdater {
         anyhow::ensure!(
             which::which("rsync").is_ok(),
             "{}",
-            locale::t("Could not auto-update because the required rsync utility was not found.")
+            locale::t_static(
+                "Could not auto-update because the required rsync utility was not found."
+            )
         );
 
         Ok(())

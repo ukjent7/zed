@@ -564,37 +564,43 @@ fn deploy_blame_entry_context_menu(
         let blame_previous_revision = blame_entry.previous_revision_target();
         let has_blame_targets = blame_revision.is_some() || blame_previous_revision.is_some();
         menu.on_blur_subscription(Subscription::new(|| {}))
-            .entry(locale::t("Copy Commit SHA"), None, move |_, cx| {
+            .entry(locale::t_static("Copy Commit SHA"), None, move |_, cx| {
                 cx.write_to_clipboard(ClipboardItem::new_string(sha.clone()));
             })
             .when_some(
                 details.and_then(|details| details.permalink.clone()),
                 |this, url| {
-                    this.entry(locale::t("Open Commit Permalink"), None, move |_, cx| {
-                        cx.open_url(url.as_str())
-                    })
+                    this.entry(
+                        locale::t_static("Open Commit Permalink"),
+                        None,
+                        move |_, cx| cx.open_url(url.as_str()),
+                    )
                 },
             )
             .when(has_blame_targets, |this| this.separator())
             .when_some(blame_revision, |this, (revision, path)| {
                 let repository = repository.clone();
                 let workspace = workspace.clone();
-                this.entry(locale::t("Blame Revision"), None, move |window, cx| {
-                    open_buffer_blame_at_revision(
-                        repository.clone(),
-                        workspace.clone(),
-                        path.clone(),
-                        revision,
-                        window,
-                        cx,
-                    );
-                })
+                this.entry(
+                    locale::t_static("Blame Revision"),
+                    None,
+                    move |window, cx| {
+                        open_buffer_blame_at_revision(
+                            repository.clone(),
+                            workspace.clone(),
+                            path.clone(),
+                            revision,
+                            window,
+                            cx,
+                        );
+                    },
+                )
             })
             .when_some(blame_previous_revision, |this, (revision, path)| {
                 let repository = repository.clone();
                 let workspace = workspace.clone();
                 this.entry(
-                    locale::t("Blame Previous Revision"),
+                    locale::t_static("Blame Previous Revision"),
                     None,
                     move |window, cx| {
                         open_buffer_blame_at_revision(

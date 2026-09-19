@@ -1518,7 +1518,7 @@ impl Editor {
                     .take(3)
                     .join(", ");
                 let title = if target.is_empty() {
-                    locale::t("References").to_string()
+                    locale::t_static("References").to_string()
                 } else {
                     locale::t_format("References to {target}", &[("{target}", &target)]).to_string()
                 };

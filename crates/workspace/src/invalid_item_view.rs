@@ -93,7 +93,7 @@ impl Render for InvalidItemView {
                         .child(
                             h_flex()
                                 .justify_center()
-                                .child(locale::t("Could not open file")),
+                                .child(locale::t_static("Could not open file")),
                         )
                         .child(
                             h_flex()
@@ -105,7 +105,7 @@ impl Render for InvalidItemView {
                                 h_flex().justify_center().child(
                                     Button::new(
                                         "open-with-system",
-                                        locale::t("Open in Default App"),
+                                        locale::t_static("Open in Default App"),
                                     )
                                     .on_click(move |_, _, cx| {
                                         cx.open_with_system(&abs_path);

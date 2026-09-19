@@ -84,7 +84,7 @@ pub fn format_output(action: &RemoteAction, output: RemoteCommandOutput) -> Succ
         RemoteAction::Fetch(remote) => {
             if output.stderr.is_empty() {
                 SuccessMessage {
-                    message: locale::t("Fetch: Already up to date").into(),
+                    message: locale::t_static("Fetch: Already up to date").into(),
                     style: SuccessStyle::Toast,
                 }
             } else {
@@ -94,7 +94,7 @@ pub fn format_output(action: &RemoteAction, output: RemoteCommandOutput) -> Succ
                         &[("{remote}", &remote.name)],
                     )
                     .to_string(),
-                    None => locale::t("Synchronized with remotes").to_string(),
+                    None => locale::t_static("Synchronized with remotes").to_string(),
                 };
                 SuccessMessage {
                     message,

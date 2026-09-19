@@ -534,37 +534,40 @@ impl TerminalView {
         let context_menu = ContextMenu::build(window, cx, |menu, _, _| {
             menu.context(self.focus_handle.clone())
                 .when(self.shows_workspace_actions(), |menu| {
-                    menu.action(locale::t("New Terminal"), Box::new(NewTerminal::default()))
-                        .action(
-                            locale::t("New Center Terminal"),
-                            Box::new(NewCenterTerminal::default()),
-                        )
-                        .separator()
+                    menu.action(
+                        locale::t_static("New Terminal"),
+                        Box::new(NewTerminal::default()),
+                    )
+                    .action(
+                        locale::t_static("New Center Terminal"),
+                        Box::new(NewCenterTerminal::default()),
+                    )
+                    .separator()
                 })
-                .action(locale::t("Copy"), Box::new(Copy))
+                .action(locale::t_static("Copy"), Box::new(Copy))
                 .when(
                     !matches!(self.mode, TerminalMode::Embedded { .. }),
                     |menu| {
-                        menu.action(locale::t("Paste"), Box::new(Paste))
-                            .action(locale::t("Paste Text"), Box::new(PasteText))
+                        menu.action(locale::t_static("Paste"), Box::new(Paste))
+                            .action(locale::t_static("Paste Text"), Box::new(PasteText))
                     },
                 )
-                .action(locale::t("Select All"), Box::new(SelectAll))
+                .action(locale::t_static("Select All"), Box::new(SelectAll))
                 .when(
                     !matches!(self.mode, TerminalMode::Embedded { .. }),
-                    |menu| menu.action(locale::t("Clear"), Box::new(Clear)),
+                    |menu| menu.action(locale::t_static("Clear"), Box::new(Clear)),
                 )
                 .when(
                     assistant_enabled && !matches!(self.mode, TerminalMode::Embedded { .. }),
                     |menu| {
                         menu.separator()
                             .action(
-                                locale::t("Inline Assist"),
+                                locale::t_static("Inline Assist"),
                                 Box::new(InlineAssist::default()),
                             )
                             .when(has_selection && self.shows_workspace_actions(), |menu| {
                                 menu.action(
-                                    locale::t("Add to Agent Thread"),
+                                    locale::t_static("Add to Agent Thread"),
                                     Box::new(AddSelectionToThread),
                                 )
                             })
@@ -572,7 +575,7 @@ impl TerminalView {
                 )
                 .when(self.shows_workspace_actions(), |menu| {
                     menu.separator().action(
-                        locale::t("Close Terminal Tab"),
+                        locale::t_static("Close Terminal Tab"),
                         Box::new(CloseActiveItem {
                             save_intent: None,
                             close_pinned: true,
@@ -1747,7 +1750,7 @@ impl Item for TerminalView {
     ) -> Vec<(SharedString, Box<dyn gpui::Action>)> {
         let terminal = self.terminal.read(cx);
         if terminal.task().is_none() {
-            vec![(locale::t("Rename"), Box::new(RenameTerminal))]
+            vec![(locale::t_static("Rename"), Box::new(RenameTerminal))]
         } else {
             Vec::new()
         }

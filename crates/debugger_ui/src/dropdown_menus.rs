@@ -212,7 +212,7 @@ impl DebugPanel {
         )
         .attach(Anchor::BottomLeft)
         .handle(self.session_picker_menu_handle.clone())
-        .trigger_tooltip(Tooltip::text(locale::t("Select a Debug Session")));
+        .trigger_tooltip(Tooltip::text(locale::t_static("Select a Debug Session")));
 
         Some(menu)
     }

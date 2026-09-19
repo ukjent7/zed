@@ -211,7 +211,7 @@ impl GitPicker {
                     )
                     .tooltip(move |_, cx| {
                         Tooltip::for_action_in(
-                            locale::t("Toggle Branch Picker"),
+                            locale::t_static("Toggle Branch Picker"),
                             &ActivateBranchesTab,
                             &branches_focus_handle,
                             cx,
@@ -228,7 +228,7 @@ impl GitPicker {
                     )
                     .tooltip(move |_, cx| {
                         Tooltip::for_action_in(
-                            locale::t("Toggle Stash Picker"),
+                            locale::t_static("Toggle Stash Picker"),
                             &ActivateStashTab,
                             &stash_focus_handle,
                             cx,

@@ -727,7 +727,7 @@ impl PickerDelegate for Delegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        locale::t("Search all files…").as_str().into()
+        locale::t_static("Search all files…").as_str().into()
     }
 
     fn searchbar_trailer(
@@ -790,34 +790,34 @@ impl PickerDelegate for Delegate {
     ) -> Vec<picker::PickerAction> {
         use gpui::Action as _;
         vec![
-            picker::PickerAction::header(locale::t("Split…")),
+            picker::PickerAction::header(locale::t_static("Split…")),
             picker::PickerAction::button(
-                locale::t("Left"),
+                locale::t_static("Left"),
                 workspace::pane::SplitLeft::default().boxed_clone(),
             ),
             picker::PickerAction::button(
-                locale::t("Right"),
+                locale::t_static("Right"),
                 workspace::pane::SplitRight::default().boxed_clone(),
             ),
             picker::PickerAction::button(
-                locale::t("Up"),
+                locale::t_static("Up"),
                 workspace::pane::SplitUp::default().boxed_clone(),
             ),
             picker::PickerAction::button(
-                locale::t("Down"),
+                locale::t_static("Down"),
                 workspace::pane::SplitDown::default().boxed_clone(),
             ),
             picker::PickerAction::separator(),
             picker::PickerAction::button(
                 if self.selected_matches.len() > 1 {
-                    locale::t("Open Multiple")
+                    locale::t_static("Open Multiple")
                 } else {
-                    locale::t("Open File")
+                    locale::t_static("Open File")
                 },
                 menu::Confirm.boxed_clone(),
             ),
             picker::PickerAction::button(
-                locale::t("Open as Tab"),
+                locale::t_static("Open as Tab"),
                 super::ToProjectSearch.boxed_clone(),
             ),
         ]

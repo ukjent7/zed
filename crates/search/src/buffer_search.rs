@@ -177,12 +177,12 @@ impl Render for BufferSearchBar {
 
         self.query_editor.update(cx, |query_editor, cx| {
             if query_editor.placeholder_text(cx).is_none() {
-                query_editor.set_placeholder_text(locale::t("Search…").as_str(), window, cx);
+                query_editor.set_placeholder_text(locale::t_static("Search…").as_str(), window, cx);
             }
         });
 
         self.replacement_editor.update(cx, |editor, cx| {
-            editor.set_placeholder_text(locale::t("Replace with…").as_str(), window, cx);
+            editor.set_placeholder_text(locale::t_static("Replace with…").as_str(), window, cx);
         });
 
         let mut color_override = None;
@@ -270,7 +270,7 @@ impl Render for BufferSearchBar {
                     "buffer-search-bar-toggle",
                     IconName::Replace,
                     self.replace_enabled.then_some(ActionButtonState::Toggled),
-                    locale::t("Toggle Replace"),
+                    locale::t_static("Toggle Replace"),
                     &ToggleReplace,
                     focus_handle.clone(),
                 ))
@@ -294,7 +294,7 @@ impl Render for BufferSearchBar {
                         let focus_handle = focus_handle.clone();
                         move |_window, cx| {
                             Tooltip::for_action_in(
-                                locale::t("Toggle Search Selection"),
+                                locale::t_static("Toggle Search Selection"),
                                 &ToggleSelection,
                                 &focus_handle,
                                 cx,
@@ -316,7 +316,7 @@ impl Render for BufferSearchBar {
                         self.active_match_index
                             .is_none()
                             .then_some(ActionButtonState::Disabled),
-                        locale::t("Select Previous Match"),
+                        locale::t_static("Select Previous Match"),
                         &SelectPreviousMatch,
                         query_focus.clone(),
                     ))
@@ -326,7 +326,7 @@ impl Render for BufferSearchBar {
                         self.active_match_index
                             .is_none()
                             .then_some(ActionButtonState::Disabled),
-                        locale::t("Select Next Match"),
+                        locale::t_static("Select Next Match"),
                         &SelectNextMatch,
                         query_focus.clone(),
                     ))
@@ -347,7 +347,7 @@ impl Render for BufferSearchBar {
                         "buffer-search-nav-button",
                         IconName::SelectAll,
                         Default::default(),
-                        locale::t("Select All Matches"),
+                        locale::t_static("Select All Matches"),
                         &SelectAllMatches,
                         query_focus.clone(),
                     ))
@@ -359,7 +359,7 @@ impl Render for BufferSearchBar {
                     "buffer-search",
                     IconName::Close,
                     Default::default(),
-                    locale::t("Close Search Bar"),
+                    locale::t_static("Close Search Bar"),
                     &Dismiss,
                     focus_handle.clone(),
                 ))
@@ -393,7 +393,7 @@ impl Render for BufferSearchBar {
                     "buffer-search-replace-button",
                     IconName::ReplaceNext,
                     Default::default(),
-                    locale::t("Replace Next Match"),
+                    locale::t_static("Replace Next Match"),
                     &ReplaceNext,
                     focus_handle.clone(),
                 ))
@@ -401,7 +401,7 @@ impl Render for BufferSearchBar {
                     "buffer-search-replace-button",
                     IconName::ReplaceAll,
                     Default::default(),
-                    locale::t("Replace All Matches"),
+                    locale::t_static("Replace All Matches"),
                     &ReplaceAll,
                     focus_handle,
                 ));
@@ -446,7 +446,7 @@ impl Render for BufferSearchBar {
                                 "buffer-search",
                                 IconName::Close,
                                 Default::default(),
-                                locale::t("Close Search Bar"),
+                                locale::t_static("Close Search Bar"),
                                 &Dismiss,
                                 focus_handle.clone(),
                             )),

@@ -50,7 +50,7 @@ pub(crate) fn render_external_agents_page(
         .overflow_y_scroll()
         .child(Label::new(locale::t_static("External Agents")))
         .child(
-            Label::new(locale::t(
+            Label::new(locale::t_static(
                 "Agents connected through the Agent Client Protocol.",
             ))
             .size(LabelSize::Small)
@@ -119,7 +119,7 @@ fn render_empty_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new(locale::t(
+            Label::new(locale::t_static(
                 "No external agents added yet. Click \"Add Agent\" to get started.",
             ))
             .color(Color::Muted)
@@ -137,7 +137,7 @@ fn render_no_project_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new(locale::t(
+            Label::new(locale::t_static(
                 "No active project found. Open a workspace to manage external agents.",
             ))
             .color(Color::Muted)
@@ -188,7 +188,7 @@ fn render_agent(
             .icon_size(IconSize::Small)
             .size(ButtonSize::Medium)
             .tab_index(0isize)
-            .tooltip(Tooltip::text(locale::t("Configure Agent")))
+            .tooltip(Tooltip::text(locale::t_static("Configure Agent")))
             .on_click(cx.listener({
                 let id = id.clone();
                 move |this, _event, window, cx| {

@@ -1996,10 +1996,11 @@ impl Pane {
             if save_intent == SaveIntent::Close && dirty_items.len() > 1 {
                 let answer = pane.update_in(cx, |_, window, cx| {
                     let detail = Self::file_names_for_prompt(&mut dirty_items.iter(), cx);
-                    let message = locale::t("Do you want to save changes to the following files?");
-                    let save_all = locale::t("Save all");
-                    let discard_all = locale::t("Discard all");
-                    let cancel = locale::t("Cancel");
+                    let message =
+                        locale::t_static("Do you want to save changes to the following files?");
+                    let save_all = locale::t_static("Save all");
+                    let discard_all = locale::t_static("Discard all");
+                    let cancel = locale::t_static("Cancel");
                     window.prompt(
                         PromptLevel::Warning,
                         &message,
@@ -2059,8 +2060,8 @@ impl Pane {
                                     "Unable to save file: {error}",
                                     &[("{error}", &err.to_string())],
                                 );
-                                let close_without_saving = locale::t("Close Without Saving");
-                                let cancel = locale::t("Cancel");
+                                let close_without_saving = locale::t_static("Close Without Saving");
+                                let cancel = locale::t_static("Cancel");
                                 window.prompt(
                                     PromptLevel::Warning,
                                     &message,
@@ -2339,9 +2340,9 @@ impl Pane {
                 let answer = pane.update_in(cx, |pane, window, cx| {
                     pane.activate_item(item_ix, true, true, window, cx);
                     let message = locale::t_static(DELETED_MESSAGE);
-                    let save = locale::t("Save");
-                    let close = locale::t("Close");
-                    let cancel = locale::t("Cancel");
+                    let save = locale::t_static("Save");
+                    let close = locale::t_static("Close");
+                    let cancel = locale::t_static("Cancel");
                     window.prompt(
                         PromptLevel::Warning,
                         &message,
@@ -2382,9 +2383,9 @@ impl Pane {
                 let answer = pane.update_in(cx, |pane, window, cx| {
                     pane.activate_item(item_ix, true, true, window, cx);
                     let message = locale::t_static(CONFLICT_MESSAGE);
-                    let overwrite = locale::t("Overwrite");
-                    let discard_edits = locale::t("Discard Edits");
-                    let cancel = locale::t("Cancel");
+                    let overwrite = locale::t_static("Overwrite");
+                    let discard_edits = locale::t_static("Discard Edits");
+                    let cancel = locale::t_static("Cancel");
                     window.prompt(
                         PromptLevel::Warning,
                         &message,
@@ -2432,9 +2433,9 @@ impl Pane {
                         if pane.save_modals_spawned.insert(item_id) {
                             pane.activate_item(item_ix, true, true, window, cx);
                             let prompt = dirty_message_for(item.project_path(cx), path_style);
-                            let save = locale::t("Save");
-                            let dont_save = locale::t("Don't Save");
-                            let cancel = locale::t("Cancel");
+                            let save = locale::t_static("Save");
+                            let dont_save = locale::t_static("Don't Save");
+                            let cancel = locale::t_static("Cancel");
                             Some(window.prompt(
                                 PromptLevel::Warning,
                                 &prompt,
@@ -3176,7 +3177,7 @@ impl Pane {
                     if let Some(pane) = pane.upgrade() {
                         menu = menu
                             .entry(
-                                locale::t("Close"),
+                                locale::t_static("Close"),
                                 Some(Box::new(close_active_item_action)),
                                 window.handler_for(&pane, move |pane, window, cx| {
                                     pane.close_item_by_id(item_id, SaveIntent::Close, window, cx)
@@ -3184,7 +3185,7 @@ impl Pane {
                                 }),
                             )
                             .item(ContextMenuItem::Entry(
-                                ContextMenuEntry::new(locale::t("Close Others"))
+                                ContextMenuEntry::new(locale::t_static("Close Others"))
                                     .action(Box::new(close_inactive_items_action.clone()))
                                     .disabled(total_items == 1)
                                     .handler(window.handler_for(&pane, move |pane, window, cx| {
@@ -3200,7 +3201,7 @@ impl Pane {
                             // We make this optional, instead of using disabled as to not overwhelm the context menu unnecessarily
                             .extend(has_multibuffer_items.then(|| {
                                 ContextMenuItem::Entry(
-                                    ContextMenuEntry::new(locale::t("Close Multibuffers"))
+                                    ContextMenuEntry::new(locale::t_static("Close Multibuffers"))
                                         .action(Box::new(close_multibuffers_action.clone()))
                                         .handler(window.handler_for(
                                             &pane,
@@ -3217,7 +3218,7 @@ impl Pane {
                             }))
                             .separator()
                             .item(ContextMenuItem::Entry(
-                                ContextMenuEntry::new(locale::t("Close Left"))
+                                ContextMenuEntry::new(locale::t_static("Close Left"))
                                     .action(Box::new(close_items_to_the_left_action.clone()))
                                     .disabled(!has_items_to_left)
                                     .handler(window.handler_for(&pane, move |pane, window, cx| {
@@ -3231,7 +3232,7 @@ impl Pane {
                                     })),
                             ))
                             .item(ContextMenuItem::Entry(
-                                ContextMenuEntry::new(locale::t("Close Right"))
+                                ContextMenuEntry::new(locale::t_static("Close Right"))
                                     .action(Box::new(close_items_to_the_right_action.clone()))
                                     .disabled(!has_items_to_right)
                                     .handler(window.handler_for(&pane, move |pane, window, cx| {
@@ -3246,7 +3247,7 @@ impl Pane {
                             ))
                             .separator()
                             .item(ContextMenuItem::Entry(
-                                ContextMenuEntry::new(locale::t("Close Clean"))
+                                ContextMenuEntry::new(locale::t_static("Close Clean"))
                                     .action(Box::new(close_clean_items_action.clone()))
                                     .disabled(!has_clean_items)
                                     .handler(window.handler_for(&pane, move |pane, window, cx| {
@@ -3259,7 +3260,7 @@ impl Pane {
                                     })),
                             ))
                             .entry(
-                                locale::t("Close All"),
+                                locale::t_static("Close All"),
                                 Some(Box::new(close_all_items_action.clone())),
                                 window.handler_for(&pane, move |pane, window, cx| {
                                     pane.close_all_items(&close_all_items_action, window, cx)
@@ -3271,7 +3272,7 @@ impl Pane {
                             menu.separator().map(|this| {
                                 if is_pinned {
                                     this.entry(
-                                        locale::t("Unpin Tab"),
+                                        locale::t_static("Unpin Tab"),
                                         Some(TogglePinTab.boxed_clone()),
                                         window.handler_for(&pane, move |pane, window, cx| {
                                             pane.unpin_tab_at(ix, window, cx);
@@ -3279,7 +3280,7 @@ impl Pane {
                                     )
                                 } else {
                                     this.entry(
-                                        locale::t("Pin Tab"),
+                                        locale::t_static("Pin Tab"),
                                         Some(TogglePinTab.boxed_clone()),
                                         window.handler_for(&pane, move |pane, window, cx| {
                                             pane.pin_tab_at(ix, window, cx);
@@ -3363,7 +3364,7 @@ impl Pane {
                                 .separator()
                                 .when_some(entry_abs_path, |menu, abs_path| {
                                     menu.entry(
-                                        locale::t("Copy Path"),
+                                        locale::t_static("Copy Path"),
                                         Some(Box::new(zed_actions::workspace::CopyPath)),
                                         window.handler_for(&pane, move |_, _, cx| {
                                             cx.write_to_clipboard(ClipboardItem::new_string(
@@ -3374,7 +3375,7 @@ impl Pane {
                                 })
                                 .when_some(relative_path, |menu, relative_path| {
                                     menu.entry(
-                                        locale::t("Copy Relative Path"),
+                                        locale::t_static("Copy Relative Path"),
                                         Some(Box::new(zed_actions::workspace::CopyRelativePath)),
                                         window.handler_for(&pane, move |this, _, cx| {
                                             let Some(project) = this.project.upgrade() else {
@@ -3393,7 +3394,7 @@ impl Pane {
                                         project_path.clone(),
                                         |menu, project_path| {
                                             menu.entry(
-                                                locale::t("Open File Permalink"),
+                                                locale::t_static("Open File Permalink"),
                                                 Some(OpenFilePermalink.boxed_clone()),
                                                 window.handler_for(&pane, {
                                                     let project_path = project_path.clone();
@@ -3413,7 +3414,7 @@ impl Pane {
                                                 }),
                                             )
                                             .entry(
-                                                locale::t("Copy File Permalink"),
+                                                locale::t_static("Copy File Permalink"),
                                                 Some(CopyFilePermalink.boxed_clone()),
                                                 window.handler_for(
                                                     &pane,
@@ -3457,7 +3458,7 @@ impl Pane {
                                 .map(pin_tab_entries)
                                 .when(visible_in_project_panel, |menu| {
                                     menu.entry(
-                                        locale::t("Reveal In Project Panel"),
+                                        locale::t_static("Reveal In Project Panel"),
                                         Some(Box::new(RevealInProjectPanel::default())),
                                         window.handler_for(&pane, move |pane, _, cx| {
                                             pane.project
@@ -3472,7 +3473,7 @@ impl Pane {
                                 })
                                 .when_some(parent_abs_path, |menu, parent_abs_path| {
                                     menu.entry(
-                                        locale::t("Open in Terminal"),
+                                        locale::t_static("Open in Terminal"),
                                         Some(Box::new(OpenInTerminal)),
                                         window.handler_for(&pane, move |_, window, cx| {
                                             window.dispatch_action(
@@ -3526,7 +3527,7 @@ impl Pane {
                 let focus_handle = focus_handle.clone();
                 move |window, cx| {
                     Tooltip::for_action_in(
-                        locale::t("Go Back"),
+                        locale::t_static("Go Back"),
                         &GoBack,
                         &window.focused(cx).unwrap_or_else(|| focus_handle.clone()),
                         cx,
@@ -3549,7 +3550,7 @@ impl Pane {
                 let focus_handle = focus_handle.clone();
                 move |window, cx| {
                     Tooltip::for_action_in(
-                        locale::t("Go Forward"),
+                        locale::t_static("Go Forward"),
                         &GoForward,
                         &window.focused(cx).unwrap_or_else(|| focus_handle.clone()),
                         cx,
@@ -4370,33 +4371,33 @@ fn default_render_tab_bar_buttons(
             PopoverMenu::new("pane-tab-bar-popover-menu")
                 .trigger_with_tooltip(
                     IconButton::new("plus", IconName::Plus).icon_size(IconSize::Small),
-                    Tooltip::text(locale::t("New…")),
+                    Tooltip::text(locale::t_static("New…")),
                 )
                 .anchor(Anchor::TopRight)
                 .with_handle(pane.new_item_context_menu_handle.clone())
                 .menu(move |window, cx| {
                     Some(ContextMenu::build(window, cx, |menu, _, _| {
-                        menu.action(locale::t("New File"), NewFile.boxed_clone())
+                        menu.action(locale::t_static("New File"), NewFile.boxed_clone())
                             .action(
-                                locale::t("Open File"),
+                                locale::t_static("Open File"),
                                 ToggleFileFinder::default().boxed_clone(),
                             )
                             .separator()
                             .action(
-                                locale::t("Search Project"),
+                                locale::t_static("Search Project"),
                                 DeploySearch::default().boxed_clone(),
                             )
                             .action(
-                                locale::t("Search Symbols"),
+                                locale::t_static("Search Symbols"),
                                 ToggleProjectSymbols.boxed_clone(),
                             )
                             .separator()
                             .action(
-                                locale::t("New Terminal"),
+                                locale::t_static("New Terminal"),
                                 NewTerminal::default().boxed_clone(),
                             )
                             .action(
-                                locale::t("New Center Terminal"),
+                                locale::t_static("New Center Terminal"),
                                 NewCenterTerminal::default().boxed_clone(),
                             )
                     }))
@@ -4408,7 +4409,7 @@ fn default_render_tab_bar_buttons(
                     IconButton::new("split", IconName::Split)
                         .icon_size(IconSize::Small)
                         .disabled(!can_clone && !can_split_move),
-                    Tooltip::text(locale::t("Split Pane")),
+                    Tooltip::text(locale::t_static("Split Pane")),
                 )
                 .anchor(Anchor::TopRight)
                 .with_handle(pane.split_item_context_menu_handle.clone())
@@ -4416,18 +4417,36 @@ fn default_render_tab_bar_buttons(
                     ContextMenu::build(window, cx, |menu, _, _| {
                         let mode = SplitMode::MovePane;
                         if can_split_move {
-                            menu.action(locale::t("Split Right"), SplitRight { mode }.boxed_clone())
-                                .action(locale::t("Split Left"), SplitLeft { mode }.boxed_clone())
-                                .action(locale::t("Split Up"), SplitUp { mode }.boxed_clone())
-                                .action(locale::t("Split Down"), SplitDown { mode }.boxed_clone())
+                            menu.action(
+                                locale::t_static("Split Right"),
+                                SplitRight { mode }.boxed_clone(),
+                            )
+                            .action(
+                                locale::t_static("Split Left"),
+                                SplitLeft { mode }.boxed_clone(),
+                            )
+                            .action(locale::t_static("Split Up"), SplitUp { mode }.boxed_clone())
+                            .action(
+                                locale::t_static("Split Down"),
+                                SplitDown { mode }.boxed_clone(),
+                            )
                         } else {
                             menu.action(
-                                locale::t("Split Right"),
+                                locale::t_static("Split Right"),
                                 SplitRight::default().boxed_clone(),
                             )
-                            .action(locale::t("Split Left"), SplitLeft::default().boxed_clone())
-                            .action(locale::t("Split Up"), SplitUp::default().boxed_clone())
-                            .action(locale::t("Split Down"), SplitDown::default().boxed_clone())
+                            .action(
+                                locale::t_static("Split Left"),
+                                SplitLeft::default().boxed_clone(),
+                            )
+                            .action(
+                                locale::t_static("Split Up"),
+                                SplitUp::default().boxed_clone(),
+                            )
+                            .action(
+                                locale::t_static("Split Down"),
+                                SplitDown::default().boxed_clone(),
+                            )
                         }
                     })
                     .into()
@@ -5086,9 +5105,8 @@ fn dirty_message_for(buffer_path: Option<ProjectPath>, path_style: PathStyle) ->
             )
             .to_string()
         }
-        None => {
-            locale::t("This buffer contains unsaved edits. Do you want to save it?").to_string()
-        }
+        None => locale::t_static("This buffer contains unsaved edits. Do you want to save it?")
+            .to_string(),
     }
 }
 

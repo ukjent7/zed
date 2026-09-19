@@ -271,7 +271,7 @@ fn render_api_key_providers_item(
                         .min_w_0()
                         .max_w_1_2()
                         .gap_0p5()
-                        .child(Label::new(locale::t("API Key")))
+                        .child(Label::new(locale::t_static("API Key")))
                         .child(
                             h_flex()
                                 .w_full()
@@ -279,7 +279,7 @@ fn render_api_key_providers_item(
                                 .flex_wrap()
                                 .gap_0p5()
                                 .child(
-                                    Label::new(locale::t("Visit the"))
+                                    Label::new(locale::t_static("Visit the"))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )
@@ -293,7 +293,7 @@ fn render_api_key_providers_item(
                                     .label_color(Color::Muted),
                                 )
                                 .child(
-                                    Label::new(locale::t("to generate an API key."))
+                                    Label::new(locale::t_static("to generate an API key."))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 ),
@@ -423,7 +423,7 @@ fn render_inline_description(
         InlineDescription::ApiKeyUrl(url) => h_flex()
             .gap_0p5()
             .child(
-                Label::new(locale::t("To find an API key, visit the"))
+                Label::new(locale::t_static("To find an API key, visit the"))
                     .size(LabelSize::Small)
                     .color(Color::Muted),
             )
@@ -775,7 +775,7 @@ fn render_models_section(
         .child(
             h_flex()
                 .justify_between()
-                .child(Label::new(locale::t("Models")))
+                .child(Label::new(locale::t_static("Models")))
                 .child(
                     Button::new("add-model", locale::t_static("Add Model"))
                         .start_icon(
@@ -1007,7 +1007,7 @@ fn render_reasoning_effort_selector(
 
     v_flex()
         .gap_1()
-        .child(Label::new(locale::t("Default reasoning effort")).size(LabelSize::Small))
+        .child(Label::new(locale::t_static("Default reasoning effort")).size(LabelSize::Small))
         .child(
             DropdownMenu::new(
                 ElementId::Name(format!("reasoning-effort-selector-{index}").into()),
@@ -1017,7 +1017,7 @@ fn render_reasoning_effort_selector(
             .style(DropdownStyle::Outlined)
             .trigger_size(ButtonSize::Compact)
             .full_width(true)
-            .aria_label(locale::t("Default reasoning effort")),
+            .aria_label(locale::t_static("Default reasoning effort")),
         )
 }
 

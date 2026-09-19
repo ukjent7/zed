@@ -135,9 +135,9 @@ impl QuickActionBar {
                     .custom_entry(
                         move |_window, _cx| {
                             Label::new(if has_nonempty_selection {
-                                locale::t("Run Selection")
+                                locale::t_static("Run Selection")
                             } else {
-                                locale::t("Run Line")
+                                locale::t_static("Run Line")
                             })
                             .into_any_element()
                         },
@@ -150,7 +150,7 @@ impl QuickActionBar {
                     )
                     .custom_entry(
                         move |_window, _cx| {
-                            Label::new(locale::t("Interrupt"))
+                            Label::new(locale::t_static("Interrupt"))
                                 .size(LabelSize::Small)
                                 .color(Color::Error)
                                 .into_any_element()
@@ -164,7 +164,7 @@ impl QuickActionBar {
                     )
                     .custom_entry(
                         move |_window, _cx| {
-                            Label::new(locale::t("Clear Outputs"))
+                            Label::new(locale::t_static("Clear Outputs"))
                                 .size(LabelSize::Small)
                                 .color(Color::Muted)
                                 .into_any_element()
@@ -179,7 +179,7 @@ impl QuickActionBar {
                     .separator()
                     .custom_entry(
                         move |_window, _cx| {
-                            Label::new(locale::t("Shut Down Kernel"))
+                            Label::new(locale::t_static("Shut Down Kernel"))
                                 .size(LabelSize::Small)
                                 .color(Color::Error)
                                 .into_any_element()
@@ -193,7 +193,7 @@ impl QuickActionBar {
                     )
                     .custom_entry(
                         move |_window, _cx| {
-                            Label::new(locale::t("Restart Kernel"))
+                            Label::new(locale::t_static("Restart Kernel"))
                                 .size(LabelSize::Small)
                                 .color(Color::Error)
                                 .into_any_element()
@@ -205,7 +205,7 @@ impl QuickActionBar {
                         },
                     )
                     .separator()
-                    .action(locale::t("View Sessions"), Box::new(repl::Sessions))
+                    .action(locale::t_static("View Sessions"), Box::new(repl::Sessions))
                     // TODO: Add shut down all kernels action
                     // .action("Shut Down all Kernels", Box::new(gpui::NoAction))
                 })
@@ -220,7 +220,7 @@ impl QuickActionBar {
                     )
                     .width(rems(1.))
                     .disabled(menu_state.popover_disabled),
-                Tooltip::text(locale::t("REPL Menu")),
+                Tooltip::text(locale::t_static("REPL Menu")),
             );
 
         let button = ButtonLike::new_rounded_left("toggle_repl_icon")
@@ -352,7 +352,7 @@ impl QuickActionBar {
                                     Label::new(if let Some(name) = current_kernel_name {
                                         name
                                     } else {
-                                        locale::t("Select Kernel")
+                                        locale::t_static("Select Kernel")
                                     })
                                     .size(LabelSize::Small)
                                     .color(if current_kernelspec.is_some() {
@@ -369,7 +369,7 @@ impl QuickActionBar {
                                 .size(IconSize::XSmall),
                         ),
                 ),
-            Tooltip::text(locale::t("Select Kernel")),
+            Tooltip::text(locale::t_static("Select Kernel")),
         )
         .with_handle(menu_handle)
         .into_any_element()
@@ -406,7 +406,7 @@ fn session_state(session: Entity<Session>, cx: &mut App) -> ReplMenuState {
 
     let fill_fields = || {
         ReplMenuState {
-            tooltip: locale::t("Nothing running"),
+            tooltip: locale::t_static("Nothing running"),
             icon: IconName::ReplNeutral,
             icon_color: Color::Default,
             icon_is_animating: false,
@@ -490,7 +490,7 @@ fn session_state(session: Entity<Session>, cx: &mut App) -> ReplMenuState {
     };
 
     let shutdown = || ReplMenuState {
-        tooltip: locale::t("Nothing running"),
+        tooltip: locale::t_static("Nothing running"),
         icon: IconName::ReplNeutral,
         icon_color: Color::Default,
         icon_is_animating: false,
