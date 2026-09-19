@@ -19,6 +19,8 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
+      - '.github/workflows/fork_ci.yml'
+      - '.github/workflows/fork_check.yml'
       - '.github/workflows/fork_disable_upstream.yml'
       - '.github/workflows/fork_release.yml'
   pull_request:
@@ -27,6 +29,8 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
+      - '.github/workflows/fork_ci.yml'
+      - '.github/workflows/fork_check.yml'
       - '.github/workflows/fork_disable_upstream.yml'
       - '.github/workflows/fork_release.yml'
   workflow_dispatch:

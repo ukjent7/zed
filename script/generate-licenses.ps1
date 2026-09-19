@@ -26,6 +26,8 @@ $needsInstall = $false
 try {
     $versionOutput = & cargo about --version 2>$null
     if (-not ($versionOutput -match "cargo-about $CARGO_ABOUT_VERSION")) {
+        # Wrong version counts as missing: silently generating with a stale
+        # cargo-about is what the pin is supposed to prevent.
         $needsInstall = $true
     } else {
         Write-Host "cargo-about@$CARGO_ABOUT_VERSION is already installed"
@@ -35,12 +37,8 @@ try {
 }
 
 if ($needsInstall) {
-    if (Test-Path "$cargoBin\cargo-about.exe") {
-        Write-Host "Found cargo-about in $cargoBin"
-    } else {
-        Write-Host "Installing cargo-about@$CARGO_ABOUT_VERSION..."
-        cargo install "cargo-about@$CARGO_ABOUT_VERSION"
-    }
+    Write-Host "Installing cargo-about@$CARGO_ABOUT_VERSION..."
+    cargo install "cargo-about@$CARGO_ABOUT_VERSION"
 }
 
 Write-Host "Generating cargo licenses"

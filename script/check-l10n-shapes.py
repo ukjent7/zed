@@ -18,11 +18,18 @@ So this check is about call-site shape, not path:
      English text in a separate `fn as_str(&self) -> &'static str`.
   2. no `locale::t*` inside a `telemetry::event!` invocation, including inside a
      `format!` there.
+  3. no `use locale::...` outside `crates/locale`. Rules 1-2 and the dictionary
+     tooling recognize calls by the fully qualified `locale::t*` spelling; an
+     imported bare `t(...)` would slip past all of them, so the import itself
+     is the violation.
 
-Both rules are deliberately conservative: they scan line windows rather than
-parsing Rust, so an exotic layout can slip past. That is acceptable - a missed
-warning is cheaper than a false CI failure, and `script/l10n-audit.py` lists
-what these two rules cannot see.
+Both rules 1-2 are deliberately conservative: they scan line windows rather
+than parsing Rust, so an exotic layout can slip past. That is acceptable - a
+missed warning is cheaper than a false CI failure, and `script/l10n-audit.py`
+lists what these two rules cannot see. This script does not share the
+`strip_rust_noise` masker from `script/l10n_common.py` on purpose: the rules
+above need string contents kept (braces inside literals count toward the
+nesting they measure), which is the opposite trade-off from the masker.
 
 Run: python script/check-l10n-shapes.py     # exit 1 on a violation
 """
@@ -89,6 +96,17 @@ def violations(rel: str, lines: list[str]) -> list[str]:
             found.append(
                 f"{rel}:{line_of(hit.start())}: localized text inside a "
                 "telemetry::event! call"
+            )
+
+    # Rule 3: an import of `locale` puts bare `t(...)` calls in scope, which
+    # rules 1-2 and the dictionary tooling cannot see. The crate itself is
+    # exempt: its internal calls are bare by definition.
+    if not rel.startswith("crates/locale/"):
+        for match in re.finditer(r"(?m)^\s*use\s+locale::", joined):
+            found.append(
+                f"{rel}:{line_of(match.start())}: `use locale::` outside "
+                "crates/locale; call locale::t* fully qualified so the l10n "
+                "tooling can recognize it"
             )
     return found
 
@@ -157,8 +175,13 @@ def main() -> int:
         try:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
+            # An unreadable file drops out of every rule below; say so instead
+            # of failing open silently.
+            print(f"warning: could not read {rel}; skipped by the shape check")
             continue
-        if "locale::t" not in text:
+        # Cheap pre-filter for both the `locale::t*` calls and the
+        # `use locale::` imports the rules look for.
+        if "locale" not in text:
             continue
         all_found.extend(violations(rel, text.splitlines()))
 
@@ -166,8 +189,9 @@ def main() -> int:
         for finding in all_found:
             print(finding)
         print(
-            f"\nError: {len(all_found)} localized value(s) reachable from a "
-            "Display/ToString body or a telemetry::event! call.\n"
+            f"\nError: {len(all_found)} finding(s) reachable from a "
+            "Display/ToString body, a telemetry::event! call, or a "
+            "`use locale::` import.\n"
             "Keep the English text in a plain accessor and translate at the "
             "display site (see crates/repl/src/kernels/mod.rs)."
         )

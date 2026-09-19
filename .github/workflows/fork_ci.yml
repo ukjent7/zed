@@ -12,6 +12,8 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
+      - '.github/workflows/fork_ci.yml'
+      - '.github/workflows/fork_check.yml'
       - '.github/workflows/fork_disable_upstream.yml'
       - '.github/workflows/fork_release.yml'
   pull_request:
@@ -20,6 +22,8 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
+      - '.github/workflows/fork_ci.yml'
+      - '.github/workflows/fork_check.yml'
       - '.github/workflows/fork_disable_upstream.yml'
       - '.github/workflows/fork_release.yml'
 permissions:
@@ -41,8 +45,8 @@ jobs:
         run: cargo fmt --all -- --check
       - name: l10n boundary check
         run: ./script/check-l10n-boundary
-      - name: l10n strict audit
-        run: ./script/extract-l10n --strict
+      - name: l10n strict dictionary audit
+        run: python3 script/check-l10n-dict.py --strict
       # Advisory, not a gate: the display-site heuristic has known false
       # positives (identity names, protocol fields it cannot classify), so a
       # non-zero count must not redden a pull request. It is printed here so the
@@ -50,5 +54,10 @@ jobs:
       - name: l10n coverage inventory
         continue-on-error: true
         run: python3 script/l10n-audit.py
+      # Advisory too: an inventory of the action registry against
+      # actions-zh-CN.json, for triaging untranslated action display names.
+      - name: l10n action-name inventory
+        continue-on-error: true
+        run: python3 script/l10n-actions.py
       - name: locale unit tests
-        run: cargo test -p locale
+        run: cargo test --locked -p locale

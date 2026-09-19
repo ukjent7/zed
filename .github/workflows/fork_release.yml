@@ -57,10 +57,14 @@ jobs:
           echo "crate version: ${{ steps.version.outputs.version }}"
           echo "channel: $(cat crates/zed/RELEASE_CHANNEL)"
       - name: tag must match the crate version
-        # Same check the `release` job runs before publishing; failing here, in
-        # the job `build` already depends on, keeps a mistagged push from
-        # burning three platforms' build budget first. See the `release` job for
-        # why the tag and the compiled-in version have to agree.
+        # This is the only place the check runs: `build` needs this job, so a
+        # mistagged push is rejected before burning three platforms' build
+        # budget. The check must live here because the updater's version
+        # comparison only offers a release whose tag version is strictly newer
+        # than the version compiled into the installed binary - publishing a
+        # tag that disagrees with the crate version would make every "Check
+        # for Updates" offer the same update again. Bump the zed crate
+        # version, commit it, then tag that commit.
         run: |
           tag="${{ inputs.tag || github.ref_name }}"
           if [ "$tag" != "v${{ steps.version.outputs.version }}" ]; then
@@ -211,18 +215,6 @@ jobs:
           find dist -mindepth 1 -type d -delete
       - name: list assets
         run: ls -lh dist
-      - name: check tag matches the crate version
-        run: |
-          set -euo pipefail
-          # The updater's version comparison only offers a release whose tag
-          # version is strictly newer than the version compiled into the
-          # installed binary. Publishing a tag that disagrees with the crate
-          # version would make every "Check for Updates" offer the same update
-          # again, so refuse to publish it.
-          if [ "$TAG" != "v${{ needs.version.outputs.version }}" ]; then
-            echo "::error::tag $TAG does not match crate version ${{ needs.version.outputs.version }} (expected v${{ needs.version.outputs.version }}). Bump the zed crate version, commit it, then tag that commit."
-            exit 1
-          fi
       - name: publish
         run: |
           set -euo pipefail
