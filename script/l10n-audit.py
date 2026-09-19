@@ -60,27 +60,12 @@ import pathlib
 import re
 import sys
 
+from l10n_common import read_blocklist, strip_rust_noise
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DICT = json.loads((ROOT / 'assets/locales/zh-CN.json').read_text(encoding='utf-8'))
 
-def read_blocklist() -> tuple[str, ...]:
-    """Model-facing paths, from `script/l10n-blocklist.txt`.
-
-    Shared with `script/check-l10n-boundary` and `script/extract-l10n`. Strings
-    under them may reach a model, so they are neither GUI-translation
-    candidates nor evidence that an entry is dead.
-    """
-    entries = []
-    for line in (ROOT / 'script' / 'l10n-blocklist.txt').read_text(
-        encoding='utf-8'
-    ).splitlines():
-        entry = line.split('#', 1)[0].strip()
-        if entry:
-            entries.append(entry)
-    return tuple(entries)
-
-
-BLOCKLIST = read_blocklist()
+BLOCKLIST = read_blocklist(ROOT)
 
 # A translate call, either fully qualified or imported into scope. `(?<![\w.])`
 # rejects method calls such as `handler.t(...)` in the agent tests.
@@ -295,6 +280,7 @@ NEVER_TRANSLATE_FILES = (
     'crates/project/src/git_store/conflict_set.rs',  # git refs
     'crates/project/src/debugger/locators/',         # language/tool names
     'crates/onboarding/src/basics_page.rs',          # theme names
+    'crates/zed/src/visual_test_runner.rs',          # visual-regression fixtures
 )
 
 # Test data and `static` initializers are reported by neither the blocklist nor
@@ -311,53 +297,6 @@ def looks_like_text(s: str, allow_single_word: bool = False) -> bool:
     if not allow_single_word and SINGLE_WORD.match(s):
         return False
     return True
-
-
-def strip_comments(text: str) -> str:
-    """Blank out comments, keeping offsets intact.
-
-    String bodies are walked over without being touched, so a `"` inside a
-    comment or an escaped quote inside a literal cannot desynchronise the scan.
-    Literals survive because scan() reads them out of the result.
-    """
-    out = list(text)
-    i, n = 0, len(text)
-
-    def blank(s, e):
-        for k in range(s, min(e, n)):
-            if text[k] != '\n':
-                out[k] = ' '
-
-    while i < n:
-        two = text[i:i + 2]
-        if two == '//':
-            e = text.find('\n', i)
-            blank(i, n if e == -1 else e)
-            i = n if e == -1 else e
-        elif two == '/*':
-            d, e = 1, i + 2
-            while e < n and d:
-                if text.startswith('/*', e):
-                    d += 1; e += 2
-                elif text.startswith('*/', e):
-                    d -= 1; e += 2
-                else:
-                    e += 1
-            blank(i, e); i = e
-        elif text[i] == '"':
-            i += 1
-            while i < n and text[i] != '"':
-                i += 2 if text[i] == '\\' else 1
-            i += 1
-        elif text[i] == "'" and i + 2 < n and (text[i + 1] == '\\' or text[i + 2] == "'"):
-            # char literal / lifetime: skip so a '"' inside cannot confuse us
-            i += 1
-            while i < n and text[i] != "'":
-                i += 2 if text[i] == '\\' else 1
-            i += 1
-        else:
-            i += 1
-    return ''.join(out)
 
 
 def blank_gallery_previews(text: str) -> str:
@@ -410,7 +349,7 @@ TEST_MODULE = re.compile(
 def scan(path: pathlib.Path):
     """Return (translate_calls, candidates, bare, ready_but_unwrapped)."""
     raw = path.read_text(encoding='utf-8', errors='ignore')
-    text = strip_comments(raw)
+    text = strip_rust_noise(raw)
     # Everything from the first inline test module on is test code.
     m = TEST_MODULE.search(text)
     prod = blank_gallery_previews(text[:m.start()] if m else text)

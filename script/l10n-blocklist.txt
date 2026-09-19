@@ -3,7 +3,7 @@
 #
 # Single source of truth, read by:
 #   - script/check-l10n-boundary  (refuses `locale::` anywhere in them)
-#   - script/extract-l10n         (a dictionary entry whose English source
+#   - script/check-l10n-dict.py   (a dictionary entry whose English source
 #                                  exists only inside one of them is a
 #                                  violation)
 #   - script/l10n-audit.py        (skipped when listing untranslated GUI

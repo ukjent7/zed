@@ -5,10 +5,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.." || exit 1
 
 # The model-facing path list, and the rationale for each entry, live in
-# script/l10n-blocklist.txt. It is shared with `script/extract-l10n` and
+# script/l10n-blocklist.txt. It is shared with `script/check-l10n-dict.py` and
 # `script/l10n-audit.py` so the three cannot drift apart. Listed paths are
-# refused below; `extract-l10n --strict` covers the other direction, reporting
-# a dictionary entry whose English source exists only inside one of them.
+# refused below; `check-l10n-dict.py --strict` covers the other direction,
+# reporting a dictionary entry whose English source exists only inside one of
+# them.
 blocklist=()
 while IFS= read -r line; do
   line="${line%%#*}"                # drop a trailing comment
