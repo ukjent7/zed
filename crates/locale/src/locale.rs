@@ -65,8 +65,11 @@ static USE_CHINESE_STATE: AtomicU8 = AtomicU8::new(STATE_UNINITIALIZED);
 /// once per label per frame. `SharedString` is not `Deserialize`, hence the
 /// intermediate `HashMap<String, String>`.
 fn parse_dictionary(json: &str) -> HashMap<String, SharedString> {
+    // The dictionary is compiled in via `include_str!`, so a malformed file is
+    // a permanent, deterministic condition: panic instead of silently rendering
+    // the whole UI in English. `cargo test -p locale` catches it earlier.
     serde_json::from_str::<HashMap<String, String>>(json)
-        .unwrap_or_default()
+        .expect("assets/locales dictionary must be a JSON string-to-string map")
         .into_iter()
         .map(|(source, translation)| (source, SharedString::from(translation)))
         .collect()
@@ -92,7 +95,7 @@ fn setting_language() -> Option<Language> {
 
 /// Returns true for Chinese locale identifiers
 /// (`zh`, `zh-CN`, `zh_Hans`, `zh-Hant-TW`, ...).
-pub fn is_chinese_locale(locale: &str) -> bool {
+fn is_chinese_locale(locale: &str) -> bool {
     let normalized = locale.replace('_', "-");
     normalized
         .split('-')
@@ -161,7 +164,7 @@ fn update_effective_language_state() {
 
 /// Whether the UI should currently render Simplified Chinese.
 /// Zero-allocation, lock-free check on the hot render path.
-pub fn use_chinese() -> bool {
+fn use_chinese() -> bool {
     match USE_CHINESE_STATE.load(Ordering::Relaxed) {
         STATE_CHINESE => true,
         STATE_ENGLISH => false,
@@ -225,13 +228,12 @@ pub fn t(key: &str) -> SharedString {
 
 /// Translate a GUI label whose English source is statically known.
 ///
-/// Same result as [`t`], but the fallback reuses the `'static` allocation
-/// instead of copying the key. [`t`] cannot do this: a `&str` parameter does
-/// not tell it whether the caller's text is static, so an untranslated key
-/// allocates on every call. Prefer `t_static` for string literals and for
-/// `&'static str` fields rendered once per frame — setting descriptions in
-/// the settings UI run into hundreds of calls per frame, all long enough to
-/// leave `SmolStr`'s inline capacity.
+/// Same result as [`t`], but the fallback reuses the caller's `'static` text
+/// without allocating. [`t`] cannot do this: a `&str` parameter does not tell
+/// it whether the caller's text is static, so `SharedString::from(key)`
+/// allocates a fresh `Arc<str>` on every call. Prefer `t_static` for string
+/// literals and for `&'static str` fields rendered once per frame — setting
+/// descriptions in the settings UI run into hundreds of calls per frame.
 pub fn t_static(key: &'static str) -> SharedString {
     if use_chinese()
         && let Some(translated) = dictionary().get(key)
@@ -315,7 +317,7 @@ pub fn localized_action_name(action_id: &str, english: &str) -> SharedString {
 }
 
 /// Placeholder names (`{name}`) in a source text that a translation must keep.
-pub fn placeholders(text: &str) -> Vec<String> {
+fn placeholders(text: &str) -> Vec<String> {
     let mut out = Vec::new();
     let mut rest = text;
     while let Some(start) = rest.find('{') {
@@ -477,10 +479,10 @@ mod tests {
     fn dictionary_parses() {
         // Must stay a valid string-to-string map with no empty entries.
         //
-        // The emptiness check is load-bearing: `dictionary()` falls back to an
-        // empty map when the JSON does not deserialize into the expected
-        // shape, and an empty map satisfies the loop below without running a
-        // single assertion.
+        // `parse_dictionary` itself panics on malformed JSON, so this test is
+        // the CI-stage gate: it runs before any release build can package a
+        // dictionary that would panic at first render. The non-empty assert
+        // also catches an accidentally emptied dictionary.
         let dictionary = dictionary();
         assert!(
             !dictionary.is_empty(),

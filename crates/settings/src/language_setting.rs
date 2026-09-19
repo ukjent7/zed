@@ -38,7 +38,10 @@ impl From<LanguageSetting> for locale::Language {
 
 impl Settings for LanguageSetting {
     fn from_settings(content: &crate::settings_content::SettingsContent) -> Self {
-        let language: Self = content.language.unwrap_or_default().into();
+        // Panic on a missing default, like `BaseKeymap` does: the trait
+        // contract says `from_settings` must fail loudly so default.json
+        // cannot silently lose an entry.
+        let language: Self = content.language.unwrap().into();
         // The settings layer is the only place that feeds the UI language to
         // `locale`, so it is what makes the setting take effect immediately
         // across all UI surfaces and triggers menu bar reloads. An explicit
